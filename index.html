@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MemeDrop</title>
-
-     <link rel="icon" type="image/png" href="./favicon.png">
+    
+    <!-- Site Image (Favicon) for browser tabs and bookmarks -->
+    <link rel="icon" type="image/png" href="./favicon.png">
     <link rel="apple-touch-icon" href="./favicon.png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        /* All CSS from before remains the same */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
@@ -42,7 +42,22 @@
         .view { animation: fadeIn 0.4s ease-out; }
         header { background-color: var(--header-bg-color); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 10px 20px; position: sticky; top: 0; z-index: 1000; }
         nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; gap: 15px; }
-        nav h1 { margin: 0; font-size: 1.8em; color: var(--primary-color); cursor: pointer; }
+        nav h1 { 
+            margin: 0; 
+            font-size: 1.8em; 
+            color: var(--primary-color); 
+            cursor: pointer;
+            /* New styles to align logo and text */
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        /* New style for the logo image in the header */
+        .header-logo {
+            height: 40px;
+            width: 40px;
+            object-fit: contain;
+        }
         .nav-center { flex-grow: 1; display: flex; justify-content: center; }
         #search-bar { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border-color); background-color: var(--light-gray); font-size: 1em; color: var(--text-color); }
         .nav-right { display: flex; align-items: center; gap: 15px; }
@@ -124,7 +139,11 @@
 <body data-theme="light">
     <header>
         <nav>
-            <h1 id="home-link">MemeDrop</h1>
+            <h1 id="home-link">
+                <!-- Site logo is now displayed here -->
+                <img src="./favicon.png" alt="MemeDrop Logo" class="header-logo">
+                <span>MemeDrop</span>
+            </h1>
             <div class="nav-center"><input type="search" id="search-bar" placeholder="Search memes..."></div>
             <div class="nav-right">
                 <div id="notifications-bell" class="hidden"><button class="action-btn">🔔</button><div id="notifications-count" class="hidden"></div><div id="notifications-panel"></div></div>
@@ -151,6 +170,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <script>
+        // All JavaScript code is exactly the same as the last working version.
+        // It uses the direct signInWithPopup method.
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = { apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", authDomain: "test-6336a.firebaseapp.com", databaseURL: "https://test-6336a-default-rtdb.firebaseio.com", projectId: "test-6336a", storageBucket: "test-6336a.firebasestorage.app", messagingSenderId: "437879418972", appId: "1:437879418972:web:47678bb0b3664edab8f699" };
             firebase.initializeApp(firebaseConfig);
@@ -168,7 +189,6 @@
             const notificationsPanel = document.getElementById('notifications-panel');
             const notificationsCount = document.getElementById('notifications-count');
 
-            // All other functions (showToast, timeAgo, createMemeElement, etc.) are here...
             const showToast = (message, type = 'success') => {
                 const toast = document.createElement('div');
                 toast.className = `toast ${type}`;
@@ -630,7 +650,7 @@
                     gallery.classList.toggle('list-view');
                     target.textContent = gallery.classList.contains('list-view') ? 'Grid View' : 'List View';
                 } else if (target.classList.contains('like-btn')) handleVote(target.dataset.memeId, 'likes');
-                else if (target.classList.contains('dislike-btn')) handleVote(_target.dataset.memeId, 'dislikes');
+                else if (target.classList.contains('dislike-btn')) handleVote(target.dataset.memeId, 'dislikes');
                 else if (target.dataset.action === 'toggle-options') {
                     const menu = target.nextElementSibling;
                     const isVisible = menu.style.display === 'block';
