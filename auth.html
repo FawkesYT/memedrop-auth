@@ -3,15 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <title>MemeDrop Auth</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+            text-align: center;
+        }
+        .container {
+            padding: 2rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .hidden {
+            display: none;
+        }
+        button {
+            font-size: 1rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #googleBtn { background-color: #db4437; }
+        #githubBtn { background-color: #333; }
+        button:hover {
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
-    <p>Please wait, authenticating...</p>
+
+    <div id="loading-container">
+        <p>Please wait...</p>
+    </div>
+
+    <div id="auth-container" class="hidden">
+        <h2>Complete Sign-in</h2>
+        <p>Click below to continue.</p>
+        <button id="auth-button">Continue</button>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     
     <script>
-        // Use the same Firebase config as your main app
         const firebaseConfig = {
             apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8",
             authDomain: "test-6336a.firebaseapp.com",
@@ -25,48 +68,55 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // 1. Get the provider from the URL (e.g., ?provider=github)
+        const loadingContainer = document.getElementById('loading-container');
+        const authContainer = document.getElementById('auth-container');
+        const authButton = document.getElementById('auth-button');
+
         const params = new URLSearchParams(window.location.search);
         const providerName = params.get('provider');
         let provider;
 
         if (providerName === 'google') {
             provider = new firebase.auth.GoogleAuthProvider();
+            authButton.textContent = 'Continue with Google';
+            authButton.id = 'googleBtn';
         } else if (providerName === 'github') {
             provider = new firebase.auth.GithubAuthProvider();
+            authButton.textContent = 'Continue with GitHub';
+            authButton.id = 'githubBtn';
         } else {
-            // Handle the error case where no provider is specified
-            document.body.textContent = 'Error: No authentication provider specified.';
-            // Use '*' for the target origin in the error case for simplicity
+            loadingContainer.innerHTML = '<p>Error: No authentication provider specified.</p>';
             window.opener.postMessage({ type: 'authError', message: 'No provider specified.' }, '*');
         }
         
-        // 2. If we have a valid provider, trigger the sign-in
+        // If we have a provider, show the button and wait for a click.
+        // This is the CRUCIAL step to avoid popup blockers.
         if (provider) {
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    // 3. On success, get the credential and user info
-                    // We must convert the credential to a plain JSON object to send it
-                    const credential = result.credential.toJSON(); 
-                    const user = result.user;
+            loadingContainer.classList.add('hidden');
+            authContainer.classList.remove('hidden');
 
-                    // 4. Send the data back to the window that opened this popup
-                    // Using `window.opener.location.origin` is the most secure way
-                    window.opener.postMessage({ 
-                        type: 'authSuccess', 
-                        payload: { 
-                            credential, // The serializable credential
-                            user // The full user object for quick access
-                        } 
-                    }, window.opener.location.origin);
-                    window.close(); // Close the popup
-                })
-                .catch((error) => {
-                    // If the user closes the popup or an error occurs
-                    console.error("Auth helper error:", error);
-                    window.opener.postMessage({ type: 'authError', message: error.message }, window.opener.location.origin);
-                    window.close(); // Close the popup
-                });
+            authButton.addEventListener('click', () => {
+                // Now that the user has clicked, we can safely open the popup.
+                authContainer.classList.add('hidden');
+                loadingContainer.classList.remove('hidden');
+
+                auth.signInWithPopup(provider)
+                    .then((result) => {
+                        const credential = result.credential.toJSON(); 
+                        const user = result.user;
+
+                        window.opener.postMessage({ 
+                            type: 'authSuccess', 
+                            payload: { credential, user } 
+                        }, window.opener.location.origin);
+                        window.close();
+                    })
+                    .catch((error) => {
+                        console.error("Auth helper error:", error);
+                        window.opener.postMessage({ type: 'authError', message: error.message }, window.opener.location.origin);
+                        window.close();
+                    });
+            });
         }
     </script>
 </body>
