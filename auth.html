@@ -14,42 +14,14 @@
             background-color: #f0f2f5;
             text-align: center;
         }
-        .container {
-            padding: 2rem;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .hidden {
-            display: none;
-        }
-        button {
-            font-size: 1rem;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #googleBtn { background-color: #db4437; }
-        #githubBtn { background-color: #333; }
-        button:hover {
-            opacity: 0.9;
+        p {
+            font-size: 1.1rem;
+            color: #333;
         }
     </style>
 </head>
 <body>
-
-    <div id="loading-container">
-        <p>Please wait...</p>
-    </div>
-
-    <div id="auth-container" class="hidden">
-        <h2>Complete Sign-in</h2>
-        <p>Click below to continue.</p>
-        <button id="auth-button">Continue</button>
-    </div>
+    <p>Redirecting to your login provider...</p>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -68,55 +40,55 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        const loadingContainer = document.getElementById('loading-container');
-        const authContainer = document.getElementById('auth-container');
-        const authButton = document.getElementById('auth-button');
+        // This page now has a two-step job:
+        // 1. First load: Redirect to the provider (Google/GitHub).
+        // 2. Second load (after provider redirect): Process the result and send it back.
 
-        const params = new URLSearchParams(window.location.search);
-        const providerName = params.get('provider');
-        let provider;
+        try {
+            const params = new URLSearchParams(window.location.search);
+            const providerName = params.get('provider');
+            let provider;
 
-        if (providerName === 'google') {
-            provider = new firebase.auth.GoogleAuthProvider();
-            authButton.textContent = 'Continue with Google';
-            authButton.id = 'googleBtn';
-        } else if (providerName === 'github') {
-            provider = new firebase.auth.GithubAuthProvider();
-            authButton.textContent = 'Continue with GitHub';
-            authButton.id = 'githubBtn';
-        } else {
-            loadingContainer.innerHTML = '<p>Error: No authentication provider specified.</p>';
-            window.opener.postMessage({ type: 'authError', message: 'No provider specified.' }, '*');
-        }
-        
-        // If we have a provider, show the button and wait for a click.
-        // This is the CRUCIAL step to avoid popup blockers.
-        if (provider) {
-            loadingContainer.classList.add('hidden');
-            authContainer.classList.remove('hidden');
+            if (providerName === 'google') {
+                provider = new firebase.auth.GoogleAuthProvider();
+            } else if (providerName === 'github') {
+                provider = new firebase.auth.GithubAuthProvider();
+            }
 
-            authButton.addEventListener('click', () => {
-                // Now that the user has clicked, we can safely open the popup.
-                authContainer.classList.add('hidden');
-                loadingContainer.classList.remove('hidden');
-
-                auth.signInWithPopup(provider)
+            if (provider) {
+                // Check if we are returning from a redirect.
+                auth.getRedirectResult()
                     .then((result) => {
-                        const credential = result.credential.toJSON(); 
-                        const user = result.user;
+                        // If result exists, it means we have successfully returned from the provider.
+                        if (result && result.credential) {
+                            const credential = result.credential.toJSON();
+                            const user = result.user;
 
-                        window.opener.postMessage({ 
-                            type: 'authSuccess', 
-                            payload: { credential, user } 
-                        }, window.opener.location.origin);
-                        window.close();
+                            // Send the successful login data to the main app window.
+                            window.opener.postMessage({
+                                type: 'authSuccess',
+                                payload: { credential, user }
+                            }, window.opener.location.origin);
+                            window.close();
+                        } else {
+                            // If no result, this is the first time the page has loaded.
+                            // Immediately redirect this window to the provider's auth page.
+                            auth.signInWithRedirect(provider);
+                        }
                     })
                     .catch((error) => {
-                        console.error("Auth helper error:", error);
+                        // Handle errors from getRedirectResult.
+                        console.error("Auth helper error during getRedirectResult:", error);
                         window.opener.postMessage({ type: 'authError', message: error.message }, window.opener.location.origin);
                         window.close();
                     });
-            });
+            } else {
+                throw new Error('No authentication provider specified.');
+            }
+        } catch (error) {
+            // Handle any other errors (like no provider in URL).
+            document.body.innerHTML = `<p>Error: ${error.message}</p>`;
+            window.opener.postMessage({ type: 'authError', message: error.message }, '*');
         }
     </script>
 </body>
