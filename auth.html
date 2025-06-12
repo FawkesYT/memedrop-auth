@@ -19,30 +19,55 @@
             projectId: "test-6336a",
             storageBucket: "test-6336a.firebasestorage.app",
             messagingSenderId: "437879418972",
-            appId: "1:437879418972:web:47678bb0b3664edab8f699",
-            measurementId: "G-4BBQBDLS41"
+            appId: "1:437879418972:web:47678bb0b3664edab8f699"
         };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const provider = new firebase.auth.GoogleAuthProvider();
 
-        // Immediately trigger the sign-in popup when this page loads
-        auth.signInWithPopup(provider)
-            .then((result) => {
-                // On success, get the Google ID Token
-                const idToken = result.credential.idToken;
-                // Send the token back to the window that opened this popup
-                window.opener.postMessage({ type: 'authSuccess', token: idToken }, 'https://sites.google.com');
-                window.close(); // Close the popup
-            })
-            .catch((error) => {
-                // If the user closes the popup or an error occurs
-                console.error("Auth helper error:", error);
-                window.opener.postMessage({ type: 'authError', message: error.message }, 'https://sites.google.com');
-                window.close(); // Close the popup
-            });
+        // 1. Get the provider from the URL (e.g., ?provider=github)
+        const params = new URLSearchParams(window.location.search);
+        const providerName = params.get('provider');
+        let provider;
+
+        if (providerName === 'google') {
+            provider = new firebase.auth.GoogleAuthProvider();
+        } else if (providerName === 'github') {
+            provider = new firebase.auth.GithubAuthProvider();
+        } else {
+            // Handle the error case where no provider is specified
+            document.body.textContent = 'Error: No authentication provider specified.';
+            // Use '*' for the target origin in the error case for simplicity
+            window.opener.postMessage({ type: 'authError', message: 'No provider specified.' }, '*');
+        }
+        
+        // 2. If we have a valid provider, trigger the sign-in
+        if (provider) {
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    // 3. On success, get the credential and user info
+                    // We must convert the credential to a plain JSON object to send it
+                    const credential = result.credential.toJSON(); 
+                    const user = result.user;
+
+                    // 4. Send the data back to the window that opened this popup
+                    // Using `window.opener.location.origin` is the most secure way
+                    window.opener.postMessage({ 
+                        type: 'authSuccess', 
+                        payload: { 
+                            credential, // The serializable credential
+                            user // The full user object for quick access
+                        } 
+                    }, window.opener.location.origin);
+                    window.close(); // Close the popup
+                })
+                .catch((error) => {
+                    // If the user closes the popup or an error occurs
+                    console.error("Auth helper error:", error);
+                    window.opener.postMessage({ type: 'authError', message: error.message }, window.opener.location.origin);
+                    window.close(); // Close the popup
+                });
+        }
     </script>
-        <!-- A small change to trigger a rebuild -->
 </body>
 </html>
