@@ -3,25 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>MemeDrop Auth</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f2f5;
-            text-align: center;
-        }
-        p {
-            font-size: 1.1rem;
-            color: #333;
-        }
-    </style>
 </head>
 <body>
-    <p>Redirecting to your login provider...</p>
+    <!-- This body is intentionally left blank. The redirect happens instantly. -->
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -40,55 +24,57 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // This page now has a two-step job:
-        // 1. First load: Redirect to the provider (Google/GitHub).
-        // 2. Second load (after provider redirect): Process the result and send it back.
+        // This page has a required two-step logic for the redirect flow:
+        // 1. First Load: Redirect this window to the login provider.
+        // 2. Return Load: After login, the provider redirects back here. We process
+        //    the result and send it to the main app.
 
         try {
-            const params = new URLSearchParams(window.location.search);
-            const providerName = params.get('provider');
-            let provider;
+            // Check if we are returning from the login provider
+            auth.getRedirectResult()
+                .then((result) => {
+                    // If 'result' exists, the user has successfully logged in and returned.
+                    if (result && result.credential) {
+                        const credential = result.credential.toJSON();
+                        const user = result.user;
 
-            if (providerName === 'google') {
-                provider = new firebase.auth.GoogleAuthProvider();
-            } else if (providerName === 'github') {
-                provider = new firebase.auth.GithubAuthProvider();
-            }
-
-            if (provider) {
-                // Check if we are returning from a redirect.
-                auth.getRedirectResult()
-                    .then((result) => {
-                        // If result exists, it means we have successfully returned from the provider.
-                        if (result && result.credential) {
-                            const credential = result.credential.toJSON();
-                            const user = result.user;
-
-                            // Send the successful login data to the main app window.
-                            window.opener.postMessage({
-                                type: 'authSuccess',
-                                payload: { credential, user }
-                            }, window.opener.location.origin);
-                            window.close();
-                        } else {
-                            // If no result, this is the first time the page has loaded.
-                            // Immediately redirect this window to the provider's auth page.
-                            auth.signInWithRedirect(provider);
-                        }
-                    })
-                    .catch((error) => {
-                        // Handle errors from getRedirectResult.
-                        console.error("Auth helper error during getRedirectResult:", error);
-                        window.opener.postMessage({ type: 'authError', message: error.message }, window.opener.location.origin);
+                        // Send the successful login data to the main app window and close this one.
+                        window.opener.postMessage({
+                            type: 'authSuccess',
+                            payload: { credential, user }
+                        }, window.opener.location.origin);
                         window.close();
-                    });
-            } else {
-                throw new Error('No authentication provider specified.');
-            }
+                    } else {
+                        // If 'result' is null, this is the first time the page has loaded.
+                        // We must now redirect to the correct provider.
+                        const params = new URLSearchParams(window.location.search);
+                        const providerName = params.get('provider');
+                        let provider;
+
+                        if (providerName === 'google') {
+                            provider = new firebase.auth.GoogleAuthProvider();
+                        } else if (providerName === 'github') {
+                            provider = new firebase.auth.GithubAuthProvider();
+                        }
+
+                        if (provider) {
+                            // This is the line that makes it automatic.
+                            auth.signInWithRedirect(provider);
+                        } else {
+                            throw new Error('No authentication provider specified.');
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error("Auth helper error:", error);
+                    window.opener.postMessage({ type: 'authError', message: error.message }, window.opener.location.origin);
+                    window.close();
+                });
         } catch (error) {
-            // Handle any other errors (like no provider in URL).
-            document.body.innerHTML = `<p>Error: ${error.message}</p>`;
+            // This catches synchronous errors, like a missing provider.
+            console.error("Auth helper setup error:", error);
             window.opener.postMessage({ type: 'authError', message: error.message }, '*');
+            window.close();
         }
     </script>
 </body>
