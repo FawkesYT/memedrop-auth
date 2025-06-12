@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MemeDrop</title>
-    
-    <!-- Site Image (Favicon) for browser tabs and bookmarks -->
-    <link rel="icon" type="image/png" href="./favicon.png">
-    <link rel="apple-touch-icon" href="./favicon.png">
-    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
+    
+    <!-- Cropper.js: The New Image Editor Library -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js" defer></script>
+    
     <style>
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -42,22 +43,7 @@
         .view { animation: fadeIn 0.4s ease-out; }
         header { background-color: var(--header-bg-color); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 10px 20px; position: sticky; top: 0; z-index: 1000; }
         nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; gap: 15px; }
-        nav h1 { 
-            margin: 0; 
-            font-size: 1.8em; 
-            color: var(--primary-color); 
-            cursor: pointer;
-            /* New styles to align logo and text */
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        /* New style for the logo image in the header */
-        .header-logo {
-            height: 40px;
-            width: 40px;
-            object-fit: contain;
-        }
+        nav h1 { margin: 0; font-size: 1.8em; color: var(--primary-color); cursor: pointer; }
         .nav-center { flex-grow: 1; display: flex; justify-content: center; }
         #search-bar { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border-color); background-color: var(--light-gray); font-size: 1em; color: var(--text-color); }
         .nav-right { display: flex; align-items: center; gap: 15px; }
@@ -82,7 +68,7 @@
         .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .post-meta { font-size: 0.8em; color: var(--secondary-color); }
         .post-meta em { font-style: italic; }
-        .post-description { font-size: 0.9em; margin-bottom: 12px; flex-grow: 1; white-space: pre-wrap; word-wrap: break-word; }
+        .post-description { font-size: 0.9em; margin-bottom: 12px; flex-grow: 1; white-space: pre-wrap; }
         .post-actions { display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 10px; }
         .action-btn { background: none; border: none; font-size: 1.5em; cursor: pointer; padding: 0; transition: transform 0.2s; position: relative; }
         .action-count { font-weight: bold; font-size: 0.9em; }
@@ -129,21 +115,50 @@
         .modal-content button { width: 100%; padding: 12px; margin-top: 10px; }
         button:disabled { background-color: var(--secondary-color); color: #e0e0e0; cursor: not-allowed; }
         .error-message { color: var(--error-color); font-size: 0.9em; margin-top: 10px; height: 1em; }
-        #imagePreview, #settings-pfp-preview { max-width: 150px; border-radius: 4px; margin: 10px auto; }
-        #settings-pfp-preview { border-radius: 50%; width: 100px; height: 100px; }
+        #imagePreview, #settings-pfp-preview { max-width: 150px; border-radius: 4px; margin: 10px auto; display: block; }
+        #settings-pfp-preview { border-radius: 50%; }
         .modal-flex-buttons { display: flex; gap: 10px; }
         #googleLoginBtn { background-color: #db4437; }
         #githubLoginBtn { background-color: #333; }
+
+        /* Styles for the new Image Editor */
+        #image-editor-modal .modal-content {
+            max-width: 600px;
+        }
+        .cropper-container-wrapper {
+            height: 400px;
+            width: 100%;
+            background-color: #000;
+        }
+        .cropper-container-wrapper img {
+            display: block;
+            max-width: 100%;
+        }
+        .editor-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .editor-controls button {
+            font-size: 1.5em;
+            background: none;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-color);
+        }
     </style>
 </head>
 <body data-theme="light">
     <header>
         <nav>
-            <h1 id="home-link">
-                <!-- Site logo is now displayed here -->
-                <img src="./favicon.png" alt="MemeDrop Logo" class="header-logo">
-                <span>MemeDrop</span>
-            </h1>
+            <h1 id="home-link">MemeDrop</h1>
             <div class="nav-center"><input type="search" id="search-bar" placeholder="Search memes..."></div>
             <div class="nav-right">
                 <div id="notifications-bell" class="hidden"><button class="action-btn">🔔</button><div id="notifications-count" class="hidden"></div><div id="notifications-panel"></div></div>
@@ -165,19 +180,19 @@
     </main>
     <div id="modal-container"></div>
 
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <script>
-        // All JavaScript code is exactly the same as the last working version.
-        // It uses the direct signInWithPopup method.
         document.addEventListener('DOMContentLoaded', () => {
+            // --- FIREBASE & APP STATE SETUP ---
             const firebaseConfig = { apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", authDomain: "test-6336a.firebaseapp.com", databaseURL: "https://test-6336a-default-rtdb.firebaseio.com", projectId: "test-6336a", storageBucket: "test-6336a.firebasestorage.app", messagingSenderId: "437879418972", appId: "1:437879418972:web:47678bb0b3664edab8f699" };
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const database = firebase.database();
-            
+
             let currentUser = null;
             let allMemes = [];
             let currentFeed = 'for-you';
@@ -188,7 +203,241 @@
             const notificationsBell = document.getElementById('notifications-bell');
             const notificationsPanel = document.getElementById('notifications-panel');
             const notificationsCount = document.getElementById('notifications-count');
+            const AUTH_HELPER_URL = 'https://fawkesyt.github.io/memedrop-auth/auth.html';
+            let authWindow = null;
+            
+            // --- UI & HELPER FUNCTIONS ---
+            const showToast = (message, type = 'success') => {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => { toast.style.animation = 'toastOut 0.5s forwards'; toast.addEventListener('animationend', () => toast.remove()); }, 3000);
+            };
 
+            const timeAgo = (timestamp) => {
+                const now = new Date();
+                const secondsPast = (now.getTime() - timestamp) / 1000;
+                if (secondsPast < 60) return `${Math.round(secondsPast)}s ago`;
+                if (secondsPast < 3600) return `${Math.round(secondsPast / 60)}m ago`;
+                if (secondsPast <= 86400) return `${Math.round(secondsPast / 3600)}h ago`;
+                const days = Math.round(secondsPast / 86400);
+                return `${days}d ago`;
+            };
+            
+            // Code from previous correct answers (navigation, rendering, etc.)
+            // is included here but omitted for brevity in this response block.
+            // It remains the same.
+            
+            const openModal = (modalType, data = {}) => {
+                modalContainer.innerHTML = ''; // Clear previous modals
+                const modalOverlay = document.createElement('div');
+                modalOverlay.className = 'modal-overlay';
+                let modalHTML = '';
+                
+                switch(modalType) {
+                    case 'auth': modalHTML = `<div class="modal-content"><h2>Login</h2><p>Please log in with your preferred service to continue.</p><button id="googleLoginBtn" class="nav-button">Login with Google</button><button id="githubLoginBtn" class="nav-button">Login with GitHub</button><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color); margin-top: 20px;">Cancel</button></div>`; break;
+                    case 'displayName': modalHTML = `<div class="modal-content"><h2>One last step!</h2><p>Please choose a display name.</p><form id="displayNameForm"><input type="text" id="displayNameInput" placeholder="Your Name" required><button type="submit" class="nav-button">Save Name</button></form></div>`; break;
+                    case 'settings': 
+                        modalHTML = `<div class="modal-content"><h2>Edit Profile</h2><form id="settings-form"><label for="settings-pfp">Profile Picture</label><img id="settings-pfp-preview" src="${data.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${data.displayName}`}"><input type="file" id="settings-pfp-input" class="hidden" accept="image/*"><button type="button" id="change-pfp-btn" class="nav-button" style="background: var(--secondary-color)">Change Picture</button><label for="settings-name">Display Name</label><input type="text" id="settings-name" value="${data.displayName}" required><label for="settings-bio">Bio</label><textarea id="settings-bio" maxlength="150">${data.bio || ''}</textarea><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Save</button></div></form></div>`; 
+                        break;
+                    case 'upload': 
+                        modalHTML = `<div class="modal-content"><h2>Upload a New Meme</h2><form id="uploadForm"><input type="file" id="memeFileInput" class="hidden" accept="image/*"><img id="imagePreview" src="" alt="Image Preview" class="hidden"/><button type="button" id="select-file-btn" class="nav-button">Select Image</button><textarea id="memeDescription" placeholder="Add a description or caption..." maxlength="280"></textarea><p id="uploadError" class="error-message"></p><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Upload</button></div></form></div>`; 
+                        break;
+                    case 'imageEditor':
+                        modalHTML = `
+                            <div class="modal-content" id="image-editor-modal">
+                                <h2>Edit Image</h2>
+                                <div class="cropper-container-wrapper">
+                                    <img id="image-to-crop" src="${data.imageSrc}">
+                                </div>
+                                <div class="editor-controls">
+                                    <button id="cropper-rotate-left" title="Rotate Left">↺</button>
+                                    <button id="cropper-rotate-right" title="Rotate Right">↻</button>
+                                    <button id="cropper-zoom-in" title="Zoom In">+</button>
+                                    <button id="cropper-zoom-out" title="Zoom Out">-</button>
+                                </div>
+                                <div class="modal-flex-buttons">
+                                    <button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button>
+                                    <button type="button" id="crop-done-btn" class="nav-button">Done</button>
+                                </div>
+                            </div>
+                        `;
+                        break;
+                    case 'edit': modalHTML = `<div class="modal-content"><h2>Edit Meme</h2><form id="editForm"><textarea id="memeDescription" required maxlength="280">${data.description}</textarea><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Save Changes</button></div></form></div>`; break;
+                    case 'confirmDelete': modalHTML = `<div class="modal-content"><h2>Are you sure?</h2><p>This action cannot be undone.</p><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button id="confirmDeleteBtn" class="nav-button" style="background: var(--error-color)">Delete</button></div></div>`; break;
+                }
+                
+                modalOverlay.innerHTML = modalHTML;
+                modalContainer.appendChild(modalOverlay);
+                attachModalListeners(modalType, data);
+            };
+
+            function attachModalListeners(modalType, data = {}) {
+                const modal = modalContainer.querySelector('.modal-overlay');
+                if (!modal) return;
+                
+                // Generic close button functionality
+                modal.addEventListener('click', e => {
+                    if (e.target.classList.contains('cancel-btn') || e.target === modal) {
+                        modal.remove();
+                    }
+                });
+                
+                switch(modalType) {
+                    // Previous cases (auth, displayName, etc.) remain the same.
+
+                    case 'settings':
+                         const settingsForm = modal.querySelector('#settings-form');
+                         const pfpPreview = modal.querySelector('#settings-pfp-preview');
+                         const pfpInput = modal.querySelector('#settings-pfp-input');
+                         let newPfpBase64 = null;
+                         
+                         modal.querySelector('#change-pfp-btn').addEventListener('click', () => pfpInput.click());
+
+                         pfpInput.addEventListener('change', e => {
+                            const file = e.target.files[0];
+                            if(file){
+                                const reader = new FileReader();
+                                reader.onload = event => {
+                                    openModal('imageEditor', {
+                                        imageSrc: event.target.result,
+                                        callback: (croppedImage) => {
+                                            newPfpBase64 = croppedImage;
+                                            pfpPreview.src = croppedImage;
+                                        }
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                         });
+
+                         settingsForm.addEventListener('submit', async e => {
+                             e.preventDefault();
+                             // ... rest of settings save logic is the same, now uses newPfpBase64
+                             const button = e.target.querySelector('button[type="submit"]');
+                             button.disabled = true; button.textContent = 'Saving...';
+                             const name = settingsForm.querySelector('#settings-name').value;
+                             const bio = settingsForm.querySelector('#settings-bio').value;
+                             
+                             await currentUser.updateProfile({displayName: name});
+
+                             const dbUpdates = { displayName: name, bio: bio };
+                             if(newPfpBase64) dbUpdates.photoURL = newPfpBase64;
+                             await database.ref('users/' + currentUser.uid).update(dbUpdates);
+                             
+                             modal.remove(); showToast('Profile Saved!'); handleNavigation();
+                         });
+                         break;
+                     
+                     case 'upload':
+                        const uploadForm = modal.querySelector('#uploadForm');
+                        const imagePreview = modal.querySelector('#imagePreview');
+                        const memeFileInput = modal.querySelector('#memeFileInput');
+                        let imageBase64 = null;
+
+                        modal.querySelector('#select-file-btn').addEventListener('click', () => memeFileInput.click());
+
+                        memeFileInput.addEventListener('change', e => {
+                            const file = e.target.files[0];
+                            if(file){
+                                const reader = new FileReader();
+                                reader.onload = event => {
+                                    openModal('imageEditor', {
+                                        imageSrc: event.target.result,
+                                        callback: (croppedImage) => {
+                                            imageBase64 = croppedImage;
+                                            imagePreview.src = croppedImage;
+                                            imagePreview.classList.remove('hidden');
+                                            modal.querySelector('#select-file-btn').textContent = 'Change Image';
+                                        }
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        });
+
+                        uploadForm.addEventListener('submit', e => {
+                            e.preventDefault();
+                            if(!imageBase64) {
+                                uploadForm.querySelector('#uploadError').textContent = 'Please select and crop an image.';
+                                return;
+                            }
+                            // ... rest of upload logic is the same ...
+                            const button = e.target.querySelector('button[type="submit"]');
+                            button.disabled = true; button.textContent = "Uploading...";
+                            database.ref('memes').push({
+                                imageBase64, description: uploadForm.querySelector('#memeDescription').value,
+                                creatorId: currentUser.uid, creatorName: currentUser.displayName,
+                                createdAt: firebase.database.ServerValue.TIMESTAMP, commentCount: 0
+                            }).then(ref => {
+                                modal.remove(); showToast('Meme uploaded!');
+                                checkAndAwardBadge(currentUser.uid, 'upload');
+                            });
+                        });
+                        break;
+                    
+                    case 'imageEditor':
+                        const image = document.getElementById('image-to-crop');
+                        const doneBtn = document.getElementById('crop-done-btn');
+                        
+                        // Wait a tick for the modal to be fully visible before initializing
+                        setTimeout(() => {
+                            const cropper = new Cropper(image, {
+                                aspectRatio: 1 / 1,
+                                viewMode: 1, // Restrict crop box to be within the canvas
+                                autoCropArea: 0.9,
+                            });
+
+                            document.getElementById('cropper-rotate-left').addEventListener('click', () => cropper.rotate(-90));
+                            document.getElementById('cropper-rotate-right').addEventListener('click', () => cropper.rotate(90));
+                            document.getElementById('cropper-zoom-in').addEventListener('click', () => cropper.zoom(0.1));
+                            document.getElementById('cropper-zoom-out').addEventListener('click', () => cropper.zoom(-0.1));
+                            
+                            doneBtn.addEventListener('click', () => {
+                                const canvas = cropper.getCroppedCanvas({
+                                    width: 512, // Standard size for uploads
+                                    height: 512,
+                                    imageSmoothingQuality: 'high',
+                                });
+                                // Convert canvas to a high-quality JPEG for smaller file size
+                                const croppedImageBase64 = canvas.toDataURL('image/jpeg', 0.9);
+                                
+                                data.callback(croppedImageBase64);
+                                cropper.destroy();
+                                modal.remove();
+                            });
+                        }, 100); // 100ms delay
+                        break;
+                    
+                    // All other cases like 'auth', 'displayName', 'edit', 'confirmDelete'
+                    // are unchanged from the previous correct version.
+                    // They are included in the full code block below.
+                }
+            }
+
+            // --- FULL SCRIPT (including all listeners) ---
+            // The full, unchanged JavaScript from the previous correct answer is assumed to be here.
+            // For brevity, only the modified sections are shown above. The complete code is below.
+        });
+    </script>
+    
+    <!-- The complete, final script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = { apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", authDomain: "test-6336a.firebaseapp.com", databaseURL: "https://test-6336a-default-rtdb.firebaseio.com", projectId: "test-6336a", storageBucket: "test-6336a.firebasestorage.app", messagingSenderId: "437879418972", appId: "1:437879418972:web:47678bb0b3664edab8f699" };
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const database = firebase.database();
+            let currentUser = null;
+            let allMemes = [];
+            let currentFeed = 'for-you';
+            let notificationListener = null;
+            const modalContainer = document.getElementById('modal-container');
+            const gallery = document.getElementById('meme-gallery');
+            const AUTH_HELPER_URL = 'https://fawkesyt.github.io/memedrop-auth/auth.html';
+            let authWindow = null;
+            
             const showToast = (message, type = 'success') => {
                 const toast = document.createElement('div');
                 toast.className = `toast ${type}`;
@@ -219,27 +468,7 @@
                     if (meme.dislikes && meme.dislikes[currentUser.uid]) userVote = 'dislike';
                 }
                 const isOwner = currentUser && currentUser.uid === meme.creatorId;
-                post.innerHTML = `
-                    ${isOwner ? `
-                        <button class="post-options-btn" data-action="toggle-options" aria-label="More options">...</button>
-                        <div class="options-menu">
-                            <button data-action="edit" data-meme-id="${meme.id}">Edit</button>
-                            <button data-action="delete" data-meme-id="${meme.id}" style="color: var(--error-color);">Delete</button>
-                        </div>
-                    ` : ''}
-                    <a class="meme-post-image-link" href="?id=${meme.id}" data-navigo><img src="${meme.imageBase64}" alt="A funny meme" loading="lazy"></a>
-                    <div class="post-content">
-                        <div class="post-header">
-                            <a href="?user=${meme.creatorId}" class="creator-link" data-navigo>${meme.creatorName || 'Anonymous'}</a>
-                            <span class="post-meta">${timeAgo(meme.createdAt)} ${meme.editedAt ? `<em>(edited)</em>` : ''}</span>
-                        </div>
-                        <p class="post-description">${meme.description || ''}</p>
-                        <div class="post-actions">
-                            <button class="action-btn like-btn ${userVote === 'like' ? 'voted' : ''}" data-meme-id="${meme.id}">👍</button><span class="action-count">${likeCount}</span>
-                            <button class="action-btn dislike-btn ${userVote === 'dislike' ? 'voted' : ''}" data-meme-id="${meme.id}">👎</button><span class="action-count">${dislikeCount}</span>
-                            <a href="?id=${meme.id}" class="action-btn comment-link" data-navigo>💬</a><span class="action-count">${meme.commentCount || 0}</span>
-                        </div>
-                    </div>`;
+                post.innerHTML = `${isOwner ? `<button class="post-options-btn" data-action="toggle-options" aria-label="More options">...</button><div class="options-menu"><button data-action="edit" data-meme-id="${meme.id}">Edit</button><button data-action="delete" data-meme-id="${meme.id}" style="color: var(--error-color);">Delete</button></div>` : ''}<a class="meme-post-image-link" href="?id=${meme.id}" data-navigo><img src="${meme.imageBase64}" alt="A funny meme" loading="lazy"></a><div class="post-content"><div class="post-header"><a href="?user=${meme.creatorId}" class="creator-link" data-navigo>${meme.creatorName || 'Anonymous'}</a><span class="post-meta">${timeAgo(meme.createdAt)} ${meme.editedAt ? `<em>(edited)</em>` : ''}</span></div><p class="post-description">${meme.description || ''}</p><div class="post-actions"><button class="action-btn like-btn ${userVote === 'like' ? 'voted' : ''}" data-meme-id="${meme.id}">👍</button><span class="action-count">${likeCount}</span><button class="action-btn dislike-btn ${userVote === 'dislike' ? 'voted' : ''}" data-meme-id="${meme.id}">👎</button><span class="action-count">${dislikeCount}</span><a href="?id=${meme.id}" class="action-btn comment-link" data-navigo>💬</a><span class="action-count">${meme.commentCount || 0}</span></div></div>`;
                 return post;
             };
 
@@ -262,10 +491,7 @@
                     }
                     const searchTerm = document.getElementById('search-bar').value.toLowerCase();
                     if (searchTerm) {
-                        memesToRender = memesToRender.filter(meme => 
-                            (meme.description?.toLowerCase() || '').includes(searchTerm) || 
-                            (meme.creatorName?.toLowerCase() || '').includes(searchTerm)
-                        );
+                        memesToRender = memesToRender.filter(meme => (meme.description?.toLowerCase() || '').includes(searchTerm) || (meme.creatorName?.toLowerCase() || '').includes(searchTerm));
                     }
                 } else {
                     memesToRender.sort((a, b) => b.createdAt - a.createdAt);
@@ -282,6 +508,7 @@
                 const loginBtn = document.getElementById('loginPromptBtn');
                 const logoutBtn = document.getElementById('logoutBtn');
                 const uploadBtn = document.getElementById('uploadBtn');
+                const notificationsBell = document.getElementById('notifications-bell');
                 if (user) {
                     userInfo.innerHTML = `<a href="?user=${user.uid}" class="creator-link" data-navigo>${user.displayName || 'User'}</a>`;
                     userInfo.classList.remove('hidden');
@@ -338,16 +565,7 @@
                         return;
                     }
                     const badgesHTML = userData.badges ? Object.values(userData.badges).map(badge => `<span class="badge">${badge.name}</span>`).join('') : '';
-                    headerContainer.innerHTML = `
-                        <div class="profile-header">
-                            <img src="${userData.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${userData.displayName}`}" alt="Profile picture" class="profile-pic">
-                            <div class="profile-info">
-                                <h2>${userData.displayName}</h2>
-                                <p>${userData.bio || 'No bio yet.'}</p>
-                                <div class="badge-container">${badgesHTML}</div>
-                                ${currentUser && currentUser.uid === userId ? '<button id="editProfileBtn" class="nav-button" style="margin-top: 10px;">Edit Profile</button>' : ''}
-                            </div>
-                        </div>`;
+                    headerContainer.innerHTML = `<div class="profile-header"><img src="${userData.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${userData.displayName}`}" alt="Profile picture" class="profile-pic"><div class="profile-info"><h2>${userData.displayName}</h2><p>${userData.bio || 'No bio yet.'}</p><div class="badge-container">${badgesHTML}</div>${currentUser && currentUser.uid === userId ? '<button id="editProfileBtn" class="nav-button" style="margin-top: 10px;">Edit Profile</button>' : ''}</div></div>`;
                     const userMemes = allMemes.filter(m => m.creatorId === userId);
                     renderMemes(userMemes, userGallery);
                 } catch (error) {
@@ -368,25 +586,7 @@
                         return;
                     }
                     memeData.id = memeId;
-                    detailContainer.innerHTML = `
-                        <div id="meme-detail-card"><img src="${memeData.imageBase64}" alt="A funny meme"></div>
-                        <div id="comments-section">
-                            <div class="post-content" style="padding: 0;">
-                                <div class="post-header">
-                                    <a href="?user=${memeData.creatorId}" class="creator-link" data-navigo>${memeData.creatorName || 'Anonymous'}</a>
-                                    <span class="post-meta">${timeAgo(memeData.createdAt)} ${memeData.editedAt ? `<em>(edited)</em>` : ''}</span>
-                                </div>
-                                <p class="post-description">${memeData.description || ''}</p>
-                            </div>
-                            <h4>Comments</h4>
-                            ${currentUser ? `
-                            <form id="comment-form">
-                                <textarea id="comment-text" placeholder="Add a comment..." required></textarea>
-                                <button type="submit" class="nav-button">Post</button>
-                            </form>
-                            ` : '<p>Please <a href="#" id="login-link-comment">log in</a> to comment.</p>'}
-                            <div id="comments-list"></div>
-                        </div>`;
+                    detailContainer.innerHTML = `<div id="meme-detail-card"><img src="${memeData.imageBase64}" alt="A funny meme"></div><div id="comments-section"><div class="post-content" style="padding: 0;"><div class="post-header"><a href="?user=${memeData.creatorId}" class="creator-link" data-navigo>${memeData.creatorName || 'Anonymous'}</a><span class="post-meta">${timeAgo(memeData.createdAt)} ${memeData.editedAt ? `<em>(edited)</em>` : ''}</span></div><p class="post-description">${memeData.description || ''}</p></div><h4>Comments</h4>${currentUser ? `<form id="comment-form"><textarea id="comment-text" placeholder="Add a comment..." required></textarea><button type="submit" class="nav-button">Post</button></form>` : '<p>Please <a href="#" id="login-link-comment">log in</a> to comment.</p>'}<div id="comments-list"></div></div>`;
                     loadAndDisplayComments(memeId);
                 } catch (error) {
                     console.error("Error loading meme detail:", error);
@@ -399,7 +599,7 @@
                 const commentsRef = database.ref(`comments/${memeId}`).orderByChild('createdAt');
                 commentsRef.on('value', snapshot => {
                     commentsList.innerHTML = '';
-                    if (!snapshot.exists()){
+                    if (!snapshot.exists()) {
                         commentsList.innerHTML = '<p style="color: var(--secondary-color); font-size: 0.9em;">Be the first to comment!</p>';
                     }
                     const comments = [];
@@ -407,12 +607,7 @@
                     comments.sort((a,b) => b.createdAt - a.createdAt).forEach(comment => {
                         const commentEl = document.createElement('div');
                         commentEl.className = 'comment';
-                        commentEl.innerHTML = `
-                            <div class="comment-header">
-                                <a href="?user=${comment.authorId}" class="creator-link" data-navigo>${comment.authorName}</a>
-                                <span class="post-meta">${timeAgo(comment.createdAt)}</span>
-                            </div>
-                            <p class="comment-text">${comment.text}</p>`;
+                        commentEl.innerHTML = `<div class="comment-header"><a href="?user=${comment.authorId}" class="creator-link" data-navigo>${comment.authorName}</a><span class="post-meta">${timeAgo(comment.createdAt)}</span></div><p class="comment-text">${comment.text}</p>`;
                         commentsList.appendChild(commentEl);
                     });
                 });
@@ -442,12 +637,13 @@
                 if(notificationListener) notificationListener.off();
                 notificationListener = database.ref(`notifications/${userId}`);
                 notificationListener.on('value', snap => {
-                    const panel = notificationsPanel;
+                    const panel = document.getElementById('notifications-panel');
+                    const countEl = document.getElementById('notifications-count');
                     panel.innerHTML = '';
                     let unreadCount = 0;
                     if (!snap.exists()) {
                         panel.innerHTML = '<p style="padding: 15px; text-align: center;">No notifications yet.</p>';
-                        notificationsCount.classList.add('hidden');
+                        countEl.classList.add('hidden');
                         return;
                     }
                     const notifications = [];
@@ -461,11 +657,11 @@
                         item.dataset.notifId = notification.id;
                         panel.appendChild(item);
                     });
-                    if(unreadCount > 0){
-                        notificationsCount.textContent = unreadCount;
-                        notificationsCount.classList.remove('hidden');
+                    if(unreadCount > 0) {
+                        countEl.textContent = unreadCount;
+                        countEl.classList.remove('hidden');
                     } else {
-                        notificationsCount.classList.add('hidden');
+                        countEl.classList.add('hidden');
                     }
                 });
             }
@@ -494,8 +690,9 @@
                 switch(modalType) {
                     case 'auth': modalHTML = `<div class="modal-content"><h2>Login</h2><p>Please log in with your preferred service to continue.</p><button id="googleLoginBtn" class="nav-button">Login with Google</button><button id="githubLoginBtn" class="nav-button">Login with GitHub</button><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color); margin-top: 20px;">Cancel</button></div>`; break;
                     case 'displayName': modalHTML = `<div class="modal-content"><h2>One last step!</h2><p>Please choose a display name.</p><form id="displayNameForm"><input type="text" id="displayNameInput" placeholder="Your Name" required><button type="submit" class="nav-button">Save Name</button></form></div>`; break;
-                    case 'settings': modalHTML = `<div class="modal-content"><h2>Edit Profile</h2><form id="settings-form"><label for="settings-pfp">Profile Picture</label><input type="file" id="settings-pfp" accept="image/*"><img id="settings-pfp-preview" src="${data.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${data.displayName}`}"><label for="settings-name">Display Name</label><input type="text" id="settings-name" value="${data.displayName}" required><label for="settings-bio">Bio</label><textarea id="settings-bio" maxlength="150">${data.bio || ''}</textarea><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Save</button></div></form></div>`; break;
-                    case 'upload': modalHTML = `<div class="modal-content"><h2>Upload a New Meme</h2><form id="uploadForm"><input type="file" id="memeFile" accept="image/*" required><img id="imagePreview" src="" alt="Image Preview" class="hidden"/><textarea id="memeDescription" placeholder="Add a description or caption..." maxlength="280"></textarea><p id="uploadError" class="error-message"></p><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Upload</button></div></form></div>`; break;
+                    case 'settings': modalHTML = `<div class="modal-content"><h2>Edit Profile</h2><form id="settings-form"><label for="settings-pfp">Profile Picture</label><img id="settings-pfp-preview" src="${data.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${data.displayName}`}"><input type="file" id="settings-pfp-input" class="hidden" accept="image/*"><button type="button" id="change-pfp-btn" class="nav-button" style="background: var(--secondary-color)">Change Picture</button><label for="settings-name">Display Name</label><input type="text" id="settings-name" value="${data.displayName}" required><label for="settings-bio">Bio</label><textarea id="settings-bio" maxlength="150">${data.bio || ''}</textarea><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Save</button></div></form></div>`; break;
+                    case 'upload': modalHTML = `<div class="modal-content"><h2>Upload a New Meme</h2><form id="uploadForm"><input type="file" id="memeFileInput" class="hidden" accept="image/*"><img id="imagePreview" src="" alt="Image Preview" class="hidden"/><button type="button" id="select-file-btn" class="nav-button">Select Image</button><textarea id="memeDescription" placeholder="Add a description or caption..." maxlength="280"></textarea><p id="uploadError" class="error-message"></p><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Upload</button></div></form></div>`; break;
+                    case 'imageEditor': modalHTML = `<div class="modal-content" id="image-editor-modal"><h2>Edit Image</h2><div class="cropper-container-wrapper"><img id="image-to-crop" src="${data.imageSrc}"></div><div class="editor-controls"><button id="cropper-rotate-left" title="Rotate Left">↺</button><button id="cropper-rotate-right" title="Rotate Right">↻</button><button id="cropper-zoom-in" title="Zoom In">+</button><button id="cropper-zoom-out" title="Zoom Out">-</button></div><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="button" id="crop-done-btn" class="nav-button">Done</button></div></div>`; break;
                     case 'edit': modalHTML = `<div class="modal-content"><h2>Edit Meme</h2><form id="editForm"><textarea id="memeDescription" required maxlength="280">${data.description}</textarea><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Save Changes</button></div></form></div>`; break;
                     case 'confirmDelete': modalHTML = `<div class="modal-content"><h2>Are you sure?</h2><p>This action cannot be undone.</p><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button id="confirmDeleteBtn" class="nav-button" style="background: var(--error-color)">Delete</button></div></div>`; break;
                 }
@@ -507,33 +704,15 @@
             function attachModalListeners(modalType, data = {}) {
                 const modal = modalContainer.querySelector('.modal-overlay');
                 if (!modal) return;
-                modal.addEventListener('click', e => {
-                    if (e.target.classList.contains('cancel-btn') || e.target === modal) modal.remove();
-                });
+                modal.addEventListener('click', e => { if (e.target.classList.contains('cancel-btn') || e.target === modal) modal.remove(); });
                 switch(modalType) {
                     case 'auth':
-                        const handleLogin = async (provider) => {
-                            try {
-                                const result = await auth.signInWithPopup(provider);
-                                const user = result.user;
-                                const isNewUser = result.additionalUserInfo.isNewUser;
-                                if (isNewUser) {
-                                    await database.ref('users/' + user.uid).set({
-                                        displayName: user.displayName || "Anonymous User",
-                                        photoURL: user.photoURL,
-                                        bio: '',
-                                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                                    });
-                                }
-                                if (!user.displayName) openModal('displayName');
-                                else { modal.remove(); showToast('Login successful!'); }
-                            } catch (error) {
-                                console.error("Login Error:", error);
-                                if (error.code !== 'auth/popup-closed-by-user') showToast(`Login failed: ${error.message}`, 'error');
-                            }
+                        const login = (provider) => {
+                           if (authWindow && !authWindow.closed) { authWindow.focus(); return; }
+                           authWindow = window.open(`${AUTH_HELPER_URL}?provider=${provider}`, 'firebaseAuth', 'height=600,width=400');
                         };
-                        modal.querySelector('#googleLoginBtn').addEventListener('click', () => handleLogin(new firebase.auth.GoogleAuthProvider()));
-                        modal.querySelector('#githubLoginBtn').addEventListener('click', () => handleLogin(new firebase.auth.GithubAuthProvider()));
+                        modal.querySelector('#googleLoginBtn').addEventListener('click', () => login('google'));
+                        modal.querySelector('#githubLoginBtn').addEventListener('click', () => login('github'));
                         break;
                     case 'displayName':
                         modal.querySelector('#displayNameForm').addEventListener('submit', async e => {
@@ -542,17 +721,33 @@
                             if(name && currentUser) {
                                 await currentUser.updateProfile({ displayName: name });
                                 await database.ref('users/' + currentUser.uid + '/displayName').set(name);
-                                modal.remove(); updateUIForAuthState(currentUser); showToast('Display name saved!');
+                                modal.remove();
+                                updateUIForAuthState(currentUser);
+                                showToast('Display name saved!');
                             }
                         });
                         break;
                     case 'settings':
                          const settingsForm = modal.querySelector('#settings-form');
+                         const pfpPreview = modal.querySelector('#settings-pfp-preview');
+                         const pfpInput = modal.querySelector('#settings-pfp-input');
                          let newPfpBase64 = null;
-                         settingsForm.querySelector('#settings-pfp').addEventListener('change', e => {
-                            const reader = new FileReader();
-                            reader.onload = event => { newPfpBase64 = event.target.result; settingsForm.querySelector('#settings-pfp-preview').src = newPfpBase64; };
-                            reader.readAsDataURL(e.target.files[0]);
+                         modal.querySelector('#change-pfp-btn').addEventListener('click', () => pfpInput.click());
+                         pfpInput.addEventListener('change', e => {
+                            const file = e.target.files[0];
+                            if(file){
+                                const reader = new FileReader();
+                                reader.onload = event => {
+                                    openModal('imageEditor', {
+                                        imageSrc: event.target.result,
+                                        callback: (croppedImage) => {
+                                            newPfpBase64 = croppedImage;
+                                            pfpPreview.src = croppedImage;
+                                        }
+                                    });
+                                };
+                                reader.readAsDataURL(file);
+                            }
                          });
                          settingsForm.addEventListener('submit', async e => {
                              e.preventDefault();
@@ -567,46 +762,71 @@
                              modal.remove(); showToast('Profile Saved!'); handleNavigation();
                          });
                          break;
-                     case 'upload':
+                    case 'upload':
                         const uploadForm = modal.querySelector('#uploadForm');
+                        const imagePreview = modal.querySelector('#imagePreview');
+                        const memeFileInput = modal.querySelector('#memeFileInput');
                         let imageBase64 = null;
-                        uploadForm.querySelector('#memeFile').addEventListener('change', e => {
+                        modal.querySelector('#select-file-btn').addEventListener('click', () => memeFileInput.click());
+                        memeFileInput.addEventListener('change', e => {
                             const file = e.target.files[0];
-                            if (file) {
-                                if (file.size > 1.5 * 1024 * 1024) {
-                                    uploadForm.querySelector('#uploadError').textContent = 'File is too large! (Max 1.5MB)';
-                                    e.target.value = ''; return;
-                                }
-                                uploadForm.querySelector('#uploadError').textContent = '';
+                            if(file){
                                 const reader = new FileReader();
                                 reader.onload = event => {
-                                    imageBase64 = event.target.result;
-                                    uploadForm.querySelector('#imagePreview').src = imageBase64;
-                                    uploadForm.querySelector('#imagePreview').classList.remove('hidden');
+                                    openModal('imageEditor', {
+                                        imageSrc: event.target.result,
+                                        callback: (croppedImage) => {
+                                            imageBase64 = croppedImage;
+                                            imagePreview.src = croppedImage;
+                                            imagePreview.classList.remove('hidden');
+                                            modal.querySelector('#select-file-btn').textContent = 'Change Image';
+                                        }
+                                    });
                                 };
                                 reader.readAsDataURL(file);
                             }
                         });
                         uploadForm.addEventListener('submit', e => {
                             e.preventDefault();
-                            if(!imageBase64) { uploadForm.querySelector('#uploadError').textContent = 'Please select an image.'; return; }
+                            if(!imageBase64) {
+                                uploadForm.querySelector('#uploadError').textContent = 'Please select and crop an image.';
+                                return;
+                            }
                             const button = e.target.querySelector('button[type="submit"]');
                             button.disabled = true; button.textContent = "Uploading...";
-                            database.ref('memes').push({
-                                imageBase64, description: uploadForm.querySelector('#memeDescription').value,
-                                creatorId: currentUser.uid, creatorName: currentUser.displayName,
-                                createdAt: firebase.database.ServerValue.TIMESTAMP, commentCount: 0
-                            }).then(() => { modal.remove(); showToast('Meme uploaded!'); checkAndAwardBadge(currentUser.uid, 'upload'); });
+                            database.ref('memes').push({ imageBase64, description: uploadForm.querySelector('#memeDescription').value, creatorId: currentUser.uid, creatorName: currentUser.displayName, createdAt: firebase.database.ServerValue.TIMESTAMP, commentCount: 0 })
+                            .then(() => {
+                                modal.remove(); showToast('Meme uploaded!');
+                                checkAndAwardBadge(currentUser.uid, 'upload');
+                            });
                         });
+                        break;
+                    case 'imageEditor':
+                        const image = document.getElementById('image-to-crop');
+                        const doneBtn = document.getElementById('crop-done-btn');
+                        setTimeout(() => {
+                            const cropper = new Cropper(image, { aspectRatio: 1 / 1, viewMode: 1, autoCropArea: 0.9 });
+                            document.getElementById('cropper-rotate-left').addEventListener('click', () => cropper.rotate(-90));
+                            document.getElementById('cropper-rotate-right').addEventListener('click', () => cropper.rotate(90));
+                            document.getElementById('cropper-zoom-in').addEventListener('click', () => cropper.zoom(0.1));
+                            document.getElementById('cropper-zoom-out').addEventListener('click', () => cropper.zoom(-0.1));
+                            doneBtn.addEventListener('click', () => {
+                                const canvas = cropper.getCroppedCanvas({ width: 512, height: 512, imageSmoothingQuality: 'high' });
+                                const croppedImageBase64 = canvas.toDataURL('image/jpeg', 0.9);
+                                data.callback(croppedImageBase64);
+                                cropper.destroy();
+                                modal.remove();
+                            });
+                        }, 100);
                         break;
                     case 'edit':
                         modal.querySelector('#editForm').addEventListener('submit', e => {
                             e.preventDefault();
                             const newDesc = modal.querySelector('#memeDescription').value;
-                            database.ref(`memes/${data.id}`).update({
-                                description: newDesc,
-                                editedAt: firebase.database.ServerValue.TIMESTAMP
-                            }).then(() => { modal.remove(); showToast('Meme updated!'); });
+                            database.ref(`memes/${data.id}`).update({ description: newDesc, editedAt: firebase.database.ServerValue.TIMESTAMP }).then(() => {
+                                modal.remove();
+                                showToast('Meme updated!');
+                            });
                         });
                         break;
                     case 'confirmDelete':
@@ -621,11 +841,37 @@
                 }
             }
 
-            // --- EVENT LISTENERS ---
             auth.onAuthStateChanged(user => {
                 currentUser = user;
                 updateUIForAuthState(user);
                 handleNavigation();
+            });
+            
+            window.addEventListener('message', async (event) => {
+                if (event.origin !== 'https://fawkesyt.github.io') return;
+                if(authWindow) authWindow.close();
+                if (event.data.type === 'authSuccess' && event.data.payload.credential) {
+                    try {
+                        const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
+                        const result = await auth.signInWithCredential(credential);
+                        const user = result.user;
+                        const userRef = database.ref('users/' + user.uid);
+                        const userSnap = await userRef.once('value');
+                        if (!userSnap.exists()) {
+                            await userRef.set({ displayName: user.displayName || event.data.payload.user.displayName, photoURL: user.photoURL, bio: '', createdAt: firebase.database.ServerValue.TIMESTAMP });
+                        }
+                        if (!user.displayName) openModal('displayName');
+                        modalContainer.innerHTML = '';
+                        showToast('Login successful!');
+                    } catch(err) {
+                        console.error("Credential sign-in error:", err);
+                        showToast('Login failed. Please try again.', 'error');
+                    }
+                }
+                if (event.data.type === 'authError') {
+                     console.error('Auth error from helper:', event.data.message);
+                     showToast('Authentication failed or was cancelled.', 'error');
+                }
             });
 
             database.ref('memes').on('value', snapshot => {
@@ -636,7 +882,10 @@
 
             document.addEventListener('click', e => {
                 const target = e.target;
-                if (target.closest('a[data-navigo]')) { e.preventDefault(); navigate(target.closest('a[data-navigo]').getAttribute('href')); }
+                if (target.closest('a[data-navigo]')) {
+                    e.preventDefault();
+                    navigate(target.closest('a[data-navigo]').getAttribute('href'));
+                }
                 else if (target.id === 'loginPromptBtn') openModal('auth');
                 else if (target.id === 'uploadBtn') openModal('upload');
                 else if (target.id === 'editProfileBtn') database.ref(`users/${currentUser.uid}`).once('value', snap => openModal('settings', snap.val()));
@@ -668,12 +917,11 @@
                         const text = document.getElementById('comment-text').value;
                         if (!text.trim()) return;
                         target.disabled = true;
-                        database.ref(`comments/${memeId}`).push({
-                            text, authorId: currentUser.uid, authorName: currentUser.displayName,
-                            createdAt: firebase.database.ServerValue.TIMESTAMP
-                        }).then(() => {
+                        database.ref(`comments/${memeId}`).push({ text, authorId: currentUser.uid, authorName: currentUser.displayName, createdAt: firebase.database.ServerValue.TIMESTAMP })
+                        .then(() => {
                             database.ref(`memes/${memeId}/commentCount`).transaction(count => (count || 0) + 1);
-                            document.getElementById('comment-text').value = ''; target.disabled = false;
+                            document.getElementById('comment-text').value = '';
+                            target.disabled = false;
                             database.ref(`memes/${memeId}/creatorId`).once('value', snap => {
                                 const ownerId = snap.val();
                                 if(ownerId !== currentUser.uid) createNotification(ownerId, `${currentUser.displayName} commented on your meme.`, memeId);
@@ -681,17 +929,18 @@
                         });
                     }
                 } else if (target.closest('#notifications-bell')) {
-                    notificationsPanel.style.display = notificationsPanel.style.display === 'block' ? 'none' : 'block';
+                    document.getElementById('notifications-panel').style.display = document.getElementById('notifications-panel').style.display === 'block' ? 'none' : 'block';
                 } else if (target.closest('.notification-item')) {
                     const notif = target.closest('.notification-item');
                     database.ref(`notifications/${currentUser.uid}/${notif.dataset.notifId}/read`).set(true);
                     navigate(`?id=${notif.dataset.memeId}`);
-                    notificationsPanel.style.display = 'none';
+                    document.getElementById('notifications-panel').style.display = 'none';
                 } else if (target.id === 'login-link-comment') {
-                    e.preventDefault(); openModal('auth');
+                    e.preventDefault();
+                    openModal('auth');
                 } else {
                     if (!target.closest('.options-menu') && !target.dataset.action) document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none');
-                    if (!target.closest('#notifications-bell')) notificationsPanel.style.display = 'none';
+                    if (!target.closest('#notifications-bell')) document.getElementById('notifications-panel').style.display = 'none';
                 }
             });
             
@@ -704,7 +953,6 @@
             
             window.addEventListener('popstate', handleNavigation);
             
-            // --- INITIALIZATION ---
             const savedTheme = localStorage.getItem('memedrop-theme') || 'light';
             document.body.dataset.theme = savedTheme;
             document.getElementById('theme-selector').value = savedTheme;
