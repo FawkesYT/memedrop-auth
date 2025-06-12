@@ -221,7 +221,7 @@
 
         let currentUser = null;
         let allMemes = [];
-        let allUsersData = {};
+        let allUsersData = {}; // Cache for user data to avoid redundant fetches
         let currentFeed = 'for-you';
         let notificationListener = null;
         
@@ -326,9 +326,8 @@
             const notificationsBell = document.getElementById('notifications-bell');
 
             if (user) {
-                const userData = allUsersData[user.uid] || (await database.ref(`users/${user.uid}`).once('value')).val();
+                const userData = await getUserData(user.uid); // Use the new helper function
                 if (userData) {
-                    allUsersData[user.uid] = userData; // Cache it
                     document.getElementById('user-info-name').textContent = userData.displayName;
                     document.getElementById('user-info-pfp').src = userData.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${userData.displayName}`;
                 }
@@ -343,7 +342,7 @@
                 listenForNotifications(user.uid);
             } else {
                 userMenu.classList.add('hidden');
-                loginBtn.classList.remove('hidden');
+                loginBtn.classList.add('hidden');
                 uploadBtn.classList.add('hidden');
                 followingTab.classList.add('hidden');
                 notificationsBell.classList.add('hidden');
@@ -351,15 +350,14 @@
             }
         };
         // #endregion
-        
-        // #region --- VIEW & NAVIGATION ---
+
+                // #region --- VIEW & NAVIGATION ---
         const showView = (viewName) => {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             document.getElementById(viewName).classList.remove('hidden');
         };
 
         const navigate = (path) => {
-            // A simple SPA navigation handler
             window.history.pushState({}, '', path);
             handleNavigation();
         };
@@ -401,7 +399,7 @@
             const container = document.getElementById('profile-view');
             container.innerHTML = '<p style="text-align:center; padding: 20px;">Loading profile...</p>';
             try {
-                const userData = allUsersData[userId] || (await database.ref(`users/${userId}`).once('value')).val();
+                const userData = await getUserData(userId);
                 if (!userData) { container.innerHTML = '<h2>User not found</h2>'; return; }
 
                 const followersSnap = await database.ref(`followers/${userId}`).once('value');
@@ -496,6 +494,18 @@
         // #endregion
 
         // #region --- CORE LOGIC & DATA ---
+        async function getUserData(userId) {
+            if (allUsersData[userId]) {
+                return allUsersData[userId];
+            }
+            const snap = await database.ref(`users/${userId}`).once('value');
+            if (snap.exists()) {
+                allUsersData[userId] = snap.val();
+                return snap.val();
+            }
+            return null;
+        }
+
         const handleFollow = async (targetUserId) => {
             if (!currentUser) return showToast('Please log in.', 'error');
             const followRef = database.ref(`users/${currentUser.uid}/following/${targetUserId}`);
@@ -567,9 +577,9 @@
         };
 
         const checkAndAwardBadge = async (userId, action) => {
-            const userRef = database.ref(`users/${userId}`);
-            const userData = allUsersData[userId] || (await userRef.once('value')).val();
+            const userData = await getUserData(userId);
             if (!userData) return;
+            const userRef = database.ref(`users/${userId}`);
             if(action === 'upload' && !userData.badges?.first_post) {
                 await userRef.child('badges/first_post').set({ name: 'First Post', awardedAt: firebase.database.ServerValue.TIMESTAMP });
                 showToast("Badge Unlocked: First Post!", "success");
@@ -699,7 +709,7 @@
                             modalContainer.innerHTML = ''; 
                             showToast(status === 'published' ? 'Meme published!' : 'Draft saved!');
                             if (status === 'published') checkAndAwardBadge(currentUser.uid, 'upload');
-                            navigate(`?id=${newMemeRef.key}`);
+                            if (status === 'published') navigate(`?id=${newMemeRef.key}`);
                         });
                     };
                     uploadForm.addEventListener('submit', e => { e.preventDefault(); saveMeme('published'); });
@@ -746,10 +756,6 @@
         // #region --- EVENT LISTENERS & INIT ---
         auth.onAuthStateChanged(async (user) => {
             currentUser = user;
-            if (user && Object.keys(allUsersData).length === 0) {
-                const usersSnap = await database.ref('users').once('value');
-                allUsersData = usersSnap.val() || {};
-            }
             await updateUIForAuthState(user);
             handleNavigation();
         });
