@@ -5,7 +5,8 @@
     <title>MemeDrop Auth</title>
 </head>
 <body>
-    <!-- The body is intentionally blank. The logic runs instantly. -->
+    <!-- This page is a utility and should have no visible content. -->
+    <!-- The logic runs instantly. -->
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -23,44 +24,50 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const SESSION_KEY = 'memedrop_awaiting_redirect';
 
-        // Use sessionStorage to track if we are in the middle of a redirect flow.
-        // This is the key to preventing the infinite loop.
-        const isAwaitingRedirect = sessionStorage.getItem('isAwaitingRedirect');
-        
-        // If the flag is set, we are on the RETURN trip from the provider.
-        if (isAwaitingRedirect) {
-            // IMPORTANT: Remove the flag immediately.
-            sessionStorage.removeItem('isAwaitingRedirect');
+        // Check if our flag is set in sessionStorage.
+        const isAwaitingRedirect = sessionStorage.getItem(SESSION_KEY);
 
+        // --- SCENARIO 1: RETURN TRIP ---
+        // If the flag is set, it means we are returning from the login provider.
+        if (isAwaitingRedirect === 'true') {
+            
+            // Remove the flag immediately to prevent re-triggering.
+            sessionStorage.removeItem(SESSION_KEY);
+
+            // Get the authentication result.
             auth.getRedirectResult()
                 .then((result) => {
                     if (result && result.credential) {
-                        // Success! Send the data to the main app.
+                        // SUCCESS! We have the user's data.
                         const credential = result.credential.toJSON();
                         const user = result.user;
+                        
+                        // Send the data back to the main app window.
                         window.opener.postMessage({
                             type: 'authSuccess',
                             payload: { credential, user }
                         }, window.opener.location.origin);
+
                     } else {
-                        // This case happens if the user closes the provider window
-                        // or if there's an error during the redirect.
-                        throw new Error("Authentication was cancelled or failed on return.");
+                        // The user may have cancelled the login on the provider's page.
+                        throw new Error("Authentication was cancelled or did not complete.");
                     }
                 })
                 .catch((error) => {
-                    // Catch any error and report it back to the main app.
+                    // Handle any errors during the process.
                     console.error("Auth helper error on return:", error);
                     window.opener.postMessage({ type: 'authError', message: error.message }, window.opener.location.origin);
                 })
                 .finally(() => {
-                    // Always close the window on the return trip.
+                    // No matter what, close the popup window on the return trip.
                     window.close();
                 });
-        } 
-        // If the flag is NOT set, this is the INITIAL trip.
-        else {
+
+        // --- SCENARIO 2: INITIAL TRIP ---
+        // If the flag is not set, this is the first time the page has loaded.
+        } else {
             try {
                 const params = new URLSearchParams(window.location.search);
                 const providerName = params.get('provider');
@@ -73,15 +80,16 @@
                 }
 
                 if (provider) {
-                    // IMPORTANT: Set the flag BEFORE redirecting.
-                    sessionStorage.setItem('isAwaitingRedirect', 'true');
-                    // Now, redirect this window to the login provider.
+                    // Set the flag BEFORE we redirect away.
+                    sessionStorage.setItem(SESSION_KEY, 'true');
+                    
+                    // Redirect this window to the login provider.
                     auth.signInWithRedirect(provider);
                 } else {
-                    throw new Error('No authentication provider specified.');
+                    throw new Error('No authentication provider specified in URL.');
                 }
             } catch (error) {
-                // Catch setup errors and report them back.
+                // Handle initial setup errors.
                 console.error("Auth helper setup error:", error);
                 window.opener.postMessage({ type: 'authError', message: error.message }, '*');
                 window.close();
