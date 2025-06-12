@@ -445,8 +445,13 @@
             detailContainer.innerHTML = '<p>Loading meme...</p>';
 
             try {
-                const memeData = allMemes.find(m => m.id === memeId) || (await database.ref(`memes/${memeId}`).once('value')).val();
-                if (!memeData) { detailContainer.innerHTML = '<h2>Meme not found.</h2>'; return; }
+                let memeData = allMemes.find(m => m.id === memeId);
+                if (!memeData) {
+                    const snap = await database.ref(`memes/${memeId}`).once('value');
+                    memeData = { id: memeId, ...snap.val() };
+                }
+                
+                if (!memeData || !memeData.creatorId) { detailContainer.innerHTML = '<h2>Meme not found or has been deleted.</h2>'; return; }
                 
                 detailContainer.innerHTML = `
                     <div id="meme-detail-card">${createMemeElement(memeData).innerHTML}</div>
@@ -690,7 +695,12 @@
                         if (data.isRemix) {
                             memeData.remixOf = { originalId: data.originalMeme.id, originalCreatorId: data.originalMeme.creatorId, originalCreatorName: data.originalMeme.creatorName };
                         }
-                        database.ref('memes').push(memeData).then(() => { modalContainer.innerHTML = ''; showToast(status === 'published' ? 'Meme published!' : 'Draft saved!'); });
+                        database.ref('memes').push(memeData).then((newMemeRef) => { 
+                            modalContainer.innerHTML = ''; 
+                            showToast(status === 'published' ? 'Meme published!' : 'Draft saved!');
+                            if (status === 'published') checkAndAwardBadge(currentUser.uid, 'upload');
+                            navigate(`?id=${newMemeRef.key}`);
+                        });
                     };
                     uploadForm.addEventListener('submit', e => { e.preventDefault(); saveMeme('published'); });
                     modal.querySelector('#save-draft-btn').addEventListener('click', () => saveMeme('draft'));
@@ -707,7 +717,7 @@
                             const canvas = cropper.getCroppedCanvas({ width: 512, height: 512, imageSmoothingQuality: 'high' });
                             data.callback(canvas.toDataURL('image/jpeg', 0.9));
                             cropper.destroy();
-                            modal.remove();
+                            modalContainer.innerHTML = '';
                         });
                     }, 100);
                     break;
@@ -723,10 +733,7 @@
                     break;
                 case 'confirmDelete':
                     modal.querySelector('#confirmDeleteBtn').addEventListener('click', () => {
-                        const updates = {};
-                        updates[`/memes/${data.id}`] = null;
-                        // Optional: clean up notifications related to this meme
-                        database.ref().update(updates).then(() => {
+                        database.ref(`memes/${data.id}`).remove().then(() => {
                             modalContainer.innerHTML = '';
                             showToast('Meme deleted.');
                         });
@@ -747,9 +754,20 @@
             handleNavigation();
         });
 
-        database.ref('memes').on('value', snapshot => {
-            const memesData = snapshot.val() || {};
-            allMemes = Object.keys(memesData).map(key => ({ id: key, ...memesData[key] }));
+        const memesRef = database.ref('memes');
+        memesRef.on('child_added', (snapshot) => {
+            allMemes.push({ id: snapshot.key, ...snapshot.val() });
+            handleNavigation();
+        });
+        memesRef.on('child_changed', (snapshot) => {
+            const index = allMemes.findIndex(m => m.id === snapshot.key);
+            if (index !== -1) {
+                allMemes[index] = { id: snapshot.key, ...snapshot.val() };
+            }
+            handleNavigation();
+        });
+        memesRef.on('child_removed', (snapshot) => {
+            allMemes = allMemes.filter(m => m.id !== snapshot.key);
             handleNavigation();
         });
 
@@ -786,6 +804,7 @@
             const memeId = target.dataset.memeId;
 
             if (target.closest('a[data-navigo]')) { e.preventDefault(); navigate(target.closest('a[data-navigo]').getAttribute('href')); }
+            else if (target.id === 'home-link') { e.preventDefault(); navigate('?'); }
             else if (target.id === 'loginPromptBtn') openModal('auth');
             else if (target.id === 'uploadBtn') openModal('upload');
             else if (target.id === 'editProfileBtn') openModal('settings', allUsersData[currentUser.uid]);
@@ -806,7 +825,6 @@
                 if (memeToRemix) openModal('upload', { isRemix: true, originalMeme: memeToRemix });
             }
             else if (target.id === 'followBtn') handleFollow(target.dataset.userId);
-            else if (target.id === 'logoutBtn') auth.signOut().then(() => showToast('Logged out.'));
             else if (target.closest('#user-info-container')) {
                 const dropdown = document.getElementById('user-dropdown');
                 dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
