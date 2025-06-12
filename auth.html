@@ -5,7 +5,7 @@
     <title>MemeDrop Auth</title>
 </head>
 <body>
-    <!-- This body is intentionally left blank. The redirect happens instantly. -->
+    <!-- The body is intentionally blank. The logic runs instantly. -->
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -24,57 +24,68 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
 
-        // This page has a required two-step logic for the redirect flow:
-        // 1. First Load: Redirect this window to the login provider.
-        // 2. Return Load: After login, the provider redirects back here. We process
-        //    the result and send it to the main app.
+        // Use sessionStorage to track if we are in the middle of a redirect flow.
+        // This is the key to preventing the infinite loop.
+        const isAwaitingRedirect = sessionStorage.getItem('isAwaitingRedirect');
+        
+        // If the flag is set, we are on the RETURN trip from the provider.
+        if (isAwaitingRedirect) {
+            // IMPORTANT: Remove the flag immediately.
+            sessionStorage.removeItem('isAwaitingRedirect');
 
-        try {
-            // Check if we are returning from the login provider
             auth.getRedirectResult()
                 .then((result) => {
-                    // If 'result' exists, the user has successfully logged in and returned.
                     if (result && result.credential) {
+                        // Success! Send the data to the main app.
                         const credential = result.credential.toJSON();
                         const user = result.user;
-
-                        // Send the successful login data to the main app window and close this one.
                         window.opener.postMessage({
                             type: 'authSuccess',
                             payload: { credential, user }
                         }, window.opener.location.origin);
-                        window.close();
                     } else {
-                        // If 'result' is null, this is the first time the page has loaded.
-                        // We must now redirect to the correct provider.
-                        const params = new URLSearchParams(window.location.search);
-                        const providerName = params.get('provider');
-                        let provider;
-
-                        if (providerName === 'google') {
-                            provider = new firebase.auth.GoogleAuthProvider();
-                        } else if (providerName === 'github') {
-                            provider = new firebase.auth.GithubAuthProvider();
-                        }
-
-                        if (provider) {
-                            // This is the line that makes it automatic.
-                            auth.signInWithRedirect(provider);
-                        } else {
-                            throw new Error('No authentication provider specified.');
-                        }
+                        // This case happens if the user closes the provider window
+                        // or if there's an error during the redirect.
+                        throw new Error("Authentication was cancelled or failed on return.");
                     }
                 })
                 .catch((error) => {
-                    console.error("Auth helper error:", error);
+                    // Catch any error and report it back to the main app.
+                    console.error("Auth helper error on return:", error);
                     window.opener.postMessage({ type: 'authError', message: error.message }, window.opener.location.origin);
+                })
+                .finally(() => {
+                    // Always close the window on the return trip.
                     window.close();
                 });
-        } catch (error) {
-            // This catches synchronous errors, like a missing provider.
-            console.error("Auth helper setup error:", error);
-            window.opener.postMessage({ type: 'authError', message: error.message }, '*');
-            window.close();
+        } 
+        // If the flag is NOT set, this is the INITIAL trip.
+        else {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const providerName = params.get('provider');
+                let provider;
+
+                if (providerName === 'google') {
+                    provider = new firebase.auth.GoogleAuthProvider();
+                } else if (providerName === 'github') {
+                    provider = new firebase.auth.GithubAuthProvider();
+                }
+
+                if (provider) {
+                    // IMPORTANT: Set the flag BEFORE redirecting.
+                    sessionStorage.setItem('isAwaitingRedirect', 'true');
+                    // Now, redirect this window to the login provider.
+                    auth.signInWithRedirect(provider);
+                } else {
+                    throw new Error('No authentication provider specified.');
+                }
+            } catch (error) {
+                // Catch setup errors and report them back.
+                console.error("Auth helper setup error:", error);
+                window.opener.postMessage({ type: 'authError', message: error.message }, '*');
+                window.close();
+            }
         }
     </script>
 </body>
