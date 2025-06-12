@@ -14,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" defer></script>
     
     <style>
+        /* All CSS from the previous correct version is unchanged. Omitted for brevity. */
         /* #region --- SETUP & THEMES --- */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -326,7 +327,7 @@
             const notificationsBell = document.getElementById('notifications-bell');
 
             if (user) {
-                const userData = await getUserData(user.uid); // Use the new helper function
+                const userData = await getUserData(user.uid);
                 if (userData) {
                     document.getElementById('user-info-name').textContent = userData.displayName;
                     document.getElementById('user-info-pfp').src = userData.photoURL || `https://api.dicebear.com/8.x/initials/svg?seed=${userData.displayName}`;
@@ -342,7 +343,7 @@
                 listenForNotifications(user.uid);
             } else {
                 userMenu.classList.add('hidden');
-                loginBtn.classList.add('hidden');
+                loginBtn.classList.remove('hidden');
                 uploadBtn.classList.add('hidden');
                 followingTab.classList.add('hidden');
                 notificationsBell.classList.add('hidden');
@@ -350,8 +351,8 @@
             }
         };
         // #endregion
-
-                // #region --- VIEW & NAVIGATION ---
+//HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT HALF POINT 
+        // #region --- VIEW & NAVIGATION ---
         const showView = (viewName) => {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
             document.getElementById(viewName).classList.remove('hidden');
