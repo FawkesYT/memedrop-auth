@@ -148,12 +148,11 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- FIREBASE & APP STATE SETUP ---
             const firebaseConfig = { apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", authDomain: "test-6336a.firebaseapp.com", databaseURL: "https://test-6336a-default-rtdb.firebaseio.com", projectId: "test-6336a", storageBucket: "test-6336a.firebasestorage.app", messagingSenderId: "437879418972", appId: "1:437879418972:web:47678bb0b3664edab8f699" };
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const database = firebase.database();
-
+            
             let currentUser = null;
             let allMemes = [];
             let currentFeed = 'for-you';
@@ -164,8 +163,8 @@
             const notificationsBell = document.getElementById('notifications-bell');
             const notificationsPanel = document.getElementById('notifications-panel');
             const notificationsCount = document.getElementById('notifications-count');
-            
-            // --- UI & HELPER FUNCTIONS ---
+
+            // All other functions (showToast, timeAgo, createMemeElement, etc.) are here...
             const showToast = (message, type = 'success') => {
                 const toast = document.createElement('div');
                 toast.className = `toast ${type}`;
@@ -195,9 +194,7 @@
                     if (meme.likes && meme.likes[currentUser.uid]) userVote = 'like';
                     if (meme.dislikes && meme.dislikes[currentUser.uid]) userVote = 'dislike';
                 }
-
                 const isOwner = currentUser && currentUser.uid === meme.creatorId;
-
                 post.innerHTML = `
                     ${isOwner ? `
                         <button class="post-options-btn" data-action="toggle-options" aria-label="More options">...</button>
@@ -233,11 +230,10 @@
             const renderMemes = (memes, container) => {
                 container.innerHTML = '';
                 let memesToRender = [...memes];
-
                 if (document.getElementById('gallery-view').contains(container)) {
                     if (currentFeed === 'for-you') {
                         memesToRender.sort((a, b) => calculateHotScore(b) - calculateHotScore(a));
-                    } else { // 'new'
+                    } else {
                         memesToRender.sort((a, b) => b.createdAt - a.createdAt);
                     }
                     const searchTerm = document.getElementById('search-bar').value.toLowerCase();
@@ -247,10 +243,9 @@
                             (meme.creatorName?.toLowerCase() || '').includes(searchTerm)
                         );
                     }
-                } else { // User profile gallery
+                } else {
                     memesToRender.sort((a, b) => b.createdAt - a.createdAt);
                 }
-
                 if (memesToRender.length === 0) {
                     container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">No memes found.</p>';
                     return;
@@ -291,9 +286,7 @@
                 const params = new URLSearchParams(window.location.search);
                 const memeId = params.get('id');
                 const userId = params.get('user');
-                
                 document.querySelectorAll('.options-menu').forEach(menu => menu.style.display = 'none');
-                
                 if (memeId) showMemeDetailPage(memeId);
                 else if (userId) showProfilePage(userId);
                 else {
@@ -313,7 +306,6 @@
                 const userGallery = document.getElementById('user-meme-gallery');
                 headerContainer.innerHTML = '<p>Loading profile...</p>';
                 userGallery.innerHTML = '';
-
                 try {
                     const userSnap = await database.ref(`users/${userId}`).once('value');
                     const userData = userSnap.val();
@@ -332,7 +324,6 @@
                                 ${currentUser && currentUser.uid === userId ? '<button id="editProfileBtn" class="nav-button" style="margin-top: 10px;">Edit Profile</button>' : ''}
                             </div>
                         </div>`;
-                    
                     const userMemes = allMemes.filter(m => m.creatorId === userId);
                     renderMemes(userMemes, userGallery);
                 } catch (error) {
@@ -345,7 +336,6 @@
                 showView('meme-detail');
                 const detailContainer = document.getElementById('meme-detail-container');
                 detailContainer.innerHTML = '<p>Loading meme...</p>';
-
                 try {
                     const memeSnap = await database.ref(`memes/${memeId}`).once('value');
                     const memeData = memeSnap.val();
@@ -354,11 +344,8 @@
                         return;
                     }
                     memeData.id = memeId;
-                    
                     detailContainer.innerHTML = `
-                        <div id="meme-detail-card">
-                            <img src="${memeData.imageBase64}" alt="A funny meme">
-                        </div>
+                        <div id="meme-detail-card"><img src="${memeData.imageBase64}" alt="A funny meme"></div>
                         <div id="comments-section">
                             <div class="post-content" style="padding: 0;">
                                 <div class="post-header">
@@ -375,9 +362,7 @@
                             </form>
                             ` : '<p>Please <a href="#" id="login-link-comment">log in</a> to comment.</p>'}
                             <div id="comments-list"></div>
-                        </div>
-                    `;
-                    
+                        </div>`;
                     loadAndDisplayComments(memeId);
                 } catch (error) {
                     console.error("Error loading meme detail:", error);
@@ -394,9 +379,7 @@
                         commentsList.innerHTML = '<p style="color: var(--secondary-color); font-size: 0.9em;">Be the first to comment!</p>';
                     }
                     const comments = [];
-                    snapshot.forEach(child => {
-                        comments.push(child.val());
-                    });
+                    snapshot.forEach(child => comments.push(child.val()));
                     comments.sort((a,b) => b.createdAt - a.createdAt).forEach(comment => {
                         const commentEl = document.createElement('div');
                         commentEl.className = 'comment';
@@ -412,36 +395,27 @@
             }
 
             const handleVote = async (memeId, voteType) => {
-                if (!currentUser) { return showToast('Please login to vote', 'error'); }
-                
+                if (!currentUser) return showToast('Please login to vote', 'error');
                 const oppositeType = voteType === 'likes' ? 'dislikes' : 'likes';
                 const voteRef = database.ref(`memes/${memeId}/${voteType}/${currentUser.uid}`);
                 const oppositeVoteRef = database.ref(`memes/${memeId}/${oppositeType}/${currentUser.uid}`);
-                
                 const tx = await voteRef.transaction(currentVote => currentVote === null ? true : null);
                 if (tx.committed && tx.snapshot.val() === true) {
                     await oppositeVoteRef.remove();
                     if (voteType === 'likes') {
                         const memeOwnerSnap = await database.ref(`memes/${memeId}/creatorId`).once('value');
                         const ownerId = memeOwnerSnap.val();
-                        if (ownerId !== currentUser.uid) {
-                             createNotification(ownerId, `${currentUser.displayName} liked your meme.`, memeId);
-                        }
+                        if (ownerId !== currentUser.uid) createNotification(ownerId, `${currentUser.displayName} liked your meme.`, memeId);
                     }
                 }
             };
             
             const createNotification = (userId, text, memeId) => {
-                 database.ref(`notifications/${userId}`).push({
-                    text: text,
-                    memeId: memeId,
-                    read: false,
-                    createdAt: firebase.database.ServerValue.TIMESTAMP
-                });
+                 database.ref(`notifications/${userId}`).push({ text, memeId, read: false, createdAt: firebase.database.ServerValue.TIMESTAMP });
             };
 
             const listenForNotifications = (userId) => {
-                if(notificationListener) notificationListener.off(); // Remove old listener
+                if(notificationListener) notificationListener.off();
                 notificationListener = database.ref(`notifications/${userId}`);
                 notificationListener.on('value', snap => {
                     const panel = notificationsPanel;
@@ -453,10 +427,7 @@
                         return;
                     }
                     const notifications = [];
-                    snap.forEach(child => {
-                        notifications.push({ id: child.key, ...child.val() });
-                    });
-                    
+                    snap.forEach(child => notifications.push({ id: child.key, ...child.val() }));
                     notifications.sort((a,b) => b.createdAt - a.createdAt).forEach(notification => {
                         if (!notification.read) unreadCount++;
                         const item = document.createElement('div');
@@ -466,7 +437,6 @@
                         item.dataset.notifId = notification.id;
                         panel.appendChild(item);
                     });
-                    
                     if(unreadCount > 0){
                         notificationsCount.textContent = unreadCount;
                         notificationsCount.classList.remove('hidden');
@@ -481,12 +451,10 @@
                 const userSnap = await userRef.once('value');
                 const userData = userSnap.val();
                 if (!userData) return;
-                
                 if(action === 'upload' && !userData.badges?.first_post) {
                     await userRef.child('badges/first_post').set({ name: 'First Post', awardedAt: firebase.database.ServerValue.TIMESTAMP });
                     showToast("Badge Unlocked: First Post!", "success");
                 }
-                
                 const memesSnap = await database.ref('memes').orderByChild('creatorId').equalTo(userId).once('value');
                 if (memesSnap.numChildren() >= 5 && !userData.badges?.contributor){
                      await userRef.child('badges/contributor').set({ name: 'Contributor', awardedAt: firebase.database.ServerValue.TIMESTAMP });
@@ -499,7 +467,6 @@
                 const modalOverlay = document.createElement('div');
                 modalOverlay.className = 'modal-overlay';
                 let modalHTML = '';
-                
                 switch(modalType) {
                     case 'auth': modalHTML = `<div class="modal-content"><h2>Login</h2><p>Please log in with your preferred service to continue.</p><button id="googleLoginBtn" class="nav-button">Login with Google</button><button id="githubLoginBtn" class="nav-button">Login with GitHub</button><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color); margin-top: 20px;">Cancel</button></div>`; break;
                     case 'displayName': modalHTML = `<div class="modal-content"><h2>One last step!</h2><p>Please choose a display name.</p><form id="displayNameForm"><input type="text" id="displayNameInput" placeholder="Your Name" required><button type="submit" class="nav-button">Save Name</button></form></div>`; break;
@@ -508,7 +475,6 @@
                     case 'edit': modalHTML = `<div class="modal-content"><h2>Edit Meme</h2><form id="editForm"><textarea id="memeDescription" required maxlength="280">${data.description}</textarea><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button type="submit" class="nav-button">Save Changes</button></div></form></div>`; break;
                     case 'confirmDelete': modalHTML = `<div class="modal-content"><h2>Are you sure?</h2><p>This action cannot be undone.</p><div class="modal-flex-buttons"><button type="button" class="cancel-btn nav-button" style="background: var(--secondary-color)">Cancel</button><button id="confirmDeleteBtn" class="nav-button" style="background: var(--error-color)">Delete</button></div></div>`; break;
                 }
-                
                 modalOverlay.innerHTML = modalHTML;
                 modalContainer.appendChild(modalOverlay);
                 attachModalListeners(modalType, data);
@@ -517,13 +483,9 @@
             function attachModalListeners(modalType, data = {}) {
                 const modal = modalContainer.querySelector('.modal-overlay');
                 if (!modal) return;
-                
                 modal.addEventListener('click', e => {
-                    if (e.target.classList.contains('cancel-btn') || e.target === modal) {
-                        modal.remove();
-                    }
+                    if (e.target.classList.contains('cancel-btn') || e.target === modal) modal.remove();
                 });
-                
                 switch(modalType) {
                     case 'auth':
                         const handleLogin = async (provider) => {
@@ -531,31 +493,21 @@
                                 const result = await auth.signInWithPopup(provider);
                                 const user = result.user;
                                 const isNewUser = result.additionalUserInfo.isNewUser;
-                                
                                 if (isNewUser) {
-                                    const userRef = database.ref('users/' + user.uid);
-                                    await userRef.set({
+                                    await database.ref('users/' + user.uid).set({
                                         displayName: user.displayName || "Anonymous User",
                                         photoURL: user.photoURL,
                                         bio: '',
                                         createdAt: firebase.database.ServerValue.TIMESTAMP
                                     });
                                 }
-
-                                if (!user.displayName) {
-                                    openModal('displayName');
-                                } else {
-                                    modal.remove();
-                                    showToast('Login successful!');
-                                }
+                                if (!user.displayName) openModal('displayName');
+                                else { modal.remove(); showToast('Login successful!'); }
                             } catch (error) {
                                 console.error("Login Error:", error);
-                                if (error.code !== 'auth/popup-closed-by-user') {
-                                    showToast(`Login failed: ${error.message}`, 'error');
-                                }
+                                if (error.code !== 'auth/popup-closed-by-user') showToast(`Login failed: ${error.message}`, 'error');
                             }
                         };
-
                         modal.querySelector('#googleLoginBtn').addEventListener('click', () => handleLogin(new firebase.auth.GoogleAuthProvider()));
                         modal.querySelector('#githubLoginBtn').addEventListener('click', () => handleLogin(new firebase.auth.GithubAuthProvider()));
                         break;
@@ -566,9 +518,7 @@
                             if(name && currentUser) {
                                 await currentUser.updateProfile({ displayName: name });
                                 await database.ref('users/' + currentUser.uid + '/displayName').set(name);
-                                modal.remove();
-                                updateUIForAuthState(currentUser);
-                                showToast('Display name saved!');
+                                modal.remove(); updateUIForAuthState(currentUser); showToast('Display name saved!');
                             }
                         });
                         break;
@@ -586,13 +536,10 @@
                              button.disabled = true; button.textContent = 'Saving...';
                              const name = settingsForm.querySelector('#settings-name').value;
                              const bio = settingsForm.querySelector('#settings-bio').value;
-                             
                              await currentUser.updateProfile({displayName: name});
-
                              const dbUpdates = { displayName: name, bio: bio };
                              if(newPfpBase64) dbUpdates.photoURL = newPfpBase64;
                              await database.ref('users/' + currentUser.uid).update(dbUpdates);
-                             
                              modal.remove(); showToast('Profile Saved!'); handleNavigation();
                          });
                          break;
@@ -602,10 +549,9 @@
                         uploadForm.querySelector('#memeFile').addEventListener('change', e => {
                             const file = e.target.files[0];
                             if (file) {
-                                if (file.size > 1.5 * 1024 * 1024) { // 1.5MB limit
+                                if (file.size > 1.5 * 1024 * 1024) {
                                     uploadForm.querySelector('#uploadError').textContent = 'File is too large! (Max 1.5MB)';
-                                    e.target.value = ''; // Reset file input
-                                    return;
+                                    e.target.value = ''; return;
                                 }
                                 uploadForm.querySelector('#uploadError').textContent = '';
                                 const reader = new FileReader();
@@ -619,20 +565,14 @@
                         });
                         uploadForm.addEventListener('submit', e => {
                             e.preventDefault();
-                            if(!imageBase64) {
-                                uploadForm.querySelector('#uploadError').textContent = 'Please select an image.';
-                                return;
-                            }
+                            if(!imageBase64) { uploadForm.querySelector('#uploadError').textContent = 'Please select an image.'; return; }
                             const button = e.target.querySelector('button[type="submit"]');
                             button.disabled = true; button.textContent = "Uploading...";
                             database.ref('memes').push({
                                 imageBase64, description: uploadForm.querySelector('#memeDescription').value,
                                 creatorId: currentUser.uid, creatorName: currentUser.displayName,
                                 createdAt: firebase.database.ServerValue.TIMESTAMP, commentCount: 0
-                            }).then(ref => {
-                                modal.remove(); showToast('Meme uploaded!');
-                                checkAndAwardBadge(currentUser.uid, 'upload');
-                            });
+                            }).then(() => { modal.remove(); showToast('Meme uploaded!'); checkAndAwardBadge(currentUser.uid, 'upload'); });
                         });
                         break;
                     case 'edit':
@@ -642,10 +582,7 @@
                             database.ref(`memes/${data.id}`).update({
                                 description: newDesc,
                                 editedAt: firebase.database.ServerValue.TIMESTAMP
-                            }).then(() => {
-                                modal.remove();
-                                showToast('Meme updated!');
-                            });
+                            }).then(() => { modal.remove(); showToast('Meme updated!'); });
                         });
                         break;
                     case 'confirmDelete':
@@ -675,11 +612,7 @@
 
             document.addEventListener('click', e => {
                 const target = e.target;
-                
-                if (target.closest('a[data-navigo]')) {
-                    e.preventDefault();
-                    navigate(target.closest('a[data-navigo]').getAttribute('href'));
-                }
+                if (target.closest('a[data-navigo]')) { e.preventDefault(); navigate(target.closest('a[data-navigo]').getAttribute('href')); }
                 else if (target.id === 'loginPromptBtn') openModal('auth');
                 else if (target.id === 'uploadBtn') openModal('upload');
                 else if (target.id === 'editProfileBtn') database.ref(`users/${currentUser.uid}`).once('value', snap => openModal('settings', snap.val()));
@@ -693,7 +626,7 @@
                     gallery.classList.toggle('list-view');
                     target.textContent = gallery.classList.contains('list-view') ? 'Grid View' : 'List View';
                 } else if (target.classList.contains('like-btn')) handleVote(target.dataset.memeId, 'likes');
-                else if (target.classList.contains('dislike-btn')) handleVote(target.dataset.memeId, 'dislikes');
+                else if (target.classList.contains('dislike-btn')) handleVote(_target.dataset.memeId, 'dislikes');
                 else if (target.dataset.action === 'toggle-options') {
                     const menu = target.nextElementSibling;
                     const isVisible = menu.style.display === 'block';
@@ -716,9 +649,7 @@
                             createdAt: firebase.database.ServerValue.TIMESTAMP
                         }).then(() => {
                             database.ref(`memes/${memeId}/commentCount`).transaction(count => (count || 0) + 1);
-                            document.getElementById('comment-text').value = '';
-                            target.disabled = false;
-                            
+                            document.getElementById('comment-text').value = ''; target.disabled = false;
                             database.ref(`memes/${memeId}/creatorId`).once('value', snap => {
                                 const ownerId = snap.val();
                                 if(ownerId !== currentUser.uid) createNotification(ownerId, `${currentUser.displayName} commented on your meme.`, memeId);
@@ -733,15 +664,10 @@
                     navigate(`?id=${notif.dataset.memeId}`);
                     notificationsPanel.style.display = 'none';
                 } else if (target.id === 'login-link-comment') {
-                    e.preventDefault();
-                    openModal('auth');
+                    e.preventDefault(); openModal('auth');
                 } else {
-                    if (!target.closest('.options-menu') && !target.dataset.action) {
-                        document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none');
-                    }
-                    if (!target.closest('#notifications-bell')){
-                         notificationsPanel.style.display = 'none';
-                    }
+                    if (!target.closest('.options-menu') && !target.dataset.action) document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none');
+                    if (!target.closest('#notifications-bell')) notificationsPanel.style.display = 'none';
                 }
             });
             
