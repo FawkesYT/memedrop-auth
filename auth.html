@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MemeDrop Auth</title>
+</head>
+<body>
+    <p>Please wait, authenticating...</p>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    
+    <script>
+        // Use the same Firebase config as your main app
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8",
+            authDomain: "test-6336a.firebaseapp.com",
+            databaseURL: "https://test-6336a-default-rtdb.firebaseio.com",
+            projectId: "test-6336a",
+            storageBucket: "test-6336a.firebasestorage.app",
+            messagingSenderId: "437879418972",
+            appId: "1:437879418972:web:47678bb0b3664edab8f699",
+            measurementId: "G-4BBQBDLS41"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
+
+        // Immediately trigger the sign-in popup when this page loads
+        auth.signInWithPopup(provider)
+            .then((result) => {
+                // On success, get the Google ID Token
+                const idToken = result.credential.idToken;
+                // Send the token back to the window that opened this popup
+                window.opener.postMessage({ type: 'authSuccess', token: idToken }, 'https://sites.google.com');
+                window.close(); // Close the popup
+            })
+            .catch((error) => {
+                // If the user closes the popup or an error occurs
+                console.error("Auth helper error:", error);
+                window.opener.postMessage({ type: 'authError', message: error.message }, 'https://sites.google.com');
+                window.close(); // Close the popup
+            });
+    </script>
+</body>
+</html>
