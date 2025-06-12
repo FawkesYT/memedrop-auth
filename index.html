@@ -14,7 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" defer></script>
     
     <style>
-        /* All CSS from the previous correct version is unchanged. Omitted for brevity. */
         /* #region --- SETUP & THEMES --- */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -130,7 +129,6 @@
         #settings-pfp-preview { border-radius: 50%; }
         .modal-flex-buttons { display: flex; gap: 10px; margin-top: 10px; }
         #googleLoginBtn { background-color: #db4437; flex: 1; }
-        #githubLoginBtn { background-color: #333; flex: 1; }
 
         #image-editor-modal .modal-content { max-width: 90vw; max-width: 600px; }
         .cropper-container-wrapper { height: 40vh; height: clamp(250px, 40vh, 400px); width: 100%; background-color: #000; margin-bottom: 15px; }
@@ -194,7 +192,7 @@
                     <button id="feed-new">New</button>
                 </div>
             </div>
-            <div id="meme-gallery" class="meme-gallery"></div>
+            <div id="meme-gallery" class="meme-gallery"><p>Loading memes...</p></div>
         </div>
         <div id="profile-view" class="view hidden"></div>
         <div id="meme-detail-view" class="view hidden"></div>
@@ -222,7 +220,7 @@
 
         let currentUser = null;
         let allMemes = [];
-        let allUsersData = {}; // Cache for user data to avoid redundant fetches
+        let allUsersData = {};
         let currentFeed = 'for-you';
         let notificationListener = null;
         
