@@ -6,8 +6,9 @@
     <title>MemeDrop</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* All CSS from before remains the same */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
@@ -163,8 +164,6 @@
             const notificationsBell = document.getElementById('notifications-bell');
             const notificationsPanel = document.getElementById('notifications-panel');
             const notificationsCount = document.getElementById('notifications-count');
-            const AUTH_HELPER_URL = './auth.html'; // Use a relative path assuming it's in the same directory
-            let authWindow = null;
             
             // --- UI & HELPER FUNCTIONS ---
             const showToast = (message, type = 'success') => {
@@ -496,7 +495,7 @@
             };
             
             const openModal = (modalType, data = {}) => {
-                modalContainer.innerHTML = ''; // Clear previous modals
+                modalContainer.innerHTML = '';
                 const modalOverlay = document.createElement('div');
                 modalOverlay.className = 'modal-overlay';
                 let modalHTML = '';
@@ -527,12 +526,38 @@
                 
                 switch(modalType) {
                     case 'auth':
-                        const login = (provider) => {
-                           if (authWindow && !authWindow.closed) { authWindow.focus(); return; }
-                           authWindow = window.open(`${AUTH_HELPER_URL}?provider=${provider}`, 'firebaseAuth', 'height=600,width=400');
+                        const handleLogin = async (provider) => {
+                            try {
+                                const result = await auth.signInWithPopup(provider);
+                                const user = result.user;
+                                const isNewUser = result.additionalUserInfo.isNewUser;
+                                
+                                if (isNewUser) {
+                                    const userRef = database.ref('users/' + user.uid);
+                                    await userRef.set({
+                                        displayName: user.displayName || "Anonymous User",
+                                        photoURL: user.photoURL,
+                                        bio: '',
+                                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                                    });
+                                }
+
+                                if (!user.displayName) {
+                                    openModal('displayName');
+                                } else {
+                                    modal.remove();
+                                    showToast('Login successful!');
+                                }
+                            } catch (error) {
+                                console.error("Login Error:", error);
+                                if (error.code !== 'auth/popup-closed-by-user') {
+                                    showToast(`Login failed: ${error.message}`, 'error');
+                                }
+                            }
                         };
-                        modal.querySelector('#googleLoginBtn').addEventListener('click', () => login('google'));
-                        modal.querySelector('#githubLoginBtn').addEventListener('click', () => login('github'));
+
+                        modal.querySelector('#googleLoginBtn').addEventListener('click', () => handleLogin(new firebase.auth.GoogleAuthProvider()));
+                        modal.querySelector('#githubLoginBtn').addEventListener('click', () => handleLogin(new firebase.auth.GithubAuthProvider()));
                         break;
                     case 'displayName':
                         modal.querySelector('#displayNameForm').addEventListener('submit', async e => {
@@ -641,51 +666,6 @@
                 updateUIForAuthState(user);
                 handleNavigation();
             });
-            
-            window.addEventListener('message', async (event) => {
-                // Security check: only accept messages from our own origin
-                if (event.origin !== window.location.origin) {
-                    console.warn(`Message from untrusted origin '${event.origin}' ignored.`);
-                    return;
-                }
-                
-                if(authWindow) authWindow.close();
-
-                if (event.data.type === 'authSuccess' && event.data.payload.credential) {
-                    try {
-                        const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
-                        const result = await auth.signInWithCredential(credential);
-                        const user = result.user;
-                        
-                        const userRef = database.ref('users/' + user.uid);
-                        const userSnap = await userRef.once('value');
-
-                        if (!userSnap.exists()) {
-                            await userRef.set({
-                                displayName: user.displayName || event.data.payload.user.displayName || "Anonymous User",
-                                photoURL: user.photoURL,
-                                bio: '',
-                                createdAt: firebase.database.ServerValue.TIMESTAMP
-                            });
-                        }
-                        
-                        if (!user.displayName) {
-                            openModal('displayName');
-                        }
-                        
-                        modalContainer.innerHTML = '';
-                        showToast('Login successful!');
-                    } catch(err) {
-                        console.error("Credential sign-in error:", err);
-                        showToast('Login failed. Please try again.', 'error');
-                    }
-                }
-
-                if (event.data.type === 'authError') {
-                     console.error('Auth error from helper:', event.data.message);
-                     showToast('Authentication failed or was cancelled.', 'error');
-                }
-            });
 
             database.ref('memes').on('value', snapshot => {
                 const memesData = snapshot.val() || {};
@@ -756,7 +736,6 @@
                     e.preventDefault();
                     openModal('auth');
                 } else {
-                    // Hide menus if clicking elsewhere
                     if (!target.closest('.options-menu') && !target.dataset.action) {
                         document.querySelectorAll('.options-menu').forEach(m => m.style.display = 'none');
                     }
