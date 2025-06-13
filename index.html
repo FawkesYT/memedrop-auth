@@ -6,172 +6,275 @@
     <title>MemeDrop</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* All necessary CSS from the previous full version */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes subtleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.4); } 70% { box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0); } 100% { box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0); } }
 
         :root {
-            --primary-color: #007bff; --secondary-color: #6c757d; --bg-color: #f9f9f9; --card-bg-color: #fff; --text-color: #1c1e21;
+            --primary-color: #007bff; --primary-color-rgb: 0, 123, 255;
+            --secondary-color: #6c757d;
+            --bg-color: #f8f9fa; 
+            --card-bg-color: #ffffff; 
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --input-bg-color: #f1f3f5;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --info-color: #17a2b8;
         }
         body[data-theme="dark"] {
-            --primary-color: #0d8eff; --secondary-color: #8899a6; --bg-color: #1a1a1a; --card-bg-color: #242424; --text-color: #e0e0e0;
+            --primary-color: #0d8eff; --primary-color-rgb: 13, 142, 255;
+            --secondary-color: #adb5bd; 
+            --bg-color: #121212; 
+            --card-bg-color: #1e1e1e; 
+            --text-color: #e9ecef;
+            --border-color: #495057;
+            --input-bg-color: #2c2c2c;
         }
         body[data-theme="vaporwave"] {
-            --primary-color: #ff71ce; --secondary-color: #01cdfe; --bg-color: #0d0d24; --card-bg-color: #1a1a3a; --text-color: #01cdfe;
+            --primary-color: #ff71ce; --primary-color-rgb: 255, 113, 206;
+            --secondary-color: #01cdfe; 
+            --bg-color: #0d0d24; 
+            --card-bg-color: #1a1a3a; 
+            --text-color: #01cdfe; 
+            --border-color: #01cdfe40; 
+            --input-bg-color: #232347;
+            --text-color-secondary-vapor: #f5f5f5; 
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-color); transition: background-color 0.3s, color 0.3s; overflow-x: hidden; }
+        body { 
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            color: var(--text-color); 
+            transition: background-color 0.3s, color 0.3s; 
+            overflow-x: hidden; 
+            line-height: 1.6;
+        }
         .hidden { display: none !important; }
-        .view { animation: fadeIn 0.4s ease-out; }
-        header { background-color: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #ddd; padding: 10px 20px; position: sticky; top: 0; z-index: 1000; transition: background-color 0.3s, border-bottom-color 0.3s; }
-        body[data-theme="dark"] header { background-color: rgba(26,26,26,0.8); border-bottom-color: #333; }
-        body[data-theme="vaporwave"] header { background-color: rgba(13, 13, 36, 0.8); border-bottom-color: #01cdfe30;}
+        .view { animation: fadeIn 0.5s ease-out; }
+        header { 
+            background-color: rgba(var(--card-bg-color-val, 255,255,255),0.85); 
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px); 
+            border-bottom: 1px solid var(--border-color); 
+            padding: 10px 20px; 
+            position: sticky; top: 0; 
+            z-index: 1000; 
+            transition: background-color 0.3s, border-bottom-color 0.3s; 
+        }
+        body[data-theme="dark"] header { --card-bg-color-val: 30,30,30; }
+        body[data-theme="vaporwave"] header { --card-bg-color-val: 26,26,58; }
+
         nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; gap: 15px; flex-wrap: wrap; }
-        nav h1 { margin: 0; font-size: 1.8em; color: var(--primary-color); cursor: pointer; font-family: 'Source Code Pro', monospace; animation: popIn 0.5s ease-out forwards; }
-        .nav-center { flex-grow: 1; display: flex; justify-content: center; }
-        #search-bar { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; background-color: #f0f2f5; font-size: 1em; transition: background-color 0.3s, border-color 0.3s, color 0.3s; }
-        body[data-theme="dark"] #search-bar { border-color: #333; background-color: #242424; color: var(--text-color); }
-        body[data-theme="vaporwave"] #search-bar { border-color: var(--secondary-color); background-color: rgba(26,26,58,0.7); color: var(--text-color); }
-        .nav-right { display: flex; align-items: center; gap: 15px; }
-        .nav-button { padding: 8px 16px; border: none; border-radius: 6px; background-color: var(--primary-color); color: white; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
-        .nav-button:hover { filter: brightness(1.1); }
+        nav h1 { 
+            margin: 0; font-size: 1.9em; 
+            color: var(--primary-color); 
+            cursor: pointer; 
+            font-family: 'Source Code Pro', monospace; 
+            animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; 
+            font-weight: 600;
+        }
+        .nav-center { flex-grow: 1; display: flex; justify-content: center; padding: 0 10px; }
+        #search-bar { 
+            width: 100%; max-width: 450px; 
+            padding: 10px 18px; 
+            border-radius: 25px; 
+            border: 1px solid var(--border-color); 
+            background-color: var(--input-bg-color); 
+            font-size: 1em; 
+            color: var(--text-color);
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.2s; 
+        }
+        #search-bar:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.25);
+        }
+        
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .nav-button { 
+            padding: 9px 18px; 
+            border: none; 
+            border-radius: 8px; 
+            background-color: var(--primary-color); 
+            color: white; 
+            font-weight: 500; 
+            cursor: pointer; 
+            transition: background-color 0.2s, transform 0.1s; 
+            font-size: 0.95em;
+        }
+        .nav-button:hover { filter: brightness(1.15); transform: translateY(-1px); }
+        .nav-button:active { transform: translateY(0px); filter: brightness(1.05); }
         #logoutBtn { background-color: var(--secondary-color); }
-        #userInfo { font-weight: bold; display: flex; align-items: center; gap: 8px;}
+        #userInfo { font-weight: 500; display: flex; align-items: center; gap: 8px; font-size: 0.95em; }
         #userInfo span { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .meme-gallery { max-width: 1200px; margin: 20px auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 0 10px; }
+        
+        #notificationsBtn svg { transition: transform 0.2s; }
+        #notificationsBtn:hover svg { animation: subtleBounce 0.5s ease-in-out; }
+
+        .meme-gallery { 
+            max-width: 1200px; 
+            margin: 25px auto; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 25px; 
+            padding: 0 15px; 
+        }
         
         .meme-post { 
             background-color: var(--card-bg-color); 
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
             overflow: hidden; 
-            transition: background-color 0.3s, border-color 0.3s, transform 0.2s ease-out; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            transition: background-color 0.3s, border-color 0.3s, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease-out; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08); 
             display: flex; 
             flex-direction: column; 
-            animation: slideInUp 0.3s ease-out forwards;
+            animation: slideInUp 0.4s ease-out forwards;
             opacity: 0; 
-            transform: translateY(20px);
+            transform: translateY(30px);
+            cursor: pointer; 
         }
         .meme-post:hover {
-            transform: translateY(-5px) scale(1.01);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-6px); 
+            box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.15);
         }
-        body[data-theme="dark"] .meme-post { border-color: #333; }
-        body[data-theme="vaporwave"] .meme-post { border-color: var(--secondary-color); }
-        body[data-theme="vaporwave"] .meme-post:hover { box-shadow: 0 0 15px var(--secondary-color_70); }
+        body[data-theme="dark"] .meme-post { border-color: #333; } /* Explicit for dark theme */
+        body[data-theme="vaporwave"] .meme-post { border-color: var(--border-color); } /* Use theme variable */
+        body[data-theme="vaporwave"] .meme-post:hover { box-shadow: 0 0 20px 0px rgba(var(--primary-color-rgb), 0.5); }
         
         .meme-post img { 
             width: 100%; 
             display: block; 
-            aspect-ratio: 1/1; 
+            aspect-ratio: 1 / 1; 
             object-fit: cover; 
             background-color: #eee; 
         }
         body[data-theme="dark"] .meme-post img { background-color: #333; }
         body[data-theme="vaporwave"] .meme-post img { background-color: #101025; }
 
-        .meme-info {
-            padding: 10px 15px;
-        }
+        .meme-info { padding: 15px 18px; flex-grow: 1; }
         .meme-description {
-            font-size: 0.9em;
-            margin-bottom: 10px;
+            font-size: 0.95em;
+            margin-bottom: 8px;
             white-space: pre-wrap; 
             word-break: break-word;
+            color: var(--text-color);
+            line-height: 1.5;
         }
+        body[data-theme="vaporwave"] .meme-description { color: var(--text-color-secondary-vapor, #f0f0f0); }
+        .meme-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .meme-creator {
+            font-size: 0.85em;
+            color: var(--secondary-color);
+            font-weight: 500;
+        }
+        .meme-timestamp {
             font-size: 0.8em;
             color: var(--secondary-color);
-            margin-bottom: 10px;
+            opacity: 0.9;
         }
         .meme-actions {
-            padding: 5px 15px 10px;
-            border-top: 1px solid #eee;
+            padding: 8px 18px 12px;
+            border-top: 1px solid var(--border-color);
             display: flex;
-            gap: 10px;
+            gap: 15px; 
             align-items: center;
         }
-        body[data-theme="dark"] .meme-actions { border-top-color: #333; }
-        body[data-theme="vaporwave"] .meme-actions { border-top-color: #01cdfe50; }
-
+        
         .action-button {
             background: none;
             border: none;
-            color: var(--text-color);
+            color: var(--secondary-color); 
             cursor: pointer;
-            padding: 5px;
+            padding: 6px; 
             font-size: 1em;
             display: flex;
             align-items: center;
-            gap: 5px;
-            transition: transform 0.1s ease-out, color 0.2s;
+            gap: 6px;
+            transition: transform 0.15s cubic-bezier(0.68, -0.55, 0.27, 1.55), color 0.2s;
+            border-radius: 6px; 
         }
         .action-button:hover {
             color: var(--primary-color);
+            background-color: rgba(var(--primary-color-rgb), 0.1);
             transform: scale(1.1);
         }
         .action-button:active {
             transform: scale(0.95);
         }
+        .action-button svg {
+            transition: fill 0.2s, stroke 0.2s;
+        }
         .action-button.liked svg { 
             fill: var(--primary-color); 
             stroke: var(--primary-color);
         }
-        .action-button.liked { 
-             color: var(--primary-color);
-             font-weight: bold;
+        .action-button.liked { color: var(--primary-color); font-weight: 500; }
+        .action-button.disliked svg {
+            fill: var(--error-color);
+            stroke: var(--error-color);
         }
-        .like-count {
+        .action-button.disliked { color: var(--error-color); font-weight: 500; }
+
+        .like-count, .dislike-count, .comment-count-display {
             font-size: 0.9em;
-        }
-        .comment-count-display {
-            font-size: 0.9em;
+            font-weight: 500;
         }
 
         /* Comment Section Styles */
         .comments-section {
-            margin-top: 10px;
-            padding: 10px;
-            background-color: rgba(0,0,0,0.03);
-            border-top: 1px solid #eee;
-            animation: fadeIn 0.3s;
+            margin-top: 12px;
+            padding: 12px;
+            background-color: rgba(0,0,0,0.02);
+            border-top: 1px solid var(--border-color);
+            animation: fadeIn 0.4s;
             max-height: 300px; 
             overflow-y: auto;
+            border-radius: 0 0 8px 8px; 
         }
-        body[data-theme="dark"] .comments-section { background-color: rgba(255,255,255,0.05); border-top-color: #333; }
-        body[data-theme="vaporwave"] .comments-section { background-color: rgba(0,0,0,0.1); border-top-color: #01cdfe30; }
+        body[data-theme="dark"] .comments-section { background-color: rgba(255,255,255,0.03); }
+        body[data-theme="vaporwave"] .comments-section { background-color: rgba(var(--primary-color-rgb), 0.05); }
 
         .comment {
-            padding: 8px 0;
-            border-bottom: 1px dashed #ccc;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
             font-size: 0.9em;
-            animation: fadeIn 0.3s;
+            animation: fadeIn 0.4s;
         }
         body[data-theme="dark"] .comment { border-bottom-color: #444; }
-        body[data-theme="vaporwave"] .comment { border-bottom-color: var(--secondary-color); }
+        body[data-theme="vaporwave"] .comment { border-bottom-color: var(--border-color); }
         .comment:last-child { border-bottom: none; }
-        .comment strong { color: var(--primary-color); }
-        .comment p { margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-word; }
+        .comment strong { color: var(--primary-color); font-weight: 500; }
+        .comment p { margin: 4px 0 0 0; white-space: pre-wrap; word-break: break-word; line-height: 1.4; }
+        .comment-timestamp { font-size: 0.75em; color: var(--secondary-color); margin-left: 8px; opacity: 0.8; }
+
         .add-comment-form textarea {
-            width: calc(100% - 22px); 
+            width: 100%; 
             padding: 10px;
             margin-top: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            background-color: var(--bg-color); 
+            border: 1px solid var(--border-color);
+            border-radius: 6px; 
+            background-color: var(--input-bg-color); 
             color: var(--text-color); 
             resize: vertical;
-            min-height: 50px;
+            min-height: 60px;
             box-sizing: border-box;
+            font-size: 0.95em;
         }
-        body[data-theme="dark"] .add-comment-form textarea { border-color: #444; }
-        body[data-theme="vaporwave"] .add-comment-form textarea { border-color: var(--secondary-color); }
+        .add-comment-form textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.2);
+        }
         .add-comment-form button {
-            margin-top: 5px;
-            padding: 8px 15px;
+            margin-top: 8px;
+            padding: 9px 18px;
+            float: right; 
         }
 
         /* In-page Notification System */
@@ -182,49 +285,98 @@
             z-index: 9999;
             display: flex;
             flex-direction: column-reverse; 
-            gap: 10px;
-            max-width: 320px;
+            gap: 12px; 
+            max-width: 350px; 
         }
         .notification {
             background-color: var(--card-bg-color);
             color: var(--text-color);
-            padding: 15px 20px;
-            border-radius: 6px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            padding: 16px 22px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
             opacity: 0;
             transform: translateX(120%); 
             transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
-            border-left: 5px solid var(--primary-color);
+            border-left: 6px solid var(--primary-color); 
             cursor: pointer; 
+            font-size: 0.95em;
         }
-        .notification.show {
-            opacity: 1;
-            transform: translateX(0);
+        .notification.show { opacity: 1; transform: translateX(0); }
+        .notification.error { border-left-color: var(--error-color); }
+        .notification.success { border-left-color: var(--success-color); }
+        .notification.info { border-left-color: var(--info-color); }
+
+        /* Meme Detail Modal (Click to Open) */
+        .meme-detail-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        .notification.error { border-left-color: #dc3545; }
-        .notification.success { border-left-color: #28a745; }
-        .notification.info { border-left-color: #17a2b8; }
+        .meme-detail-modal-content {
+            background: var(--card-bg-color);
+            border-radius: 12px;
+            padding: 0; 
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex; 
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: popIn 0.3s 0.1s ease-out forwards; 
+            opacity: 0; 
+            overflow: hidden; 
+        }
+        .meme-detail-modal-content img {
+            display: block;
+            max-width: 100%;
+            max-height: 100%; 
+            object-fit: contain; 
+            border-radius: 10px; 
+        }
+        .meme-detail-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 20px;
+            line-height: 30px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 3001; 
+            transition: background-color 0.2s;
+        }
+        .meme-detail-close-btn:hover {
+            background: rgba(0,0,0,0.8);
+        }
 
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.3s; }
         .modal-content { background: var(--card-bg-color); padding: 25px 35px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out forwards; }
         .modal-content h2 { margin-top: 0; color: var(--primary-color); }
-        .modal-content input[type="file"], .modal-content textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; background-color: var(--bg-color); color: var(--text-color); }
-        body[data-theme="dark"] .modal-content input[type="file"], body[data-theme="dark"] .modal-content textarea { border-color: #444; }
+        .modal-content input[type="file"], .modal-content textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--input-bg-color); color: var(--text-color); }
         .modal-flex-buttons { display: flex; gap: 10px; margin-top: 10px; }
         #googleLoginBtn { background-color: #db4437; flex: 1; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; font-size: 1em; }
         #googleLoginBtn:hover { background-color: #c23321; }
-        #theme-selector { padding: 8px; border-radius: 6px; border: 1px solid #ddd; background-color: var(--card-bg-color); color: var(--text-color); }
-        body[data-theme="dark"] #theme-selector { border-color: #333; }
-        body[data-theme="vaporwave"] #theme-selector { border-color: var(--secondary-color); background-color: var(--card-bg-color); color: var(--text-color); }
-
-        .feed-controls { max-width: 1200px; margin: 20px auto 10px; padding: 0 10px; }
-        .feed-tabs { display: flex; gap: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-        body[data-theme="dark"] .feed-tabs { border-bottom-color: #333; }
-        body[data-theme="vaporwave"] .feed-tabs { border-bottom-color: var(--secondary-color); }
-        .feed-tabs button { background: none; border: none; padding: 10px 15px; font-size: 1em; color: var(--secondary-color); cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-bottom-color 0.2s; }
+        #theme-selector { padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--card-bg-color); color: var(--text-color); font-size: 0.9em; }
+        
+        .feed-controls { max-width: 1200px; margin: 25px auto 15px; padding: 0 15px; }
+        .feed-tabs { display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .feed-tabs button { background: none; border: none; padding: 10px 18px; font-size: 1.05em; color: var(--secondary-color); cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-bottom-color 0.2s; font-weight: 500; }
         .feed-tabs button:hover { color: var(--primary-color); }
-        .feed-tabs button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: bold; }
+        .feed-tabs button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: 700; }
         .cancel-btn { background-color: var(--secondary-color) !important; }
     </style>
 </head>
@@ -234,8 +386,9 @@
             <h1 id="home-link">MemeDrop</h1>
             <div class="nav-center"><input type="search" id="search-bar" placeholder="Search memes..."></div>
             <div class="nav-right">
-                <button class="nav-button" id="notificationsBtn" title="Notifications" style="padding: 8px;">
+                <button class="nav-button" id="notificationsBtn" title="Notifications" style="padding: 8px; position: relative;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span id="notification-badge" class="hidden" style="position:absolute; top:-5px; right:-5px; background:var(--error-color); color:white; border-radius:50%; width:16px; height:16px; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:bold;"></span>
                 </button>
                 <button id="uploadBtn" class="nav-button hidden">Upload</button>
                 <select id="theme-selector" title="Change Theme">
@@ -280,64 +433,26 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-// Inside your index.html's main <script> block, within DOMContentLoaded
 
-// ... after firebase.initializeApp(firebaseConfig); ...
-// const auth = firebase.auth();
-// const database = firebase.database();
-
-// Add this function:
-const performDirectWriteTest = () => {
-    if (auth.currentUser) {
-        const userUid = auth.currentUser.uid;
-        const testData = { message: "Hello from user " + userUid, timestamp: Date.now() };
-        console.log(`INDEX: Attempting direct write test to /testwrites/${userUid} with data:`, testData);
-        database.ref(`testwrites/${userUid}`).set(testData)
-            .then(() => {
-                showInPageNotification("Direct write test SUCCEEDED!", "success");
-                console.log("INDEX: Direct write test SUCCEEDED!");
-            })
-            .catch((error) => {
-                showInPageNotification(`Direct write test FAILED: ${error.message}`, "error");
-                console.error("INDEX: Direct write test FAILED:", error);
-            });
-    } else {
-        showInPageNotification("Direct write test: User not logged in.", "info");
-        console.log("INDEX: Direct write test: User not logged in.");
-    }
-};
-
-// You can call this function after a successful login, or via a temporary test button.
-// For example, in your signInWithPopup success block:
-// ... after alert('Login successful!'); ...
-// performDirectWriteTest();
-
-// Or, for a manual test, add a button to your HTML:
-// <button id="directWriteTestBtn">Test Direct Write</button>
-// And then in your JS:
-// const testBtn = document.getElementById('directWriteTestBtn');
-// if (testBtn) testBtn.addEventListener('click', performDirectWriteTest);
         let currentUser = null;
         let allMemes = [];
         let currentFeedMemes = []; 
         const modalContainer = document.getElementById('modal-container');
         const notificationArea = document.getElementById('notification-area');
         let activeFeed = 'for-you'; 
+        const commentsListeners = {};
 
-        // --- CUSTOM NOTIFICATION SYSTEM ---
-        const showInPageNotification = (message, type = 'info', duration = 3000) => {
+        const showInPageNotification = (message, type = 'info', duration = 3500) => {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
-            
             notification.addEventListener('click', () => { 
                 notification.classList.remove('show');
                 notification.addEventListener('transitionend', () => notification.remove(), { once: true });
             });
-
             notificationArea.appendChild(notification);
-            setTimeout(() => notification.classList.add('show'), 10); 
-
+            void notification.offsetWidth; 
+            notification.classList.add('show');
             setTimeout(() => {
                 if (notification.parentElement) { 
                     notification.classList.remove('show');
@@ -345,8 +460,27 @@ const performDirectWriteTest = () => {
                 }
             }, duration);
         };
+        
+        const timeAgo = (timestamp) => {
+            if (!timestamp) return '';
+            const now = new Date();
+            const seconds = Math.round((now - new Date(timestamp)) / 1000);
+            if (seconds < 5) return 'just now';
+            if (seconds < 60) return `${seconds}s ago`;
+            const minutes = Math.round(seconds / 60);
+            if (minutes < 60) return `${minutes}m ago`;
+            const hours = Math.round(minutes / 60);
+            if (hours < 24) return `${hours}h ago`;
+            const days = Math.round(hours / 24);
+            if (days < 7) return `${days}d ago`;
+            const weeks = Math.round(days / 7);
+            if (weeks < 5) return `${weeks}w ago`;
+            const months = Math.round(days / 30.44);
+            if (months < 12) return `${months}mo ago`;
+            const years = Math.round(days / 365);
+            return `${years}y ago`;
+        };
 
-        // --- UI & RENDERING ---
         const createMemeElement = (meme) => {
             const post = document.createElement('article');
             post.className = 'meme-post';
@@ -356,6 +490,12 @@ const performDirectWriteTest = () => {
             img.src = meme.imageBase64;
             const altText = (meme.description || 'A meme from MemeDrop').replace(/"/g, '"');
             img.alt = altText;
+            img.addEventListener('click', (e) => {
+                // Prevent comment section toggle if image itself is clicked for detail view
+                if (e.target === img) { 
+                    openMemeDetail(meme);
+                }
+            });
             post.appendChild(img);
 
             const memeInfoDiv = document.createElement('div');
@@ -367,19 +507,29 @@ const performDirectWriteTest = () => {
                 descriptionP.textContent = meme.description;
                 memeInfoDiv.appendChild(descriptionP);
             }
+            
+            const metaDiv = document.createElement('div');
+            metaDiv.className = 'meme-meta';
+                const creatorP = document.createElement('p');
+                creatorP.className = 'meme-creator';
+                creatorP.textContent = `By: ${meme.creatorName || 'Anonymous'}`;
+                metaDiv.appendChild(creatorP);
 
-            const creatorP = document.createElement('p');
-            creatorP.className = 'meme-creator';
-            creatorP.textContent = `Posted by: ${meme.creatorName || 'Anonymous'}`;
-            memeInfoDiv.appendChild(creatorP);
+                const timestampP = document.createElement('p');
+                timestampP.className = 'meme-timestamp';
+                timestampP.textContent = timeAgo(meme.createdAt);
+                metaDiv.appendChild(timestampP);
+            memeInfoDiv.appendChild(metaDiv);
             post.appendChild(memeInfoDiv);
 
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'meme-actions';
 
             const likeCount = meme.likeCount || 0;
+            const dislikeCount = meme.dislikeCount || 0;
             const commentCount = meme.commentCount || 0; 
             const isLikedByCurrentUser = currentUser && meme.likes && meme.likes[currentUser.uid];
+            const isDislikedByCurrentUser = currentUser && meme.dislikes && meme.dislikes[currentUser.uid];
 
             actionsDiv.innerHTML = `
                 <button class="action-button like-button ${isLikedByCurrentUser ? 'liked' : ''}" title="Like">
@@ -388,11 +538,20 @@ const performDirectWriteTest = () => {
                     </svg>
                     <span class="like-count">${likeCount}</span>
                 </button>
+                <button class="action-button dislike-button ${isDislikedByCurrentUser ? 'disliked' : ''}" title="Dislike">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isDislikedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3L8 14M5 2h4v10H5z"/>
+                    </svg>
+                    <span class="dislike-count">${dislikeCount}</span>
+                </button>
                 <button class="action-button comment-toggle-button" title="View Comments">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                     <span class="comment-count-display">${commentCount}</span>
+                </button>
+                <button class="action-button remix-button" title="Remix (Coming Soon)" style="margin-left: auto; opacity: 0.5; cursor: not-allowed;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11.6V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 12.4V15a4 4 0 0 1-4 4H3"></path></svg>
                 </button>
             `;
             post.appendChild(actionsDiv);
@@ -407,18 +566,14 @@ const performDirectWriteTest = () => {
                                          </form>` : '<p><small>Login to post comments.</small></p>'}`;
             post.appendChild(commentsSection);
 
-            const likeButton = post.querySelector('.like-button');
-            if (likeButton) {
-                likeButton.addEventListener('click', () => handleLike(meme.id));
-            }
-            const commentToggleButton = post.querySelector('.comment-toggle-button');
-            if (commentToggleButton) {
-                commentToggleButton.addEventListener('click', () => toggleComments(meme.id, post));
-            }
+            post.querySelector('.like-button')?.addEventListener('click', (e) => { e.stopPropagation(); handleLike(meme.id); });
+            post.querySelector('.dislike-button')?.addEventListener('click', (e) => { e.stopPropagation(); handleDislike(meme.id); });
+            post.querySelector('.comment-toggle-button')?.addEventListener('click', (e) => { e.stopPropagation(); toggleComments(meme.id, post); });
+            
             if (currentUser) { 
                 const addCommentForm = commentsSection.querySelector('.add-comment-form');
                 if (addCommentForm) {
-                    addCommentForm.addEventListener('submit', (e) => handleAddComment(e, meme.id));
+                    addCommentForm.addEventListener('submit', (e) => {e.stopPropagation(); handleAddComment(e, meme.id);});
                 }
             }
             return post;
@@ -426,7 +581,6 @@ const performDirectWriteTest = () => {
 
         const renderGallery = () => {
             const galleryContainer = document.getElementById('meme-gallery');
-            const scrollTop = galleryContainer.scrollTop; 
             galleryContainer.innerHTML = ''; 
             
             let memesToDisplay = [];
@@ -437,15 +591,14 @@ const performDirectWriteTest = () => {
             currentFeedMemes = memesToDisplay;
 
             if(currentFeedMemes.length === 0) {
-                 galleryContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">No memes found. Be the first to upload!</p>';
+                 galleryContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; animation: fadeIn 0.5s;">No memes found. Be the first to upload!</p>';
                  return;
             }
             currentFeedMemes.forEach((meme, index) => {
                 const memeEl = createMemeElement(meme);
-                memeEl.style.animationDelay = `${index * 0.05}s`; 
+                memeEl.style.animationDelay = `${index * 0.07}s`; 
                 galleryContainer.appendChild(memeEl);
             });
-            galleryContainer.scrollTop = scrollTop; 
         };
         
         const updateUIForAuthState = (user) => {
@@ -474,7 +627,7 @@ const performDirectWriteTest = () => {
             renderGallery(); 
         };
 
-        const openModal = (modalType) => {
+        const openModal = (modalType, data = null) => {
             modalContainer.innerHTML = '';
             const modalOverlay = document.createElement('div');
             modalOverlay.className = 'modal-overlay';
@@ -493,6 +646,18 @@ const performDirectWriteTest = () => {
                                     </form>
                                  </div>`;
                     break;
+                case 'memeDetail':
+                    if (data && data.meme) {
+                        modalOverlay.classList.add('meme-detail-modal-overlay'); 
+                        modalHTML = `<div class="meme-detail-modal-content">
+                                        <button class="meme-detail-close-btn">×</button>
+                                        <img src="${data.meme.imageBase64}" alt="${(data.meme.description || '').replace(/"/g, '"')}"/>
+                                     </div>`;
+                    } else {
+                        showInPageNotification("Error: Meme data not found for detail view.", "error");
+                        return;
+                    }
+                    break;
             }
             modalOverlay.innerHTML = modalHTML;
             modalContainer.appendChild(modalOverlay);
@@ -500,11 +665,23 @@ const performDirectWriteTest = () => {
         };
 
         function attachModalListeners(modalType, modalOverlayElement) {
+            const closeLogic = () => modalOverlayElement.remove();
             modalOverlayElement.addEventListener('click', e => {
-                if (e.target === modalOverlayElement || e.target.classList.contains('cancel-btn')) {
-                    modalOverlayElement.remove();
+                if (e.target === modalOverlayElement || e.target.classList.contains('cancel-btn') || e.target.classList.contains('meme-detail-close-btn')) {
+                    closeLogic();
                 }
             });
+            const escListener = (e) => {
+                if (e.key === "Escape") {
+                    closeLogic();
+                    document.removeEventListener('keydown', escListener);
+                }
+            };
+            document.addEventListener('keydown', escListener);
+            modalOverlayElement.addEventListener('DOMNodeRemoved', () => {
+                document.removeEventListener('keydown', escListener);
+            }, { once: true });
+
             switch(modalType) {
                 case 'auth': 
                     const googleLoginBtn = modalOverlayElement.querySelector('#googleLoginBtn');
@@ -566,8 +743,10 @@ const performDirectWriteTest = () => {
                                     creatorName: currentUser.displayName || currentUser.email || 'Anonymous Dropper', 
                                     createdAt: firebase.database.ServerValue.TIMESTAMP,
                                     likeCount: 0, 
+                                    dislikeCount: 0,
                                     commentCount: 0,
-                                    likes: {}       
+                                    likes: {},
+                                    dislikes: {}       
                                 };
                                 database.ref('memes').push(memeData)
                                     .then(() => {
@@ -583,6 +762,8 @@ const performDirectWriteTest = () => {
                             reader.readAsDataURL(file);
                         });
                     }
+                    break;
+                case 'memeDetail':
                     break;
             }
         }
@@ -618,45 +799,65 @@ const performDirectWriteTest = () => {
         });
 
         const handleLike = (memeId) => {
-            if (!currentUser) {
-                showInPageNotification("Please login to like memes!", "error");
-                openModal('auth');
-                return;
-            }
+            if (!currentUser) { showInPageNotification("Please login to interact!", "error"); openModal('auth'); return; }
             console.log(`INDEX: Toggling like for meme ${memeId} by user ${currentUser.uid}`);
-            
             database.ref(`memes/${memeId}`).transaction(memeData => {
                 if (memeData) {
-                    if (!memeData.likes) memeData.likes = {};
-                    if (typeof memeData.likeCount !== 'number') memeData.likeCount = 0;
+                    memeData.likes = memeData.likes || {};
+                    memeData.dislikes = memeData.dislikes || {};
+                    memeData.likeCount = typeof memeData.likeCount === 'number' ? memeData.likeCount : 0;
+                    memeData.dislikeCount = typeof memeData.dislikeCount === 'number' ? memeData.dislikeCount : 0;
 
-                    if (memeData.likes[currentUser.uid]) {
-                        console.log("INDEX: Unliking via transaction");
+                    if (memeData.likes[currentUser.uid]) { 
                         memeData.likeCount--;
-                        memeData.likes[currentUser.uid] = null; 
-                    } else {
-                        console.log("INDEX: Liking via transaction");
+                        memeData.likes[currentUser.uid] = null;
+                    } else { 
                         memeData.likeCount++;
-                        memeData.likes[currentUser.uid] = true; 
+                        memeData.likes[currentUser.uid] = true;
+                        if (memeData.dislikes[currentUser.uid]) { 
+                            memeData.dislikeCount--;
+                            memeData.dislikes[currentUser.uid] = null;
+                        }
                     }
                 }
                 return memeData; 
             }, (error, committed, snapshot) => {
-                if (error) {
-                    console.error('Like transaction failed!', error);
-                    showInPageNotification("Could not process like: " + error.message, "error");
-                } else if (!committed) {
-                    console.warn('Like transaction not committed (data may have changed or no data at path).');
-                    showInPageNotification("Could not update like, please try again.", "info");
-                } else {
-                    console.log('Like transaction committed!');
-                }
+                if (error) { console.error('Like transaction failed!', error); showInPageNotification("Could not process like: " + error.message, "error");
+                } else if (!committed) { console.warn('Like transaction not committed.'); showInPageNotification("Could not update like, please try again.", "info");
+                } else { console.log('Like transaction committed!'); }
             });
         };
 
-        // --- COMMENTS ---
-        const commentsListeners = {}; 
+        const handleDislike = (memeId) => {
+            if (!currentUser) { showInPageNotification("Please login to interact!", "error"); openModal('auth'); return; }
+            console.log(`INDEX: Toggling dislike for meme ${memeId} by user ${currentUser.uid}`);
+            database.ref(`memes/${memeId}`).transaction(memeData => {
+                if (memeData) {
+                    memeData.likes = memeData.likes || {};
+                    memeData.dislikes = memeData.dislikes || {};
+                    memeData.likeCount = typeof memeData.likeCount === 'number' ? memeData.likeCount : 0;
+                    memeData.dislikeCount = typeof memeData.dislikeCount === 'number' ? memeData.dislikeCount : 0;
 
+                    if (memeData.dislikes[currentUser.uid]) { 
+                        memeData.dislikeCount--;
+                        memeData.dislikes[currentUser.uid] = null;
+                    } else { 
+                        memeData.dislikeCount++;
+                        memeData.dislikes[currentUser.uid] = true;
+                        if (memeData.likes[currentUser.uid]) { 
+                            memeData.likeCount--;
+                            memeData.likes[currentUser.uid] = null;
+                        }
+                    }
+                }
+                return memeData;
+            }, (error, committed, snapshot) => {
+                if (error) { console.error('Dislike transaction failed!', error); showInPageNotification("Could not process dislike: " + error.message, "error");
+                } else if (!committed) { console.warn('Dislike transaction not committed.'); showInPageNotification("Could not update dislike, please try again.", "info");
+                } else { console.log('Dislike transaction committed!'); }
+            });
+        };
+        
         const toggleComments = (memeId, postElement) => {
             const commentsSection = postElement.querySelector('.comments-section');
             const commentsListDiv = commentsSection.querySelector('.comments-list');
@@ -675,8 +876,7 @@ const performDirectWriteTest = () => {
                         const commentCountDisplay = postElement.querySelector('.comment-count-display');
                         if (commentCountDisplay) commentCountDisplay.textContent = commentCount;
                         
-                        const memeInAll = allMemes.find(m => m.id === memeId);
-                        if (memeInAll && memeInAll.commentCount !== commentCount) {
+                        if (allMemes.find(m => m.id === memeId)?.commentCount !== commentCount) {
                            database.ref(`memes/${memeId}/commentCount`).set(commentCount); 
                         }
                     };
@@ -690,14 +890,9 @@ const performDirectWriteTest = () => {
                     commentsListeners[memeId] = { ref: memeCommentsRef, listener: listenerCallback, errorCb: errorCallback, isActive: true };
                 }
             } else { 
-                // Optionally detach listener when comments are hidden to save resources
                 if (commentsListeners[memeId] && commentsListeners[memeId].isActive) {
                     console.log(`INDEX: Detaching comment listener for meme ${memeId}`);
                     commentsListeners[memeId].ref.off('value', commentsListeners[memeId].listener);
-                    // If you also attached the error callback separately, you might need to .off() it too,
-                    // or ensure that .off('value', callback) removes all listeners for that event type if callback is specified.
-                    // Firebase's .off() without a specific callback removes ALL listeners for that event type on that ref.
-                    // For more granular control: commentsListeners[memeId].ref.off('value', commentsListeners[memeId].listener, commentsListeners[memeId].contextForListener);
                     commentsListeners[memeId].isActive = false; 
                 }
             }
@@ -719,10 +914,15 @@ const performDirectWriteTest = () => {
                 const commentDiv = document.createElement('div');
                 commentDiv.className = 'comment';
                 const strong = document.createElement('strong');
-                strong.textContent = (comment.userName || 'User') + ": ";
+                strong.textContent = (comment.userName || 'User');
                 const p = document.createElement('p');
                 p.textContent = comment.text;
+                const time = document.createElement('span');
+                time.className = 'comment-timestamp';
+                time.textContent = ` - ${timeAgo(comment.createdAt)}`;
+
                 commentDiv.appendChild(strong);
+                commentDiv.appendChild(time); 
                 commentDiv.appendChild(p);
                 commentsListDiv.appendChild(commentDiv);
             });
@@ -750,10 +950,8 @@ const performDirectWriteTest = () => {
                 userName: currentUser.displayName || 'Anonymous Commenter',
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             };
-            // Debug logs for comment posting
             console.log("INDEX: Attempting to post commentData:", JSON.stringify(commentData));
             console.log("INDEX: Current auth.currentUser.uid on client for comment:", auth.currentUser ? auth.currentUser.uid : "No auth.currentUser");
-
 
             const newCommentRef = database.ref(`comments/${memeId}`).push();
             newCommentRef.set(commentData)
@@ -768,13 +966,14 @@ const performDirectWriteTest = () => {
                 });
         };
 
+        const openMemeDetail = (meme) => {
+            openModal('memeDetail', { meme: meme });
+        };
 
         const searchBar = document.getElementById('search-bar');
         const applySearchFilter = () => {
             const searchTerm = searchBar.value.toLowerCase().trim();
-            // This logic will be refined when activeFeed has more distinct sources than just allMemes
             let baseMemesForFilter = [...allMemes]; 
-
             if (searchTerm === '') {
                 currentFeedMemes = baseMemesForFilter;
             } else {
@@ -783,7 +982,7 @@ const performDirectWriteTest = () => {
                     (meme.creatorName && meme.creatorName.toLowerCase().includes(searchTerm))
                 );
             }
-            renderGallery(); // renderGallery will apply sorting based on activeFeed to currentFeedMemes
+            renderGallery();
         };
         searchBar.addEventListener('input', applySearchFilter);
 
@@ -795,7 +994,6 @@ const performDirectWriteTest = () => {
             document.querySelectorAll('.feed-tabs button').forEach(btn => btn.classList.remove('active'));
             const activeBtn = document.getElementById(`feed-${feedName}`);
             if (activeBtn) activeBtn.classList.add('active');
-            
             applySearchFilter(); 
             showInPageNotification(`Switched to "${feedName.replace('-', ' ')}" feed.`, 'info', 1500);
         };
@@ -826,47 +1024,6 @@ const performDirectWriteTest = () => {
         });
 
         applySearchFilter(); 
-        /*
-        REMINDER: Update Firebase Realtime Database Rules!
-        Example rules (Tailor these to your exact needs):
-        {
-          "rules": {
-            "users": {
-              "$uid": {
-                ".read": "$uid === auth.uid || root.child('users').child($uid).child('profilePublic').val() === true",
-                ".write": "$uid === auth.uid"
-              }
-            },
-            "memes": {
-              ".read": true,
-              "$memeId": {
-                ".write": "auth != null && (newData.child('creatorId').val() === auth.uid || !data.exists())",
-                ".validate": "newData.hasChildren(['imageBase64', 'description', 'creatorId', 'creatorName', 'createdAt', 'likeCount', 'commentCount'])",
-                "likeCount": { ".validate": "newData.isNumber() && newData.val() >= 0" },
-                "commentCount": { ".validate": "newData.isNumber() && newData.val() >= 0" },
-                "likes": {
-                  "$uid": {
-                    ".write": "auth != null && $uid === auth.uid",
-                    ".validate": "newData.isBoolean() || newData.val() === null"
-                  }
-                },
-                "$other": { ".validate": false }
-              }
-            },
-            "comments": {
-              "$memeId": {
-                ".read": true,
-                ".indexOn": "createdAt", // For performance with orderByChild('createdAt')
-                "$commentId": {
-                  ".write": "auth != null && newData.child('userId').val() === auth.uid && (!data.exists() || data.child('userId').val() === auth.uid)",
-                  ".validate": "newData.hasChildren(['text', 'userId', 'userName', 'createdAt']) && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length < 500 && newData.child('userId').isString() && newData.child('userId').val() === auth.uid && newData.child('userName').isString() && (newData.child('createdAt').isNumber() || newData.child('createdAt').val() === '.sv_timestamp')",
-                  "$other": { ".validate": false }
-                }
-              }
-            }
-          }
-        }
-        */
     });
     </script>
 </body>
