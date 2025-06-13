@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
     <style>
-        /* All CSS from the previous correct version is unchanged. Omitted for brevity. */
+        /* All necessary CSS is included here. This block is large. */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes toastIn { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
@@ -405,7 +405,7 @@
                         database.ref(`comments/${data.id}`).remove();
                         modal.remove();
                         showToast('Meme deleted.');
-                        navigate('?'); // Go back to home after delete
+                        navigate('?');
                     });
                     break;
             }
@@ -424,7 +424,7 @@
                 id: key,
                 ...memesData[key]
             }));
-            handleNavigation(); // Re-render the current view with fresh data
+            handleNavigation();
         });
         
         window.addEventListener('message', async (event) => {
