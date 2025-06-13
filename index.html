@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemeDrop - Full App</title>
+    <title>MemeDrop - Full App (No escapeHTML function)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
     <style>
-        /* All necessary CSS is included here. */
+        /* All necessary CSS is included here - SAME AS PREVIOUS FULL VERSION */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         :root {
             --primary-color: #007bff; --secondary-color: #6c757d; --bg-color: #f9f9f9; --card-bg-color: #fff; --text-color: #1c1e21;
@@ -100,11 +100,11 @@
         .action-button:hover {
             color: var(--primary-color);
         }
-        .action-button.liked svg { /* Style for the SVG when liked */
+        .action-button.liked svg { 
             fill: var(--primary-color); 
             stroke: var(--primary-color);
         }
-        .action-button.liked { /* Style for the button text/container when liked */
+        .action-button.liked { 
              color: var(--primary-color);
              font-weight: bold;
         }
@@ -193,35 +193,49 @@
             post.className = 'meme-post';
             post.dataset.memeId = meme.id;
 
-            let descriptionHTML = '';
+            const img = document.createElement('img');
+            img.src = meme.imageBase64;
+            // Minimal sanitization for alt attribute: replace double quotes
+            const altText = (meme.description || 'A meme from MemeDrop').replace(/"/g, '"');
+            img.alt = altText;
+            post.appendChild(img);
+
+            const memeInfoDiv = document.createElement('div');
+            memeInfoDiv.className = 'meme-info';
+
             if (meme.description) {
-                descriptionHTML = `<p class="meme-description">${escapeHTML(meme.description)}</p>`;
+                const descriptionP = document.createElement('p');
+                descriptionP.className = 'meme-description';
+                descriptionP.textContent = meme.description; // textContent handles escaping
+                memeInfoDiv.appendChild(descriptionP);
             }
-            const creatorName = meme.creatorName || 'Anonymous';
+
+            const creatorP = document.createElement('p');
+            creatorP.className = 'meme-creator';
+            creatorP.textContent = `Posted by: ${meme.creatorName || 'Anonymous'}`; // textContent handles escaping
+            memeInfoDiv.appendChild(creatorP);
+            post.appendChild(memeInfoDiv);
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'meme-actions';
+
             const likeCount = meme.likeCount || 0;
             const isLikedByCurrentUser = currentUser && meme.likes && meme.likes[currentUser.uid];
 
-            post.innerHTML = `
-                <img src="${meme.imageBase64}" alt="${escapeHTML(meme.description) || 'A meme from MemeDrop'}">
-                <div class="meme-info">
-                    ${descriptionHTML}
-                    <p class="meme-creator">Posted by: ${escapeHTML(creatorName)}</p>
-                </div>
-                <div class="meme-actions">
-                    <button class="action-button like-button ${isLikedByCurrentUser ? 'liked' : ''}" title="Like">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isLikedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                        <span class="like-count">${likeCount}</span>
-                    </button>
-                    <button class="action-button comment-button" title="Comments">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        <!-- Comment count can be added here -->
-                    </button>
-                </div>
+            actionsDiv.innerHTML = `
+                <button class="action-button like-button ${isLikedByCurrentUser ? 'liked' : ''}" title="Like">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isLikedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span class="like-count">${likeCount}</span>
+                </button>
+                <button class="action-button comment-button" title="Comments">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </button>
             `;
+            post.appendChild(actionsDiv);
 
             const likeButton = post.querySelector('.like-button');
             if (likeButton) {
@@ -234,18 +248,7 @@
             return post;
         };
 
-       const escapeHTML = (str) => {
-    if (typeof str !== 'string') return '';
-    return str.replace(/[&<>'"]/g, 
-        tag => ({
-            '&': '&',
-            '<': '<',
-            '>': '>',
-"'": ''', // Use HTML entity for single quote
-            '"': '"'  // Use HTML entity for double quote
-        }[tag] || tag)
-    );
-};
+        // const escapeHTML function is REMOVED
 
         const renderGallery = (memesToDisplay = filteredMemes) => {
             const galleryContainer = document.getElementById('meme-gallery');
@@ -266,7 +269,7 @@
             if (logoutBtnInstance) logoutBtnInstance.removeEventListener('click', handleLogout);
             if (user) {
                 userInfoEl.innerHTML = `<span>Hi, ${user.displayName || 'User'}!</span> <button id="logoutBtn" class="nav-button">Logout</button>`;
-                if(document.getElementById('logoutBtn')) { // Ensure button exists before adding listener
+                if(document.getElementById('logoutBtn')) { 
                     document.getElementById('logoutBtn').addEventListener('click', handleLogout);
                 }
                 userInfoEl.classList.remove('hidden');
@@ -427,20 +430,18 @@
             
             database.ref(`memes/${memeId}`).transaction(memeData => {
                 if (memeData) {
-                    if (!memeData.likes) { // Initialize likes object if it doesn't exist
+                    if (!memeData.likes) { 
                         memeData.likes = {};
                     }
-                    if (!memeData.hasOwnProperty('likeCount')) { // Initialize likeCount if it doesn't exist
+                    if (!memeData.hasOwnProperty('likeCount')) { 
                         memeData.likeCount = 0;
                     }
 
                     if (memeData.likes[currentUser.uid]) {
-                        // User has liked it, so unlike
                         console.log("INDEX: Unliking via transaction");
                         memeData.likeCount--;
                         memeData.likes[currentUser.uid] = null; 
                     } else {
-                        // User has not liked it, so like
                         console.log("INDEX: Liking via transaction");
                         memeData.likeCount++;
                         memeData.likes[currentUser.uid] = true; 
@@ -479,7 +480,7 @@
         const defaultTheme = 'vaporwave'; 
         const currentTheme = savedTheme || defaultTheme;
         document.body.setAttribute('data-theme', currentTheme);
-        if(themeSelector) themeSelector.value = currentTheme; // Check if selector exists
+        if(themeSelector) themeSelector.value = currentTheme; 
         if(themeSelector) {
             themeSelector.addEventListener('change', (e) => {
                 document.body.setAttribute('data-theme', e.target.value);
