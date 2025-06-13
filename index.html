@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemeDrop</title>
+    <title>MemeDrop - signInWithPopup Test</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
@@ -120,8 +120,9 @@
         let filteredMemes = [];
         const modalContainer = document.getElementById('modal-container');
         
-        const AUTH_HELPER_URL = 'https://fawkesyt.github.io/memedrop-auth/auth.html';
-        let authWindow = null;
+        // AUTH_HELPER_URL is not used in this specific test version
+        // const AUTH_HELPER_URL = 'https://fawkesyt.github.io/memedrop-auth/auth.html';
+        // let authWindow = null;
 
         // --- UI & RENDERING ---
         const createMemeElement = (meme) => {
@@ -169,7 +170,7 @@
             let modalHTML = '';
             switch(modalType) {
                 case 'auth':
-                    modalHTML = `<div class="modal-content"><h2>Login with Google</h2><p>Continue to MemeDrop using your Google account.</p><div class="modal-flex-buttons"><button id="googleLoginBtn">Sign in with Google</button></div><button type="button" class="cancel-btn nav-button" style="margin-top:20px;">Cancel</button></div>`;
+                    modalHTML = `<div class="modal-content"><h2>Login with Google</h2><p>Continue to MemeDrop using your Google account.</p><div class="modal-flex-buttons"><button id="googleLoginBtn">Sign in with Google (Popup Test)</button></div><button type="button" class="cancel-btn nav-button" style="margin-top:20px;">Cancel</button></div>`;
                     break;
                 case 'upload':
                     modalHTML = `<div class="modal-content"><h2>Upload a New Meme</h2><form id="uploadForm"><input type="file" id="memeFile" accept="image/*" required><textarea id="memeDescription" placeholder="A funny description... (optional)" rows="3"></textarea><button type="submit" class="nav-button" style="width:100%; margin-top:10px;">Upload Meme</button><button type="button" class="cancel-btn nav-button" style="width:100%; margin-top:10px;">Cancel</button></form></div>`;
@@ -190,11 +191,39 @@
                 case 'auth':
                     const googleLoginBtn = modalOverlayElement.querySelector('#googleLoginBtn');
                     if (googleLoginBtn) {
-                        googleLoginBtn.addEventListener('click', () => {
-                           if (authWindow && !authWindow.closed) { authWindow.focus(); return; }
-                           const urlToOpen = `${AUTH_HELPER_URL}?provider=google&cb=${Date.now()}`; // Added cache buster
-                           console.log("INDEX: Attempting to open auth popup with URL:", urlToOpen);
-                           authWindow = window.open(urlToOpen, 'firebaseAuth', 'height=600,width=400');
+                        // THIS IS THE MODIFIED PART FOR signInWithPopup TEST
+                        googleLoginBtn.addEventListener('click', async () => { 
+                            console.log("INDEX: Attempting signInWithPopup directly.");
+                            const provider = new firebase.auth.GoogleAuthProvider();
+                            try {
+                                const result = await auth.signInWithPopup(provider);
+                                console.log("INDEX: signInWithPopup SUCCESS. Full result:", JSON.stringify(result, null, 2));
+                                
+                                if (result.user) {
+                                    const user = result.user;
+                                    console.log("INDEX: signInWithPopup User:", user.uid, user.displayName);
+                                    
+                                    const userRef = database.ref('users/' + user.uid);
+                                    const userSnap = await userRef.once('value');
+                                    if (!userSnap.exists()) { 
+                                        userRef.set({ displayName: user.displayName || 'Meme Lover', email: user.email, photoURL: user.photoURL, createdAt: firebase.database.ServerValue.TIMESTAMP, lastLogin: firebase.database.ServerValue.TIMESTAMP });
+                                    } else { 
+                                        userRef.update({ lastLogin: firebase.database.ServerValue.TIMESTAMP, displayName: user.displayName || userSnap.val().displayName, photoURL: user.photoURL || userSnap.val().photoURL });
+                                    }
+                                    
+                                    modalContainer.innerHTML = ''; 
+                                    // updateUIForAuthState(user); // onAuthStateChanged will handle this
+                                    alert('Login successful with signInWithPopup!');
+                                } else {
+                                    console.error("INDEX: signInWithPopup successful, but no user object in result.");
+                                    alert("Login with popup seemed to work but no user data was returned.");
+                                }
+
+                            } catch (error) {
+                                console.error("INDEX: signInWithPopup ERROR. Code:", error.code, "Message:", error.message);
+                                console.error("INDEX: signInWithPopup Full Error Object:", JSON.stringify(error, null, 2)); // Log full error object
+                                alert(`Login failed with signInWithPopup: ${error.message} (Code: ${error.code})`);
+                            }
                         });
                     }
                     break;
@@ -225,50 +254,12 @@
         
         // --- AUTHENTICATION LOGIC ---
         auth.onAuthStateChanged(user => {
-            console.log("INDEX: Auth state changed, current user:", user);
+            console.log("INDEX: Auth state changed, current user:", user ? {uid: user.uid, displayName: user.displayName} : null);
             currentUser = user;
             updateUIForAuthState(user);
         });
 
-        window.addEventListener('message', async (event) => {
-            // Origin check is crucial for security
-            if (!AUTH_HELPER_URL || event.origin !== new URL(AUTH_HELPER_URL).origin) {
-                if (AUTH_HELPER_URL) console.warn("INDEX: Message received from unexpected origin:", event.origin, "Expected:", new URL(AUTH_HELPER_URL).origin);
-                else console.warn("INDEX: AUTH_HELPER_URL not defined, cannot verify message origin.");
-                return;
-            }
-            
-            console.log("INDEX: Main App: Received message from auth helper:", event.data);
-
-            if (event.data && event.data.type === 'authSuccess' && event.data.payload && event.data.payload.credential) {
-                console.log("INDEX: Main App: Auth Success type received. Credential payload:", event.data.payload.credential);
-                try {
-                    const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
-                    const result = await auth.signInWithCredential(credential);
-                    const user = result.user; // Corrected: result.user
-                    console.log("INDEX: Main App: Successfully signed in with credential. User:", user);
-                    
-                    const userRef = database.ref('users/' + user.uid);
-                    const userSnap = await userRef.once('value');
-                    if (!userSnap.exists()) { 
-                        userRef.set({ displayName: user.displayName || 'Meme Lover', email: user.email, photoURL: user.photoURL, createdAt: firebase.database.ServerValue.TIMESTAMP, lastLogin: firebase.database.ServerValue.TIMESTAMP });
-                    } else { 
-                        userRef.update({ lastLogin: firebase.database.ServerValue.TIMESTAMP, displayName: user.displayName || userSnap.val().displayName, photoURL: user.photoURL || userSnap.val().photoURL });
-                    }
-                    
-                    modalContainer.innerHTML = ''; // Close any open modals (like the auth modal)
-                    alert('Login successful!');
-                } catch(err) { 
-                    console.error("INDEX: Main App: Error signing in with credential:", err, "Error Code:", err.code, "Error Message:", err.message);
-                    alert(`Login failed: ${err.message}. Code: ${err.code}`); 
-                }
-            } else if (event.data && event.data.type === 'authError') { 
-                console.error("INDEX: Main App: Auth Error from popup:", event.data.message, "Code:", event.data.code);
-                alert(`Login process failed: ${event.data.message} ${event.data.code ? '('+event.data.code+')' : ''}`);
-            } else {
-                console.warn("INDEX: Main App: Received unhandled message type or invalid payload from auth helper:", event.data);
-            }
-        });
+        // window.addEventListener('message', ...) IS NOT USED FOR THIS signInWithPopup TEST
         
         const handleLogout = () => {
             auth.signOut().then(() => { alert('You have been logged out.'); }).catch(error => { console.error("Logout error:", error); alert(`Logout failed: ${error.message}`); });
@@ -302,7 +293,7 @@
         // --- THEME SELECTOR ---
         const themeSelector = document.getElementById('theme-selector');
         const savedTheme = localStorage.getItem('theme');
-        const defaultTheme = 'vaporwave'; // Your preferred default
+        const defaultTheme = 'vaporwave'; 
         const currentTheme = savedTheme || defaultTheme;
         
         document.body.setAttribute('data-theme', currentTheme);
@@ -326,7 +317,7 @@
         });
 
         // Initial render after setup
-        applySearchFilter(); // This will also call renderGallery
+        applySearchFilter(); 
     });
     </script>
 </body>
