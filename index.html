@@ -62,10 +62,10 @@
         body[data-theme="vaporwave"] .feed-tabs { border-bottom-color: var(--secondary-color); }
         .feed-tabs button { background: none; border: none; padding: 10px 15px; font-size: 1em; color: var(--secondary-color); cursor: pointer; border-bottom: 3px solid transparent; }
         .feed-tabs button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: bold; }
-        .cancel-btn { background-color: var(--secondary-color) !important; } /* Ensure cancel button has distinct color */
+        .cancel-btn { background-color: var(--secondary-color) !important; }
     </style>
 </head>
-<body data-theme="vaporwave"> <!-- Default theme -->
+<body data-theme="vaporwave">
     <header>
         <nav>
             <h1 id="home-link">MemeDrop</h1>
@@ -86,8 +86,8 @@
         <div id="gallery-view" class="view">
             <div class="feed-controls">
                 <div class="feed-tabs">
-                    <button id="feed-for-you" class="active">For You</button> <!-- Placeholder, functionality not implemented -->
-                    <button id="feed-new">New</button> <!-- Placeholder, functionality not implemented -->
+                    <button id="feed-for-you" class="active">For You</button>
+                    <button id="feed-new">New</button>
                 </div>
             </div>
             <div id="meme-gallery" class="meme-gallery"><p>Loading memes...</p></div>
@@ -95,7 +95,6 @@
     </main>
     <div id="modal-container"></div>
 
-    <!-- Firebase SDKs - Using compat versions for familiarity with older Firebase examples -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
@@ -103,29 +102,30 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- SETUP & STATE ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", // REPLACE WITH YOUR ACTUAL API KEY
-            authDomain: "test-6336a.firebaseapp.com",
-            databaseURL: "https://test-6336a-default-rtdb.firebaseio.com",
-            projectId: "test-6336a",
-            storageBucket: "test-6336a.appspot.com", // Ensure this is correct for your project
-            messagingSenderId: "437879418972",
-            appId: "1:437879418972:web:47678bb0b3664edab8f699"
+        // Using the exact firebaseConfig from your initial code
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", 
+            authDomain: "test-6336a.firebaseapp.com", 
+            databaseURL: "https://test-6336a-default-rtdb.firebaseio.com", 
+            projectId: "test-6336a", 
+            storageBucket: "test-6336a.appspot.com", // This was .appspot.com in your original index.html
+            messagingSenderId: "437879418972", 
+            appId: "1:437879418972:web:47678bb0b3664edab8f699" 
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
 
         let currentUser = null;
-        let allMemes = []; // Stores all fetched memes
-        let filteredMemes = []; // Stores memes after search/filter
+        let allMemes = [];
+        let filteredMemes = [];
         const modalContainer = document.getElementById('modal-container');
-        // IMPORTANT: Ensure auth.html is hosted at this exact URL
-        // If you host auth.html elsewhere, update this URL.
+        
         const AUTH_HELPER_URL = 'https://fawkesyt.github.io/memedrop-auth/auth.html';
+        // CRITICAL: Ensure the auth.html hosted at AUTH_HELPER_URL also uses
+        // this EXACT SAME firebaseConfig (especially storageBucket).
         let authWindow = null;
 
-        // --- UI & RENDERING ---
         const createMemeElement = (meme) => {
             const post = document.createElement('article');
             post.className = 'meme-post';
@@ -135,10 +135,8 @@
 
         const renderGallery = (memesToDisplay = filteredMemes) => {
             const galleryContainer = document.getElementById('meme-gallery');
-            galleryContainer.innerHTML = ''; // Clear previous memes
-            
+            galleryContainer.innerHTML = '';
             const sortedMemes = [...memesToDisplay].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
-            
             if(sortedMemes.length === 0) {
                  galleryContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">No memes found. Try a different search or be the first to upload!</p>';
                  return;
@@ -151,9 +149,7 @@
             const loginBtn = document.getElementById('loginPromptBtn');
             const uploadBtn = document.getElementById('uploadBtn');
             const logoutBtnInstance = document.getElementById('logoutBtn');
-
             if (logoutBtnInstance) logoutBtnInstance.removeEventListener('click', handleLogout);
-
             if (user) {
                 userInfoEl.innerHTML = `<span>Hi, ${user.displayName || 'User'}!</span> <button id="logoutBtn" class="nav-button">Logout</button>`;
                 document.getElementById('logoutBtn').addEventListener('click', handleLogout);
@@ -173,28 +169,12 @@
             const modalOverlay = document.createElement('div');
             modalOverlay.className = 'modal-overlay';
             let modalHTML = '';
-
             switch(modalType) {
                 case 'auth':
-                    modalHTML = `<div class="modal-content">
-                                    <h2>Login with Google</h2>
-                                    <p>Continue to MemeDrop using your Google account.</p>
-                                    <div class="modal-flex-buttons">
-                                        <button id="googleLoginBtn">Sign in with Google</button>
-                                    </div>
-                                    <button type="button" class="cancel-btn nav-button" style="margin-top:20px;">Cancel</button>
-                                 </div>`;
+                    modalHTML = `<div class="modal-content"><h2>Login with Google</h2><p>Continue to MemeDrop using your Google account.</p><div class="modal-flex-buttons"><button id="googleLoginBtn">Sign in with Google</button></div><button type="button" class="cancel-btn nav-button" style="margin-top:20px;">Cancel</button></div>`;
                     break;
                 case 'upload':
-                    modalHTML = `<div class="modal-content">
-                                    <h2>Upload a New Meme</h2>
-                                    <form id="uploadForm">
-                                        <input type="file" id="memeFile" accept="image/*" required>
-                                        <textarea id="memeDescription" placeholder="A funny description... (optional)" rows="3"></textarea>
-                                        <button type="submit" class="nav-button" style="width:100%; margin-top:10px;">Upload Meme</button>
-                                        <button type="button" class="cancel-btn nav-button" style="width:100%; margin-top:10px;">Cancel</button>
-                                    </form>
-                                 </div>`;
+                    modalHTML = `<div class="modal-content"><h2>Upload a New Meme</h2><form id="uploadForm"><input type="file" id="memeFile" accept="image/*" required><textarea id="memeDescription" placeholder="A funny description... (optional)" rows="3"></textarea><button type="submit" class="nav-button" style="width:100%; margin-top:10px;">Upload Meme</button><button type="button" class="cancel-btn nav-button" style="width:100%; margin-top:10px;">Cancel</button></form></div>`;
                     break;
             }
             modalOverlay.innerHTML = modalHTML;
@@ -208,14 +188,15 @@
                     modalOverlayElement.remove();
                 }
             });
-            
             switch(modalType) {
                 case 'auth':
                     const googleLoginBtn = modalOverlayElement.querySelector('#googleLoginBtn');
                     if (googleLoginBtn) {
                         googleLoginBtn.addEventListener('click', () => {
                            if (authWindow && !authWindow.closed) { authWindow.focus(); return; }
-                           authWindow = window.open(`${AUTH_HELPER_URL}?provider=google`, 'firebaseAuth', 'height=600,width=400');
+                           const urlToOpen = `${AUTH_HELPER_URL}?provider=google`;
+                           console.log("Attempting to open auth popup with URL:", urlToOpen);
+                           authWindow = window.open(urlToOpen, 'firebaseAuth', 'height=600,width=400');
                         });
                     }
                     break;
@@ -224,46 +205,19 @@
                     if (uploadForm) {
                         uploadForm.addEventListener('submit', async e => {
                             e.preventDefault();
-                            if (!currentUser) {
-                                alert("Please login to upload memes.");
-                                return;
-                            }
+                            if (!currentUser) { alert("Please login to upload memes."); return; }
                             const fileInput = e.target.querySelector('#memeFile');
                             const file = fileInput.files[0];
                             const description = e.target.querySelector('#memeDescription').value.trim();
-
                             if (!file) { alert("Please select an image file."); return; }
-                            if (file.size > 1.5 * 1024 * 1024) { 
-                                alert("Image is too large! Please choose a file under 1.5MB.");
-                                return;
-                            }
-
+                            if (file.size > 1.5 * 1024 * 1024) { alert("Image is too large! Please choose a file under 1.5MB."); return; }
                             const reader = new FileReader();
                             reader.onload = (event) => {
-                                if (event.target.result.length > 2 * 1024 * 1024) { 
-                                    alert("Image data is too large after encoding. Please choose a smaller file (under 1.5MB).");
-                                    return;
-                                }
-                                const memeData = {
-                                    imageBase64: event.target.result,
-                                    description: description,
-                                    creatorId: currentUser.uid,
-                                    creatorName: currentUser.displayName || currentUser.email || 'Anonymous Dropper',
-                                    createdAt: firebase.database.ServerValue.TIMESTAMP
-                                };
-                                database.ref('memes').push(memeData)
-                                    .then(() => {
-                                        alert('Meme uploaded successfully!');
-                                        modalOverlayElement.remove();
-                                    })
-                                    .catch(err => {
-                                        console.error("Upload error:", err);
-                                        alert(`Upload failed: ${err.message}`);
-                                    });
+                                if (event.target.result.length > 2 * 1024 * 1024) { alert("Image data is too large after encoding. Please choose a smaller file (under 1.5MB)."); return; }
+                                const memeData = { imageBase64: event.target.result, description: description, creatorId: currentUser.uid, creatorName: currentUser.displayName || currentUser.email || 'Anonymous Dropper', createdAt: firebase.database.ServerValue.TIMESTAMP };
+                                database.ref('memes').push(memeData).then(() => { alert('Meme uploaded successfully!'); modalOverlayElement.remove(); }).catch(err => { console.error("Upload error:", err); alert(`Upload failed: ${err.message}`); });
                             };
-                            reader.onerror = () => {
-                                alert("Failed to read the file. Please try again.");
-                            };
+                            reader.onerror = () => { alert("Failed to read the file. Please try again."); };
                             reader.readAsDataURL(file);
                         });
                     }
@@ -271,7 +225,6 @@
             }
         }
         
-        // --- AUTHENTICATION LOGIC ---
         auth.onAuthStateChanged(user => {
             console.log("Auth state changed, current user:", user);
             currentUser = user;
@@ -284,115 +237,59 @@
                 else console.warn("AUTH_HELPER_URL not defined, cannot verify message origin.");
                 return;
             }
-
             if (authWindow) authWindow.close();
-
             console.log("Main App: Received message from auth helper:", event.data);
-
             if (event.data && event.data.type === 'authSuccess' && event.data.payload && event.data.payload.credential) {
                 try {
                     const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
                     const result = await auth.signInWithCredential(credential);
                     const user = result.user;
-                    
                     const userRef = database.ref('users/' + user.uid);
                     const userSnap = await userRef.once('value');
-                    if (!userSnap.exists()) {
-                        userRef.set({
-                            displayName: user.displayName || 'Meme Lover',
-                            email: user.email,
-                            photoURL: user.photoURL,
-                            createdAt: firebase.database.ServerValue.TIMESTAMP,
-                            lastLogin: firebase.database.ServerValue.TIMESTAMP
-                        });
-                    } else {
-                        userRef.update({
-                            lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                            displayName: user.displayName || userSnap.val().displayName,
-                            photoURL: user.photoURL || userSnap.val().photoURL
-                        });
-                    }
-                    
-                    modalContainer.innerHTML = '';
-                    alert('Login successful!');
-                } catch(err) {
-                    console.error("Main App: Error signing in with credential:", err);
-                    alert(`Login failed: ${err.message}. Code: ${err.code}`);
-                }
-            } else if (event.data && event.data.type === 'authError') {
-                console.error("Main App: Auth Error from popup:", event.data.message);
-                alert(`Login process failed: ${event.data.message}`);
-            }
+                    if (!userSnap.exists()) { userRef.set({ displayName: user.displayName || 'Meme Lover', email: user.email, photoURL: user.photoURL, createdAt: firebase.database.ServerValue.TIMESTAMP, lastLogin: firebase.database.ServerValue.TIMESTAMP }); }
+                    else { userRef.update({ lastLogin: firebase.database.ServerValue.TIMESTAMP, displayName: user.displayName || userSnap.val().displayName, photoURL: user.photoURL || userSnap.val().photoURL }); }
+                    modalContainer.innerHTML = ''; alert('Login successful!');
+                } catch(err) { console.error("Main App: Error signing in with credential:", err); alert(`Login failed: ${err.message}. Code: ${err.code}`); }
+            } else if (event.data && event.data.type === 'authError') { console.error("Main App: Auth Error from popup:", event.data.message); alert(`Login process failed: ${event.data.message}`); }
         });
         
         const handleLogout = () => {
-            auth.signOut().then(() => {
-                alert('You have been logged out.');
-            }).catch(error => {
-                console.error("Logout error:", error);
-                alert(`Logout failed: ${error.message}`);
-            });
+            auth.signOut().then(() => { alert('You have been logged out.'); }).catch(error => { console.error("Logout error:", error); alert(`Logout failed: ${error.message}`); });
         };
 
-        // --- MEME DATA HANDLING ---
         database.ref('memes').on('value', snapshot => {
             const memesData = snapshot.val() || {};
-            allMemes = Object.keys(memesData).map(key => ({
-                id: key,
-                ...memesData[key]
-            }));
+            allMemes = Object.keys(memesData).map(key => ({ id: key, ...memesData[key] }));
             console.log("Fetched memes count:", allMemes.length);
             applySearchFilter();
-        }, error => {
-            console.error("Error fetching memes from Firebase:", error);
-            document.getElementById('meme-gallery').innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: red;">Could not load memes. Check console for errors.</p>';
-        });
+        }, error => { console.error("Error fetching memes from Firebase:", error); document.getElementById('meme-gallery').innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: red;">Could not load memes. Check console for errors.</p>'; });
 
-        // --- SEARCH FUNCTIONALITY ---
         const searchBar = document.getElementById('search-bar');
         const applySearchFilter = () => {
             const searchTerm = searchBar.value.toLowerCase().trim();
-            if (searchTerm === '') {
-                filteredMemes = [...allMemes];
-            } else {
-                filteredMemes = allMemes.filter(meme => 
-                    (meme.description && meme.description.toLowerCase().includes(searchTerm)) ||
-                    (meme.creatorName && meme.creatorName.toLowerCase().includes(searchTerm))
-                );
-            }
+            if (searchTerm === '') { filteredMemes = [...allMemes]; }
+            else { filteredMemes = allMemes.filter(meme => (meme.description && meme.description.toLowerCase().includes(searchTerm)) || (meme.creatorName && meme.creatorName.toLowerCase().includes(searchTerm))); }
             renderGallery(filteredMemes);
         };
         searchBar.addEventListener('input', applySearchFilter);
 
-
-        // --- THEME SELECTOR ---
         const themeSelector = document.getElementById('theme-selector');
         const savedTheme = localStorage.getItem('theme');
         const defaultTheme = 'vaporwave';
         const currentTheme = savedTheme || defaultTheme;
-        
         document.body.setAttribute('data-theme', currentTheme);
         themeSelector.value = currentTheme;
-
-        themeSelector.addEventListener('change', (e) => {
-            document.body.setAttribute('data-theme', e.target.value);
-            localStorage.setItem('theme', e.target.value);
-        });
+        themeSelector.addEventListener('change', (e) => { document.body.setAttribute('data-theme', e.target.value); localStorage.setItem('theme', e.target.value); });
         
-        // --- GLOBAL CLICK HANDLERS ---
         document.addEventListener('click', (e) => {
             const target = e.target;
             if (target.id === 'loginPromptBtn') openModal('auth');
             else if (target.id === 'uploadBtn' && currentUser) openModal('upload');
             else if (target.id === 'uploadBtn' && !currentUser) alert("Please login to upload.");
-            else if (target.id === 'home-link') {
-                e.preventDefault(); 
-                window.location.reload(); 
-            }
+            else if (target.id === 'home-link') { e.preventDefault(); window.location.reload(); }
         });
 
-        // Initial render after setup
-        applySearchFilter(); // This will also call renderGallery
+        applySearchFilter();
     });
     </script>
 </body>
