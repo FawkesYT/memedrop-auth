@@ -280,7 +280,43 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
+// Inside your index.html's main <script> block, within DOMContentLoaded
 
+// ... after firebase.initializeApp(firebaseConfig); ...
+// const auth = firebase.auth();
+// const database = firebase.database();
+
+// Add this function:
+const performDirectWriteTest = () => {
+    if (auth.currentUser) {
+        const userUid = auth.currentUser.uid;
+        const testData = { message: "Hello from user " + userUid, timestamp: Date.now() };
+        console.log(`INDEX: Attempting direct write test to /testwrites/${userUid} with data:`, testData);
+        database.ref(`testwrites/${userUid}`).set(testData)
+            .then(() => {
+                showInPageNotification("Direct write test SUCCEEDED!", "success");
+                console.log("INDEX: Direct write test SUCCEEDED!");
+            })
+            .catch((error) => {
+                showInPageNotification(`Direct write test FAILED: ${error.message}`, "error");
+                console.error("INDEX: Direct write test FAILED:", error);
+            });
+    } else {
+        showInPageNotification("Direct write test: User not logged in.", "info");
+        console.log("INDEX: Direct write test: User not logged in.");
+    }
+};
+
+// You can call this function after a successful login, or via a temporary test button.
+// For example, in your signInWithPopup success block:
+// ... after alert('Login successful!'); ...
+// performDirectWriteTest();
+
+// Or, for a manual test, add a button to your HTML:
+// <button id="directWriteTestBtn">Test Direct Write</button>
+// And then in your JS:
+// const testBtn = document.getElementById('directWriteTestBtn');
+// if (testBtn) testBtn.addEventListener('click', performDirectWriteTest);
         let currentUser = null;
         let allMemes = [];
         let currentFeedMemes = []; 
