@@ -8,45 +8,41 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
     <style>
-        /* All CSS from the previous correct version is unchanged. Omitted for brevity. */
+        /* All necessary CSS is included here. */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         :root {
-            --primary-color: #007bff; --secondary-color: #6c757d; --success-color: #28a745; --error-color: #dc3545;
-            --light-gray: #f0f2f5; --border-color: #ddd; --text-color: #1c1e21;
-            --bg-color: #f9f9f9; --card-bg-color: #fff; --header-bg-color: #ffffffcc;
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; --font-code: 'Source Code Pro', monospace;
+            --primary-color: #007bff; --secondary-color: #6c757d; --bg-color: #f9f9f9; --card-bg-color: #fff; --text-color: #1c1e21;
         }
         body[data-theme="dark"] {
-            --primary-color: #0d8eff; --secondary-color: #8899a6; --light-gray: #121212; --border-color: #333; --text-color: #e0e0e0;
-            --bg-color: #1a1a1a; --card-bg-color: #242424; --header-bg-color: #1a1a1acc;
+            --primary-color: #0d8eff; --secondary-color: #8899a6; --bg-color: #1a1a1a; --card-bg-color: #242424; --text-color: #e0e0e0;
         }
-        body { font-family: var(--font-main); background-color: var(--bg-color); margin: 0; color: var(--text-color); }
+        body[data-theme="vaporwave"] {
+            --primary-color: #ff71ce; --secondary-color: #01cdfe; --bg-color: #0d0d24; --card-bg-color: #1a1a3a; --text-color: #01cdfe;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-color); }
         .hidden { display: none !important; }
         .view { animation: fadeIn 0.4s ease-out; }
-        header { background-color: var(--header-bg-color); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); padding: 10px 20px; position: sticky; top: 0; z-index: 1000; }
+        header { background-color: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #ddd; padding: 10px 20px; position: sticky; top: 0; z-index: 1000; }
+        body[data-theme="dark"] header { background-color: rgba(26,26,26,0.8); border-bottom-color: #333; }
         nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; gap: 15px; flex-wrap: wrap; }
         nav h1 { margin: 0; font-size: 1.8em; color: var(--primary-color); cursor: pointer; }
         .nav-center { flex-grow: 1; display: flex; justify-content: center; }
-        #search-bar { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border-color); background-color: var(--light-gray); font-size: 1em; color: var(--text-color); }
+        #search-bar { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; background-color: #f0f2f5; font-size: 1em; }
+        body[data-theme="dark"] #search-bar { border-color: #333; background-color: #242424; color: var(--text-color); }
         .nav-right { display: flex; align-items: center; gap: 15px; }
-        .nav-button { padding: 8px 16px; border: none; border-radius: 6px; background-color: var(--primary-color); color: white; font-weight: bold; cursor: pointer; transition: background-color 0.2s ease; }
-        .creator-link { font-family: var(--font-code); font-weight: 600; }
-        .creator-link:hover { color: var(--primary-color); }
-        .feed-controls { max-width: 1200px; margin: 20px auto; padding: 0 10px; display: flex; justify-content: space-between; align-items: center; }
-        .feed-tabs button { background: none; border: none; padding: 10px 15px; font-size: 1.1em; font-weight: bold; color: var(--secondary-color); cursor: pointer; border-bottom: 3px solid transparent; }
-        .feed-tabs button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .nav-button { padding: 8px 16px; border: none; border-radius: 6px; background-color: var(--primary-color); color: white; font-weight: bold; cursor: pointer; }
+        #userInfo { font-weight: bold; }
+        #logoutBtn { background-color: var(--secondary-color); }
         .meme-gallery { max-width: 1200px; margin: 20px auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 0 10px; }
-        .meme-post { background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
-        .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 12px 15px 0; }
-        .post-image-link img { width: 100%; display: block; background-color: var(--skeleton-bg); cursor: pointer; aspect-ratio: 1/1; object-fit: cover; }
-        .post-content { padding: 12px 15px; flex-grow: 1; display: flex; flex-direction: column; }
-        .post-meta { font-size: 0.8em; color: var(--secondary-color); }
-        .post-actions { display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--border-color); padding-top: 10px; }
+        .meme-post { background-color: var(--card-bg-color); border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+        body[data-theme="dark"] .meme-post { border-color: #333; }
+        .meme-post img { width: 100%; display: block; aspect-ratio: 1/1; object-fit: cover; background-color: #eee; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; }
         .modal-content { background: var(--card-bg-color); padding: 20px 30px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; }
+        .modal-content input[type="file"], .modal-content textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
     </style>
 </head>
-<body data-theme="light">
+<body data-theme="vaporwave">
     <!-- HTML Structure -->
     <header>
         <nav>
@@ -63,7 +59,6 @@
         <div id="gallery-view" class="view">
             <div id="meme-gallery" class="meme-gallery"><p>Loading memes...</p></div>
         </div>
-        <!-- Other views remain hidden -->
     </main>
     <div id="modal-container"></div>
 
@@ -71,7 +66,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
     
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -80,7 +74,6 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-        const storage = firebase.storage(); // Initialize Cloud Storage
 
         let currentUser = null;
         let allMemes = [];
@@ -92,8 +85,8 @@
         const createMemeElement = (meme) => {
             const post = document.createElement('article');
             post.className = 'meme-post';
-            // Set the image source to the new imageUrl from Cloud Storage
-            post.innerHTML = `<a class="post-image-link" href="#"><img src="${meme.imageUrl}" alt="${meme.description || 'A meme'}"></a>`;
+            // Use the imageBase64 string directly from the Realtime Database
+            post.innerHTML = `<img src="${meme.imageBase64}" alt="${meme.description || 'A meme'}">`;
             return post;
         };
 
@@ -133,7 +126,7 @@
             let modalHTML = '';
             switch(modalType) {
                 case 'auth': modalHTML = `<div class="modal-content"><h2>Login</h2><p>Login with Google to continue.</p><button id="googleLoginBtn" class="nav-button">Login with Google</button></div>`; break;
-                case 'upload': modalHTML = `<div class="modal-content"><h2>Upload a Meme</h2><p>Select an image file to upload.</p><input type="file" id="memeFile" accept="image/*"><p id="upload-progress" class="hidden">Uploading...</p><button id="uploadConfirmBtn" class="nav-button">Upload</button></div>`; break;
+                case 'upload': modalHTML = `<div class="modal-content"><h2>Upload a Meme</h2><form id="uploadForm"><input type="file" id="memeFile" accept="image/*" required><textarea id="memeDescription" placeholder="A funny description..."></textarea><button type="submit" class="nav-button">Upload</button></form></div>`; break;
             }
             modalOverlay.innerHTML = modalHTML;
             modalContainer.appendChild(modalOverlay);
@@ -153,51 +146,37 @@
                     });
                     break;
                 case 'upload':
-                    modal.querySelector('#uploadConfirmBtn').addEventListener('click', () => {
-                        const file = modal.querySelector('#memeFile').files[0];
+                    modal.querySelector('#uploadForm').addEventListener('submit', e => {
+                        e.preventDefault();
+                        const file = e.target.querySelector('#memeFile').files[0];
                         if (!file) {
                             alert('Please select a file first.');
                             return;
                         }
-
-                        const uploadProgress = modal.querySelector('#upload-progress');
-                        uploadProgress.classList.remove('hidden');
-                        modal.querySelector('#uploadConfirmBtn').disabled = true;
-
-                        const newMemeRef = database.ref('memes').push();
-                        const memeId = newMemeRef.key;
-                        const filePath = `memes/${currentUser.uid}/${memeId}/${file.name}`;
-                        const fileRef = storage.ref(filePath);
-
-                        // Upload the file to Cloud Storage
-                        const uploadTask = fileRef.put(file);
-                        
-                        uploadTask.on('state_changed', 
-                            (snapshot) => {
-                                // You can display progress here if you want
-                            }, 
-                            (error) => {
-                                console.error('Upload failed:', error);
-                                alert('Upload failed. Please try again.');
-                                modal.remove();
-                            }, 
-                            () => {
-                                // Upload completed successfully, now get the download URL
-                                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                                    const memeData = {
-                                        imageUrl: downloadURL,
-                                        creatorId: currentUser.uid,
-                                        creatorName: currentUser.displayName,
-                                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                                    };
-                                    // Now, save the meme metadata to the Realtime Database
-                                    newMemeRef.set(memeData).then(() => {
-                                        alert('Meme uploaded successfully!');
-                                        modal.remove();
-                                    });
-                                });
+                        // Use FileReader to get the base64 string
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            if (event.target.result.length > 2 * 1024 * 1024) {
+                                alert("Image is too large! Please choose a smaller file (under 1.5MB).");
+                                return;
                             }
-                        );
+                            const memeData = {
+                                imageBase64: event.target.result,
+                                description: e.target.querySelector('#memeDescription').value,
+                                creatorId: currentUser.uid,
+                                creatorName: currentUser.displayName,
+                                createdAt: firebase.database.ServerValue.TIMESTAMP
+                            };
+                            database.ref('memes').push(memeData).then(() => {
+                                alert('Meme uploaded successfully!');
+                                modal.remove();
+                            });
+                        };
+                        reader.onerror = (error) => {
+                            console.error("File could not be read:", error);
+                            alert("Error reading file.");
+                        };
+                        reader.readAsDataURL(file);
                     });
                     break;
             }
@@ -209,7 +188,7 @@
             updateUIForAuthState(user);
         });
 
-        // Use .on('value') for simplicity and stability in this version.
+        // Use .on('value') for simplicity and stability. This will load all memes.
         database.ref('memes').on('value', snapshot => {
             const memesData = snapshot.val() || {};
             allMemes = Object.keys(memesData).map(key => ({
@@ -221,11 +200,22 @@
         
         window.addEventListener('message', async (event) => {
             if (event.origin !== 'https://fawkesyt.github.io') return;
-            if(authWindow) authWindow.close();
+            if (authWindow) authWindow.close();
             if (event.data.type === 'authSuccess' && event.data.payload.credential) {
                 try {
                     const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
-                    await auth.signInWithCredential(credential);
+                    const result = await auth.signInWithCredential(credential);
+                    const user = result.user;
+                    // Check if user is new, if so, save their info to RTDB
+                    const userRef = database.ref('users/' + user.uid);
+                    const userSnap = await userRef.once('value');
+                    if (!userSnap.exists()) {
+                        await userRef.set({
+                            displayName: user.displayName,
+                            photoURL: user.photoURL,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    }
                     modalContainer.innerHTML = '';
                     alert('Login successful!');
                 } catch(err) {
