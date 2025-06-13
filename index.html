@@ -31,8 +31,8 @@
         body[data-theme="dark"] #search-bar { border-color: #333; background-color: #242424; color: var(--text-color); }
         .nav-right { display: flex; align-items: center; gap: 15px; }
         .nav-button { padding: 8px 16px; border: none; border-radius: 6px; background-color: var(--primary-color); color: white; font-weight: bold; cursor: pointer; }
-        #userInfo { font-weight: bold; }
         #logoutBtn { background-color: var(--secondary-color); }
+        #userInfo { font-weight: bold; }
         .meme-gallery { max-width: 1200px; margin: 20px auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 0 10px; }
         .meme-post { background-color: var(--card-bg-color); border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
         body[data-theme="dark"] .meme-post { border-color: #333; }
@@ -40,6 +40,9 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; }
         .modal-content { background: var(--card-bg-color); padding: 20px 30px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; }
         .modal-content input[type="file"], .modal-content textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        .modal-flex-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        #googleLoginBtn { background-color: #db4437; flex: 1; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; }
+        #githubLoginBtn { background-color: #333; flex: 1; color: white; border: none; padding: 10px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body data-theme="vaporwave">
@@ -50,6 +53,7 @@
             <div class="nav-center"><input type="search" id="search-bar" placeholder="Search memes..."></div>
             <div class="nav-right">
                 <button id="uploadBtn" class="nav-button hidden">Upload</button>
+                <select id="theme-selector" title="Change Theme"><option value="light">Light</option><option value="dark">Dark</option><option value="vaporwave" selected>Vaporwave</option></select>
                 <span id="userInfo" class="hidden"></span>
                 <button id="loginPromptBtn" class="nav-button">Login</button>
             </div>
@@ -57,6 +61,12 @@
     </header>
     <main>
         <div id="gallery-view" class="view">
+            <div class="feed-controls">
+                <div class="feed-tabs">
+                    <button id="feed-for-you" class="active">For You</button>
+                    <button id="feed-new">New</button>
+                </div>
+            </div>
             <div id="meme-gallery" class="meme-gallery"><p>Loading memes...</p></div>
         </div>
     </main>
@@ -85,7 +95,6 @@
         const createMemeElement = (meme) => {
             const post = document.createElement('article');
             post.className = 'meme-post';
-            // Use the imageBase64 string directly from the Realtime Database
             post.innerHTML = `<img src="${meme.imageBase64}" alt="${meme.description || 'A meme'}">`;
             return post;
         };
@@ -93,7 +102,7 @@
         const renderGallery = () => {
             const container = document.getElementById('meme-gallery');
             container.innerHTML = '';
-            let memesToDisplay = [...allMemes].sort((a,b) => b.createdAt - a.createdAt);
+            const memesToDisplay = [...allMemes].sort((a,b) => b.createdAt - a.createdAt);
             
             if(memesToDisplay.length === 0) {
                  container.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">No memes found. Be the first to upload!</p>';
@@ -125,8 +134,8 @@
             modalOverlay.className = 'modal-overlay';
             let modalHTML = '';
             switch(modalType) {
-                case 'auth': modalHTML = `<div class="modal-content"><h2>Login</h2><p>Login with Google to continue.</p><button id="googleLoginBtn" class="nav-button">Login with Google</button></div>`; break;
-                case 'upload': modalHTML = `<div class="modal-content"><h2>Upload a Meme</h2><form id="uploadForm"><input type="file" id="memeFile" accept="image/*" required><textarea id="memeDescription" placeholder="A funny description..."></textarea><button type="submit" class="nav-button">Upload</button></form></div>`; break;
+                case 'auth': modalHTML = `<div class="modal-content"><h2>Login or Sign Up</h2><p>Continue with your preferred service.</p><div class="modal-flex-buttons"><button id="googleLoginBtn">Google</button><button id="githubLoginBtn">GitHub</button></div><button type="button" class="cancel-btn nav-button" style="background:var(--secondary-color); margin-top:20px;">Cancel</button></div>`; break;
+                case 'upload': modalHTML = `<div class="modal-content"><h2>Upload a New Meme</h2><form id="uploadForm"><input type="file" id="memeFile" accept="image/*" required><textarea id="memeDescription" placeholder="A funny description..."></textarea><button type="submit" class="nav-button">Upload</button></form></div>`; break;
             }
             modalOverlay.innerHTML = modalHTML;
             modalContainer.appendChild(modalOverlay);
@@ -136,24 +145,22 @@
         function attachModalListeners(modalType) {
             const modal = modalContainer.querySelector('.modal-overlay');
             if (!modal) return;
-            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+            modal.addEventListener('click', e => { if (e.target.classList.contains('cancel-btn') || e.target === modal) modal.remove(); });
             
             switch(modalType) {
                 case 'auth':
-                    modal.querySelector('#googleLoginBtn').addEventListener('click', () => {
+                    const login = (providerName) => {
                        if (authWindow && !authWindow.closed) { authWindow.focus(); return; }
-                       authWindow = window.open(`${AUTH_HELPER_URL}?provider=google`, 'firebaseAuth', 'height=600,width=400');
-                    });
+                       authWindow = window.open(`${AUTH_HELPER_URL}?provider=${providerName}`, 'firebaseAuth', 'height=600,width=400');
+                    };
+                    modal.querySelector('#googleLoginBtn').addEventListener('click', () => login('google'));
+                    modal.querySelector('#githubLoginBtn').addEventListener('click', () => login('github'));
                     break;
                 case 'upload':
                     modal.querySelector('#uploadForm').addEventListener('submit', e => {
                         e.preventDefault();
                         const file = e.target.querySelector('#memeFile').files[0];
-                        if (!file) {
-                            alert('Please select a file first.');
-                            return;
-                        }
-                        // Use FileReader to get the base64 string
+                        if (!file) return;
                         const reader = new FileReader();
                         reader.onload = (event) => {
                             if (event.target.result.length > 2 * 1024 * 1024) {
@@ -171,10 +178,6 @@
                                 alert('Meme uploaded successfully!');
                                 modal.remove();
                             });
-                        };
-                        reader.onerror = (error) => {
-                            console.error("File could not be read:", error);
-                            alert("Error reading file.");
                         };
                         reader.readAsDataURL(file);
                     });
@@ -206,12 +209,11 @@
                     const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
                     const result = await auth.signInWithCredential(credential);
                     const user = result.user;
-                    // Check if user is new, if so, save their info to RTDB
                     const userRef = database.ref('users/' + user.uid);
                     const userSnap = await userRef.once('value');
                     if (!userSnap.exists()) {
                         await userRef.set({
-                            displayName: user.displayName,
+                            displayName: user.displayName || 'New User',
                             photoURL: user.photoURL,
                             createdAt: firebase.database.ServerValue.TIMESTAMP
                         });
@@ -230,7 +232,9 @@
             if (target.id === 'loginPromptBtn') openModal('auth');
             else if (target.id === 'uploadBtn') openModal('upload');
             else if (target.id === 'logoutBtn') auth.signOut();
+            else if (target.id === 'home-link') { e.preventDefault(); navigate('?'); }
         });
+
     });
     </script>
 </body>
