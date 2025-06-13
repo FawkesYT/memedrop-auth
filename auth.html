@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MemeDrop Auth - Google</title>
+    <title>MemeDrop Auth - Google (v4)</title>
     <style>
         body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f0f0; text-align: center; }
         .container { padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -23,6 +23,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <script>
+        // CRITICAL: This firebaseConfig MUST BE IDENTICAL to the one in your index.html
         const firebaseConfig = { 
             apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", 
             authDomain: "test-6336a.firebaseapp.com", 
@@ -35,73 +36,128 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const SESSION_KEY = 'memedrop_awaiting_google_redirect_v3'; 
+        const SESSION_KEY = 'memedrop_awaiting_google_redirect_v4'; // Incremented version
         const statusMessageEl = document.getElementById('status-message');
 
-        console.log("AUTH.HTML: Helper Loaded. Firebase Initialized.");
-        console.log("AUTH.HTML: URL is", window.location.href);
+        console.log("AUTH.HTML (v4): Helper Loaded. Firebase Initialized.");
+        console.log("AUTH.HTML (v4): URL is", window.location.href);
 
-        const postMessageToOpener = (message) => { /* ... same as before ... */ };
+        const postMessageToOpener = (message) => {
+            if (window.opener && !window.opener.closed && window.opener.location && window.opener.location.origin) {
+                console.log("AUTH.HTML (v4): Posting message to opener:", message, "Target Origin:", window.opener.location.origin);
+                window.opener.postMessage(message, window.opener.location.origin);
+            } else {
+                console.warn("AUTH.HTML (v4): Cannot post message - window.opener is closed or its origin is not accessible.", message);
+                statusMessageEl.textContent = "Error: Could not communicate with the main application window. Please close this window and try again.";
+                statusMessageEl.classList.add("error");
+            }
+        };
+
+        const attemptCloseWindow = () => {
+            console.log("AUTH.HTML (v4): Attempting to close window.");
+            // Give a brief moment for any pending operations or messages
+            setTimeout(() => {
+                if (window.opener && !window.opener.closed) { // Check if opener still exists and is not closed
+                   // Don't try to close if it's not a popup (e.g., opened directly in tab)
+                   if (window.opener !== window) {
+                       window.close();
+                   }
+                }
+            }, 1500); 
+        };
+
+        const handleAuthError = (errorMessage, errorCode = null, errorObject = null) => {
+            if (errorObject) {
+                console.error("AUTH.HTML (v4): Auth Error Details:", JSON.stringify({ 
+                    message: errorObject.message, 
+                    code: errorObject.code, 
+                    name: errorObject.name 
+                }, null, 2), errorObject); // Log the full error object too
+            } else {
+                console.error("AUTH.HTML (v4): Auth Error:", errorMessage, "Code:", errorCode);
+            }
+            postMessageToOpener({
+                type: 'authError',
+                message: errorMessage,
+                code: errorCode
+            });
+            statusMessageEl.textContent = `${errorMessage}${errorCode ? ' ('+errorCode+')' : ''}. Please close this window.`;
+            statusMessageEl.classList.add("error");
+            attemptCloseWindow();
+        };
+
+
         const isAwaitingRedirect = sessionStorage.getItem(SESSION_KEY);
-        console.log("AUTH.HTML: isAwaitingRedirect flag from sessionStorage ('"+SESSION_KEY+"'):", isAwaitingRedirect);
+        console.log("AUTH.HTML (v4): isAwaitingRedirect flag from sessionStorage ('"+SESSION_KEY+"'):", isAwaitingRedirect);
 
+        // --- SCENARIO 1: RETURN TRIP (after Google redirect) ---
         if (isAwaitingRedirect === 'true') {
-            console.log("AUTH.HTML: Return trip detected.");
+            console.log("AUTH.HTML (v4): Return trip detected.");
             statusMessageEl.textContent = "Finalizing Google sign-in...";
-            sessionStorage.removeItem(SESSION_KEY); 
+            sessionStorage.removeItem(SESSION_KEY); // Clear the flag immediately
 
             auth.getRedirectResult()
                 .then((result) => {
-                    console.log("AUTH.HTML: getRedirectResult.then() entered. Full result object:", JSON.stringify(result, null, 2)); 
+                    console.log("AUTH.HTML (v4): getRedirectResult.then() entered. Full result object:", JSON.stringify(result, null, 2)); 
+                    
                     if (result && result.credential) {
                         const credential = result.credential.toJSON(); 
-                        console.log("AUTH.HTML: SUCCESS! Credential found:", JSON.stringify(credential, null, 2));
-                        postMessageToOpener({ type: 'authSuccess', payload: { credential } });
+                        console.log("AUTH.HTML (v4): SUCCESS! Credential found:", JSON.stringify(credential, null, 2));
+                        postMessageToOpener({
+                            type: 'authSuccess',
+                            payload: { credential }
+                        });
                         statusMessageEl.textContent = "Sign-in successful! Closing window...";
+                        attemptCloseWindow();
                     } else {
-                        let userDetail = "null";
-                        if (result && result.user) {
-                            userDetail = JSON.stringify({uid: result.user.uid, displayName: result.user.displayName, email: result.user.email}, null, 2);
+                        // Handle cases: result is null, or result is not null but result.credential is null
+                        let msg = "Authentication cancelled or no redirect credential found.";
+                        if (result && result.user) { // User might exist even if credential doesn't (e.g. prior session)
+                             msg += " User object was present but no new credential.";
+                             console.warn("AUTH.HTML (v4): User object found in result but no credential. User:", JSON.stringify(result.user, null, 2));
+                        } else if (result) {
+                             msg += " Result object was present but contained no user or credential.";
+                        } else {
+                             msg += " Result object itself was null.";
                         }
-                        console.warn("AUTH.HTML: getRedirectResult.then() - result is null, or no credential. User detail from result:", userDetail);
-                        postMessageToOpener({ type: 'authError', message: "Authentication cancelled or no redirect result found (Firebase result or credential was null)." });
-                        statusMessageEl.textContent = "Sign-in cancelled or failed. Please try again from the main app.";
-                        statusMessageEl.classList.add("error");
+                        handleAuthError(msg, null, result); // Pass result for more context if needed
                     }
                 })
                 .catch((error) => {
-                    console.error("AUTH.HTML: CATCH block for getRedirectResult. Error object:", JSON.stringify({ message: error.message, code: error.code, name: error.name, stack: error.stack }, null, 2));
-                    postMessageToOpener({ type: 'authError', message: error.message || "An unknown error occurred during sign-in.", code: error.code });
-                    statusMessageEl.textContent = `Sign-in error: ${error.message}. You can close this window.`;
-                    statusMessageEl.classList.add("error");
-                })
-                .finally(() => {
-                    console.log("AUTH.HTML: Closing window after return trip processing (attempting).");
-                    setTimeout(() => { if (window.opener) { window.close(); } }, 2500); 
+                    // This catch block is for errors thrown by auth.getRedirectResult() itself
+                    handleAuthError(error.message || "Unknown error during getRedirectResult.", error.code, error);
                 });
+
+        // --- SCENARIO 2: INITIAL TRIP (when popup is first opened) ---
         } else {
-            console.log("AUTH.HTML: Initial trip detected.");
+            console.log("AUTH.HTML (v4): Initial trip detected.");
             try {
                 const params = new URLSearchParams(window.location.search);
                 const providerName = params.get('provider');
-                console.log("AUTH.HTML: Requested provider from URL params:", providerName);
+                console.log("AUTH.HTML (v4): Requested provider from URL params:", providerName);
+
                 if (providerName === 'google') {
-                    statusMessageEl.textContent = "Redirecting to Google for sign-in...";
+                    statusMessageEl.textContent = "Preparing to redirect to Google for sign-in...";
                     const provider = new firebase.auth.GoogleAuthProvider();
-                    provider.setCustomParameters({});
-                    console.log("AUTH.HTML: Setting session flag ('"+SESSION_KEY+"' = 'true') and initiating signInWithRedirect to Google.");
+                    // provider.setCustomParameters({ prompt: 'select_account' }); // Optional: force account selection
+
+                    console.log("AUTH.HTML (v4): Setting session flag ('"+SESSION_KEY+"' = 'true').");
                     sessionStorage.setItem(SESSION_KEY, 'true'); 
-                    auth.signInWithRedirect(provider);
+                    
+                    // Slight delay before redirect - highly speculative if this helps
+                    setTimeout(() => {
+                        console.log("AUTH.HTML (v4): Initiating signInWithRedirect to Google.");
+                        auth.signInWithRedirect(provider).catch(redirectError => {
+                            // Catch immediate errors from signInWithRedirect itself (rare)
+                            handleAuthError("Failed to initiate sign-in redirect.", redirectError.code, redirectError);
+                        });
+                    }, 100); 
+
                 } else {
                     throw new Error(`Unsupported or no authentication provider specified. Expected "google", got "${providerName || 'nothing'}".`);
                 }
-            } catch (error) {
-                console.error("AUTH.HTML: Error during initial setup:", error);
-                statusMessageEl.textContent = `Setup error: ${error.message}. Please close this window.`;
-                statusMessageEl.classList.add("error");
-                postMessageToOpener({ type: 'authError', message: error.message || "Auth helper setup failed." });
-                console.log("AUTH.HTML: Closing window due to setup error (attempting).");
-                 setTimeout(() => { if (window.opener) { window.close(); } }, 3000);
+            } catch (error) { // Catches errors from new URLSearchParams, params.get, or the new Error() throw
+                handleAuthError(error.message || "Auth helper setup failed.", null, error);
             }
         }
     </script>
