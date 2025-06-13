@@ -100,14 +100,17 @@
         .action-button:hover {
             color: var(--primary-color);
         }
-        .action-button.liked {
-            color: var(--primary-color); 
-            font-weight: bold;
+        .action-button.liked svg { /* Style for the SVG when liked */
+            fill: var(--primary-color); 
+            stroke: var(--primary-color);
+        }
+        .action-button.liked { /* Style for the button text/container when liked */
+             color: var(--primary-color);
+             font-weight: bold;
         }
         .like-count {
             font-size: 0.9em;
         }
-
 
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.3s; }
         .modal-content { background: var(--card-bg-color); padding: 25px 35px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
@@ -215,6 +218,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                         </svg>
+                        <!-- Comment count can be added here -->
                     </button>
                 </div>
             `;
@@ -256,7 +260,9 @@
             if (logoutBtnInstance) logoutBtnInstance.removeEventListener('click', handleLogout);
             if (user) {
                 userInfoEl.innerHTML = `<span>Hi, ${user.displayName || 'User'}!</span> <button id="logoutBtn" class="nav-button">Logout</button>`;
-                document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+                if(document.getElementById('logoutBtn')) { // Ensure button exists before adding listener
+                    document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+                }
                 userInfoEl.classList.remove('hidden');
                 loginBtn.classList.add('hidden');
                 uploadBtn.classList.remove('hidden');
@@ -412,38 +418,37 @@
                 return;
             }
             console.log(`INDEX: Toggling like for meme ${memeId} by user ${currentUser.uid}`);
-            const memeLikeRef = database.ref(`memes/${memeId}/likes/${currentUser.uid}`);
-            const memeLikeCountRef = database.ref(`memes/${memeId}/likeCount`);
-
-            // Using a transaction for robust like/unlike toggle and count update
+            
             database.ref(`memes/${memeId}`).transaction(memeData => {
                 if (memeData) {
-                    if (memeData.likes && memeData.likes[currentUser.uid]) {
+                    if (!memeData.likes) { // Initialize likes object if it doesn't exist
+                        memeData.likes = {};
+                    }
+                    if (!memeData.hasOwnProperty('likeCount')) { // Initialize likeCount if it doesn't exist
+                        memeData.likeCount = 0;
+                    }
+
+                    if (memeData.likes[currentUser.uid]) {
                         // User has liked it, so unlike
                         console.log("INDEX: Unliking via transaction");
                         memeData.likeCount--;
-                        memeData.likes[currentUser.uid] = null; // Remove the like
+                        memeData.likes[currentUser.uid] = null; 
                     } else {
                         // User has not liked it, so like
                         console.log("INDEX: Liking via transaction");
-                        if (!memeData.likes) {
-                            memeData.likes = {};
-                        }
-                        memeData.likeCount = (memeData.likeCount || 0) + 1;
-                        memeData.likes[currentUser.uid] = true; // Mark as liked
+                        memeData.likeCount++;
+                        memeData.likes[currentUser.uid] = true; 
                     }
                 }
-                return memeData; // Return modified data for Firebase to save
+                return memeData; 
             }, (error, committed, snapshot) => {
                 if (error) {
                     console.error('Like transaction failed!', error);
                     alert("Could not process like. Please try again.");
                 } else if (!committed) {
-                    console.warn('Like transaction not committed (data may have changed).');
-                    // Optionally, you could retry or inform the user.
+                    console.warn('Like transaction not committed (data may have changed, or no data at path). Retrying might be needed or check data path.');
                 } else {
                     console.log('Like transaction committed!');
-                    // UI will update due to the 'value' listener on memesRef
                 }
             });
         };
@@ -468,11 +473,13 @@
         const defaultTheme = 'vaporwave'; 
         const currentTheme = savedTheme || defaultTheme;
         document.body.setAttribute('data-theme', currentTheme);
-        themeSelector.value = currentTheme;
-        themeSelector.addEventListener('change', (e) => {
-            document.body.setAttribute('data-theme', e.target.value);
-            localStorage.setItem('theme', e.target.value);
-        });
+        if(themeSelector) themeSelector.value = currentTheme; // Check if selector exists
+        if(themeSelector) {
+            themeSelector.addEventListener('change', (e) => {
+                document.body.setAttribute('data-theme', e.target.value);
+                localStorage.setItem('theme', e.target.value);
+            });
+        }
         
         document.addEventListener('click', (e) => {
             const target = e.target;
