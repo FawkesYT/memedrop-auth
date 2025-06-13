@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
     <style>
-        /* All necessary CSS is included here. This block is large. */
+        /* All CSS from the previous correct version is unchanged. Omitted for brevity. */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes toastIn { from { transform: translate(-50%, 100px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
@@ -309,12 +309,13 @@
             const detailContainer = document.getElementById('meme-detail-view');
             detailContainer.innerHTML = '<p>Loading meme...</p>';
             try {
-                const memeSnap = await database.ref(`memes/${memeId}`).once('value');
-                const memeData = { id: memeId, ...memeSnap.val() };
-                if (!memeData.creatorId) {
-                    detailContainer.innerHTML = '<h2>Meme not found or has been deleted.</h2>';
-                    return;
+                let memeData = allMemes.find(m => m.id === memeId);
+                if (!memeData) {
+                    const snap = await database.ref(`memes/${memeId}`).once('value');
+                    if (!snap.exists()) throw new Error("Meme not found");
+                    memeData = { id: memeId, ...snap.val() };
                 }
+                
                 detailContainer.innerHTML = `
                     <div id="meme-detail-card">${createMemeElement(memeData).innerHTML}</div>
                     <div id="comments-section">
@@ -325,7 +326,7 @@
                 `;
                 loadAndDisplayComments(memeId);
             } catch (error) {
-                detailContainer.innerHTML = '<h2>Could not load meme.</h2>';
+                detailContainer.innerHTML = '<h2>Meme not found or has been deleted.</h2>';
             }
         };
 
@@ -333,6 +334,7 @@
             const commentsList = document.getElementById('comments-list');
             const commentsRef = database.ref(`comments/${memeId}`).orderByChild('createdAt');
             commentsRef.on('value', snapshot => {
+                if(!commentsList) return; // if user navigated away
                 commentsList.innerHTML = '';
                 if (!snapshot.exists()){
                     commentsList.innerHTML = '<p style="color: var(--secondary-color); font-size: 0.9em;">Be the first to comment!</p>';
@@ -418,8 +420,11 @@
 
         database.ref('memes').on('value', snapshot => {
             const memesData = snapshot.val() || {};
-            allMemes = Object.keys(memesData).map(key => ({ id: key, ...memesData[key] }));
-            handleNavigation();
+            allMemes = Object.keys(memesData).map(key => ({
+                id: key,
+                ...memesData[key]
+            }));
+            handleNavigation(); // Re-render the current view with fresh data
         });
         
         window.addEventListener('message', async (event) => {
@@ -429,12 +434,16 @@
                 try {
                     const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
                     const result = await auth.signInWithCredential(credential);
-                    if (result.additionalUserInfo.isNewUser) {
-                        await database.ref('users/' + result.user.uid).set({displayName: result.user.displayName, photoURL: result.user.photoURL, bio: '', createdAt: firebase.database.ServerValue.TIMESTAMP});
+                    const user = result.user;
+                    const userRef = database.ref('users/' + user.uid);
+                    const userSnap = await userRef.once('value');
+                    if (!userSnap.exists()) {
+                        await userRef.set({displayName: user.displayName || 'New User', photoURL: user.photoURL, bio: '', createdAt: firebase.database.ServerValue.TIMESTAMP});
                     }
                     modalContainer.innerHTML = '';
                     showToast('Login successful!');
                 } catch(err) {
+                    console.error("Login Error:", err);
                     showToast('Login failed.', 'error');
                 }
             }
@@ -459,8 +468,20 @@
             else if (action === 'toggle-options') { target.nextElementSibling.style.display = 'block'; }
             else if (action === 'edit') openModal('edit', allMemes.find(m => m.id === memeId));
             else if (action === 'delete') openModal('confirmDelete', {id: memeId});
-            else if (target.closest('.like-btn')) { /* handleVote logic here */ }
-            else if (target.closest('.dislike-btn')) { /* handleVote logic here */ }
+            else if (target.closest('.like-btn')) { 
+                if (!currentUser) return showToast('Please log in to vote.', 'error');
+                const voteRef = database.ref(`memes/${memeId}/likes/${currentUser.uid}`);
+                const dislikeRef = database.ref(`memes/${memeId}/dislikes/${currentUser.uid}`);
+                voteRef.transaction(currentVote => currentVote ? null : true);
+                dislikeRef.remove();
+            }
+            else if (target.closest('.dislike-btn')) {
+                if (!currentUser) return showToast('Please log in to vote.', 'error');
+                const voteRef = database.ref(`memes/${memeId}/dislikes/${currentUser.uid}`);
+                const likeRef = database.ref(`memes/${memeId}/likes/${currentUser.uid}`);
+                voteRef.transaction(currentVote => currentVote ? null : true);
+                likeRef.remove();
+            }
             else if (target.closest('#comment-form')) {
                 e.preventDefault();
                 const text = document.getElementById('comment-text').value;
@@ -482,6 +503,10 @@
         const savedTheme = localStorage.getItem('memedrop-theme') || 'light';
         document.body.dataset.theme = savedTheme;
         document.getElementById('theme-selector').value = savedTheme;
+        document.getElementById('theme-selector').addEventListener('change', e => {
+            document.body.dataset.theme = e.target.value;
+            localStorage.setItem('memedrop-theme', e.target.value);
+        });
     });
     </script>
 </body>
