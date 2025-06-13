@@ -2,415 +2,139 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemeDrop</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
+    <title>MemeDrop Auth - Google</title>
     <style>
-        /* All necessary CSS is included here. */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        :root {
-            --primary-color: #007bff; --secondary-color: #6c757d; --bg-color: #f9f9f9; --card-bg-color: #fff; --text-color: #1c1e21;
-        }
-        body[data-theme="dark"] {
-            --primary-color: #0d8eff; --secondary-color: #8899a6; --bg-color: #1a1a1a; --card-bg-color: #242424; --text-color: #e0e0e0;
-        }
-        body[data-theme="vaporwave"] {
-            --primary-color: #ff71ce; --secondary-color: #01cdfe; --bg-color: #0d0d24; --card-bg-color: #1a1a3a; --text-color: #01cdfe;
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); margin: 0; color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
-        .hidden { display: none !important; }
-        .view { animation: fadeIn 0.4s ease-out; }
-        header { background-color: rgba(255,255,255,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #ddd; padding: 10px 20px; position: sticky; top: 0; z-index: 1000; transition: background-color 0.3s, border-bottom-color 0.3s; }
-        body[data-theme="dark"] header { background-color: rgba(26,26,26,0.8); border-bottom-color: #333; }
-        body[data-theme="vaporwave"] header { background-color: rgba(13, 13, 36, 0.8); border-bottom-color: #01cdfe30;}
-        nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; gap: 15px; flex-wrap: wrap; }
-        nav h1 { margin: 0; font-size: 1.8em; color: var(--primary-color); cursor: pointer; font-family: 'Source Code Pro', monospace; }
-        .nav-center { flex-grow: 1; display: flex; justify-content: center; }
-        #search-bar { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 20px; border: 1px solid #ddd; background-color: #f0f2f5; font-size: 1em; transition: background-color 0.3s, border-color 0.3s, color 0.3s; }
-        body[data-theme="dark"] #search-bar { border-color: #333; background-color: #242424; color: var(--text-color); }
-        body[data-theme="vaporwave"] #search-bar { border-color: var(--secondary-color); background-color: rgba(26,26,58,0.7); color: var(--text-color); }
-        .nav-right { display: flex; align-items: center; gap: 15px; }
-        .nav-button { padding: 8px 16px; border: none; border-radius: 6px; background-color: var(--primary-color); color: white; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
-        .nav-button:hover { filter: brightness(1.1); }
-        #logoutBtn { background-color: var(--secondary-color); }
-        #userInfo { font-weight: bold; display: flex; align-items: center; gap: 8px;}
-        #userInfo span { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .meme-gallery { max-width: 1200px; margin: 20px auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 0 10px; }
-        .meme-post { background-color: var(--card-bg-color); border: 1px solid #ddd; border-radius: 8px; overflow: hidden; transition: background-color 0.3s, border-color 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        body[data-theme="dark"] .meme-post { border-color: #333; }
-        body[data-theme="vaporwave"] .meme-post { border-color: var(--secondary-color); box-shadow: 0 0 10px var(--secondary-color_70); }
-        .meme-post img { width: 100%; display: block; aspect-ratio: 1/1; object-fit: cover; background-color: #eee; }
-        body[data-theme="dark"] .meme-post img { background-color: #333; }
-        body[data-theme="vaporwave"] .meme-post img { background-color: #101025; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.3s; }
-        .modal-content { background: var(--card-bg-color); padding: 25px 35px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .modal-content h2 { margin-top: 0; color: var(--primary-color); }
-        .modal-content input[type="file"], .modal-content textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; background-color: var(--bg-color); color: var(--text-color); }
-        body[data-theme="dark"] .modal-content input[type="file"], body[data-theme="dark"] .modal-content textarea { border-color: #444; }
-        .modal-flex-buttons { display: flex; gap: 10px; margin-top: 10px; }
-        #googleLoginBtn { background-color: #db4437; flex: 1; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; font-size: 1em; }
-        #googleLoginBtn:hover { background-color: #c23321; }
-        #theme-selector { padding: 8px; border-radius: 6px; border: 1px solid #ddd; background-color: var(--card-bg-color); color: var(--text-color); }
-        body[data-theme="dark"] #theme-selector { border-color: #333; }
-        body[data-theme="vaporwave"] #theme-selector { border-color: var(--secondary-color); background-color: var(--card-bg-color); color: var(--text-color); }
-
-        .feed-controls { max-width: 1200px; margin: 20px auto 10px; padding: 0 10px; }
-        .feed-tabs { display: flex; gap: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
-        body[data-theme="dark"] .feed-tabs { border-bottom-color: #333; }
-        body[data-theme="vaporwave"] .feed-tabs { border-bottom-color: var(--secondary-color); }
-        .feed-tabs button { background: none; border: none; padding: 10px 15px; font-size: 1em; color: var(--secondary-color); cursor: pointer; border-bottom: 3px solid transparent; }
-        .feed-tabs button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: bold; }
-        .cancel-btn { background-color: var(--secondary-color) !important; } /* Ensure cancel button has distinct color */
+        body { font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f0f0; text-align: center; }
+        .container { padding: 20px; background-color: white; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #09f; animation: spin 1s ease infinite; margin: 0 auto 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        p { color: #333; }
+        .error { color: red; font-weight: bold; }
     </style>
 </head>
-<body data-theme="vaporwave"> <!-- Default theme -->
-    <header>
-        <nav>
-            <h1 id="home-link">MemeDrop</h1>
-            <div class="nav-center"><input type="search" id="search-bar" placeholder="Search memes..."></div>
-            <div class="nav-right">
-                <button id="uploadBtn" class="nav-button hidden">Upload</button>
-                <select id="theme-selector" title="Change Theme">
-                    <option value="light">Light</option>
-                    <option value="dark">Dark</option>
-                    <option value="vaporwave">Vaporwave</option>
-                </select>
-                <span id="userInfo" class="hidden"></span>
-                <button id="loginPromptBtn" class="nav-button">Login</button>
-            </div>
-        </nav>
-    </header>
-    <main>
-        <div id="gallery-view" class="view">
-            <div class="feed-controls">
-                <div class="feed-tabs">
-                    <button id="feed-for-you" class="active">For You</button> <!-- Placeholder, functionality not implemented -->
-                    <button id="feed-new">New</button> <!-- Placeholder, functionality not implemented -->
-                </div>
-            </div>
-            <div id="meme-gallery" class="meme-gallery"><p>Loading memes...</p></div>
-        </div>
-    </main>
-    <div id="modal-container"></div>
+<body>
+    <div class="container">
+        <div class="spinner"></div>
+        <p id="status-message">Processing authentication...</p>
+        <p><small>This window should close automatically.</small></p>
+    </div>
 
-    <!-- Firebase SDKs - Using compat versions for familiarity with older Firebase examples -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    
+
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- SETUP & STATE ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", // REPLACE WITH YOUR ACTUAL API KEY
-            authDomain: "test-6336a.firebaseapp.com",
-            databaseURL: "https://test-6336a-default-rtdb.firebaseio.com",
-            projectId: "test-6336a",
-            storageBucket: "test-6336a.appspot.com", // Ensure this is correct for your project
-            messagingSenderId: "437879418972",
-            appId: "1:437879418972:web:47678bb0b3664edab8f699"
+        // CRITICAL: This firebaseConfig MUST BE IDENTICAL to the one in your index.html
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", 
+            authDomain: "test-6336a.firebaseapp.com", 
+            databaseURL: "https://test-6336a-default-rtdb.firebaseio.com", 
+            projectId: "test-6336a", 
+            storageBucket: "test-6336a.appspot.com", // Matches index.html original
+            messagingSenderId: "437879418972", 
+            appId: "1:437879418972:web:47678bb0b3664edab8f699" 
         };
+
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const database = firebase.database();
+        const SESSION_KEY = 'memedrop_awaiting_google_redirect_v2'; // Use a distinct key
+        const statusMessageEl = document.getElementById('status-message');
 
-        let currentUser = null;
-        let allMemes = []; // Stores all fetched memes
-        let filteredMemes = []; // Stores memes after search/filter
-        const modalContainer = document.getElementById('modal-container');
-        // IMPORTANT: Ensure auth.html is hosted at this exact URL
-        const AUTH_HELPER_URL = 'https://fawkesyt.github.io/memedrop-auth/auth.html';
-        let authWindow = null;
+        console.log("Auth Helper Loaded. Firebase Initialized with config:", firebaseConfig);
 
-        // --- UI & RENDERING ---
-        const createMemeElement = (meme) => {
-            const post = document.createElement('article');
-            post.className = 'meme-post';
-            // Simple display, could add more info like uploader, date, description later
-            post.innerHTML = `<img src="${meme.imageBase64}" alt="${meme.description || 'A meme from MemeDrop'}">`;
-            return post;
-        };
-
-        const renderGallery = (memesToDisplay = filteredMemes) => {
-            const galleryContainer = document.getElementById('meme-gallery');
-            galleryContainer.innerHTML = ''; // Clear previous memes
-            
-            // Sort by creation date, newest first. Handle potential missing createdAt.
-            const sortedMemes = [...memesToDisplay].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
-            
-            if(sortedMemes.length === 0) {
-                 galleryContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">No memes found. Try a different search or be the first to upload!</p>';
-                 return;
-            }
-            sortedMemes.forEach(meme => galleryContainer.appendChild(createMemeElement(meme)));
-        };
-
-        const updateUIForAuthState = (user) => {
-            const userInfoEl = document.getElementById('userInfo');
-            const loginBtn = document.getElementById('loginPromptBtn');
-            const uploadBtn = document.getElementById('uploadBtn');
-            const logoutBtnInstance = document.getElementById('logoutBtn'); // For removal later
-
-            if (logoutBtnInstance) logoutBtnInstance.removeEventListener('click', handleLogout); // Clean up previous listener
-
-            if (user) {
-                userInfoEl.innerHTML = `<span>Hi, ${user.displayName || 'User'}!</span> <button id="logoutBtn" class="nav-button">Logout</button>`;
-                document.getElementById('logoutBtn').addEventListener('click', handleLogout); // Add listener to new button
-                userInfoEl.classList.remove('hidden');
-                loginBtn.classList.add('hidden');
-                uploadBtn.classList.remove('hidden');
+        const postMessageToOpener = (message) => {
+            if (window.opener && window.opener.location && window.opener.location.origin) {
+                console.log("Auth Helper: Posting message to opener:", message, "Target Origin:", window.opener.location.origin);
+                window.opener.postMessage(message, window.opener.location.origin);
             } else {
-                userInfoEl.classList.add('hidden');
-                userInfoEl.innerHTML = ''; // Clear user info
-                loginBtn.classList.remove('hidden');
-                uploadBtn.classList.add('hidden');
+                console.warn("Auth Helper: Cannot post message - window.opener or its origin is not accessible.", message);
+                statusMessageEl.textContent = "Error: Could not communicate with the main application window. Please close this window and try again.";
+                statusMessageEl.classList.add("error");
             }
         };
 
-        const openModal = (modalType) => {
-            modalContainer.innerHTML = ''; // Clear previous modal
-            const modalOverlay = document.createElement('div');
-            modalOverlay.className = 'modal-overlay';
-            let modalHTML = '';
+        // Check if our flag is set in sessionStorage.
+        const isAwaitingRedirect = sessionStorage.getItem(SESSION_KEY);
+        console.log("Auth Helper: isAwaitingRedirect flag from sessionStorage:", isAwaitingRedirect);
 
-            switch(modalType) {
-                case 'auth':
-                    modalHTML = `<div class="modal-content">
-                                    <h2>Login with Google</h2>
-                                    <p>Continue to MemeDrop using your Google account.</p>
-                                    <div class="modal-flex-buttons">
-                                        <button id="googleLoginBtn">Sign in with Google</button>
-                                    </div>
-                                    <button type="button" class="cancel-btn nav-button" style="margin-top:20px;">Cancel</button>
-                                 </div>`;
-                    break;
-                case 'upload':
-                    modalHTML = `<div class="modal-content">
-                                    <h2>Upload a New Meme</h2>
-                                    <form id="uploadForm">
-                                        <input type="file" id="memeFile" accept="image/*" required>
-                                        <textarea id="memeDescription" placeholder="A funny description... (optional)" rows="3"></textarea>
-                                        <button type="submit" class="nav-button" style="width:100%; margin-top:10px;">Upload Meme</button>
-                                        <button type="button" class="cancel-btn nav-button" style="width:100%; margin-top:10px;">Cancel</button>
-                                    </form>
-                                 </div>`;
-                    break;
-            }
-            modalOverlay.innerHTML = modalHTML;
-            modalContainer.appendChild(modalOverlay);
-            attachModalListeners(modalType, modalOverlay);
-        };
 
-        function attachModalListeners(modalType, modalOverlayElement) {
-            // Close modal by clicking overlay or cancel button
-            modalOverlayElement.addEventListener('click', e => {
-                if (e.target === modalOverlayElement || e.target.classList.contains('cancel-btn')) {
-                    modalOverlayElement.remove();
+        // --- SCENARIO 1: RETURN TRIP (after Google redirect) ---
+        if (isAwaitingRedirect === 'true') {
+            console.log("Auth Helper: Return trip detected.");
+            statusMessageEl.textContent = "Finalizing Google sign-in...";
+            sessionStorage.removeItem(SESSION_KEY); // Clear the flag immediately
+
+            auth.getRedirectResult()
+                .then((result) => {
+                    console.log("Auth Helper: getRedirectResult full result object:", result);
+                    if (result && result.credential) {
+                        const credential = result.credential.toJSON();
+                        console.log("Auth Helper: Authentication successful. Credential:", credential);
+                        postMessageToOpener({
+                            type: 'authSuccess',
+                            payload: { credential }
+                        });
+                        statusMessageEl.textContent = "Sign-in successful! Closing window...";
+                    } else {
+                        console.warn("Auth Helper: No redirect result or credential found. Result object was:", result);
+                        postMessageToOpener({
+                            type: 'authError',
+                            message: "Authentication cancelled or no redirect result found."
+                        });
+                        statusMessageEl.textContent = "Sign-in cancelled or failed. Please try again from the main app.";
+                        statusMessageEl.classList.add("error");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Auth Helper: Error during getRedirectResult:", error, "Code:", error.code, "Message:", error.message);
+                    postMessageToOpener({
+                        type: 'authError',
+                        message: error.message || "An unknown error occurred during sign-in.",
+                        code: error.code
+                    });
+                    statusMessageEl.textContent = `Sign-in error: ${error.message}. You can close this window.`;
+                    statusMessageEl.classList.add("error");
+                })
+                .finally(() => {
+                    console.log("Auth Helper: Closing window after return trip processing.");
+                    setTimeout(() => window.close(), 2000); // Give a bit more time for message and visibility
+                });
+
+        // --- SCENARIO 2: INITIAL TRIP (when popup is first opened) ---
+        } else {
+            console.log("Auth Helper: Initial trip detected.");
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const providerName = params.get('provider');
+                console.log("Auth Helper: Requested provider from URL params:", providerName);
+
+                if (providerName === 'google') {
+                    statusMessageEl.textContent = "Redirecting to Google for sign-in...";
+                    const provider = new firebase.auth.GoogleAuthProvider();
+                    // Optional: Add custom parameters or scopes if needed
+                    // provider.addScope('profile');
+                    // provider.addScope('email');
+                    // provider.setCustomParameters({ 'prompt': 'select_account' }); // Example
+
+                    console.log("Auth Helper: Setting session flag and initiating signInWithRedirect to Google.");
+                    sessionStorage.setItem(SESSION_KEY, 'true'); // Set flag BEFORE redirect
+                    auth.signInWithRedirect(provider);
+                    // The page will redirect here, so code below this line in this block might not execute
+                    // immediately unless signInWithRedirect itself throws a synchronous error.
+                } else {
+                    throw new Error(`Unsupported or no authentication provider specified. Expected "google", got "${providerName}".`);
                 }
-            });
-            
-            switch(modalType) {
-                case 'auth':
-                    const googleLoginBtn = modalOverlayElement.querySelector('#googleLoginBtn');
-                    if (googleLoginBtn) {
-                        googleLoginBtn.addEventListener('click', () => {
-                           if (authWindow && !authWindow.closed) { authWindow.focus(); return; }
-                           // Open auth.html which handles Google sign-in redirect
-                           authWindow = window.open(`${AUTH_HELPER_URL}?provider=google`, 'firebaseAuth', 'height=600,width=400');
-                        });
-                    }
-                    break;
-                case 'upload':
-                    const uploadForm = modalOverlayElement.querySelector('#uploadForm');
-                    if (uploadForm) {
-                        uploadForm.addEventListener('submit', async e => {
-                            e.preventDefault();
-                            if (!currentUser) {
-                                alert("Please login to upload memes.");
-                                return;
-                            }
-                            const fileInput = e.target.querySelector('#memeFile');
-                            const file = fileInput.files[0];
-                            const description = e.target.querySelector('#memeDescription').value.trim();
-
-                            if (!file) { alert("Please select an image file."); return; }
-
-                            // Basic client-side size check (approx 1.5MB for base64)
-                            if (file.size > 1.5 * 1024 * 1024) { 
-                                alert("Image is too large! Please choose a file under 1.5MB.");
-                                return;
-                            }
-
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                                // Double check base64 string length (more accurate but after reading)
-                                // 2MB base64 is roughly 1.5MB binary
-                                if (event.target.result.length > 2 * 1024 * 1024) { 
-                                    alert("Image data is too large after encoding. Please choose a smaller file (under 1.5MB).");
-                                    return;
-                                }
-                                const memeData = {
-                                    imageBase64: event.target.result,
-                                    description: description,
-                                    creatorId: currentUser.uid,
-                                    creatorName: currentUser.displayName || currentUser.email || 'Anonymous Dropper',
-                                    createdAt: firebase.database.ServerValue.TIMESTAMP // Firebase server timestamp
-                                };
-                                database.ref('memes').push(memeData)
-                                    .then(() => {
-                                        alert('Meme uploaded successfully!');
-                                        modalOverlayElement.remove(); // Close modal on success
-                                    })
-                                    .catch(err => {
-                                        console.error("Upload error:", err);
-                                        alert(`Upload failed: ${err.message}`);
-                                    });
-                            };
-                            reader.onerror = () => {
-                                alert("Failed to read the file. Please try again.");
-                            };
-                            reader.readAsDataURL(file);
-                        });
-                    }
-                    break;
+            } catch (error) {
+                console.error("Auth Helper: Error during initial setup:", error);
+                statusMessageEl.textContent = `Setup error: ${error.message}. Please close this window.`;
+                statusMessageEl.classList.add("error");
+                postMessageToOpener({
+                    type: 'authError',
+                    message: error.message || "Auth helper setup failed."
+                });
+                console.log("Auth Helper: Closing window due to setup error.");
+                setTimeout(() => window.close(), 3000);
             }
         }
-        
-        // --- AUTHENTICATION LOGIC ---
-        auth.onAuthStateChanged(user => {
-            console.log("Auth state changed, user:", user);
-            currentUser = user;
-            updateUIForAuthState(user);
-            if (user) {
-                // Potentially re-fetch or filter memes based on user preferences if implemented
-            } else {
-                // User logged out, clear any user-specific data if needed
-            }
-        });
-
-        // Communication with Auth Popup (auth.html)
-        window.addEventListener('message', async (event) => {
-            // IMPORTANT: Verify the origin of the message for security
-            // Ensure AUTH_HELPER_URL is correctly defined
-            if (!AUTH_HELPER_URL || event.origin !== new URL(AUTH_HELPER_URL).origin) {
-                if (AUTH_HELPER_URL) console.warn("Message received from unexpected origin:", event.origin, "Expected:", new URL(AUTH_HELPER_URL).origin);
-                else console.warn("AUTH_HELPER_URL not defined, cannot verify message origin.");
-                return;
-            }
-
-            if (authWindow) authWindow.close(); // Close the popup window
-
-            console.log("Main App: Received message from auth helper:", event.data);
-
-            if (event.data && event.data.type === 'authSuccess' && event.data.payload && event.data.payload.credential) {
-                try {
-                    // The credential from postMessage is a JSON object.
-                    // We need to reconstruct it into a Firebase Auth credential.
-                    const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
-                    const result = await auth.signInWithCredential(credential);
-                    const user = result.user;
-                    
-                    // Store or update user info in 'users' collection (optional but good practice)
-                    const userRef = database.ref('users/' + user.uid);
-                    const userSnap = await userRef.once('value');
-                    if (!userSnap.exists()) {
-                        userRef.set({
-                            displayName: user.displayName || 'Meme Lover',
-                            email: user.email, // If available and permitted by scopes
-                            photoURL: user.photoURL,
-                            createdAt: firebase.database.ServerValue.TIMESTAMP,
-                            lastLogin: firebase.database.ServerValue.TIMESTAMP
-                        });
-                    } else {
-                        userRef.update({
-                            lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                            displayName: user.displayName || userSnap.val().displayName, // Keep existing if new is null
-                            photoURL: user.photoURL || userSnap.val().photoURL
-                        });
-                    }
-                    
-                    modalContainer.innerHTML = ''; // Close any open modals (like the auth modal)
-                    alert('Login successful!');
-                } catch(err) {
-                    console.error("Main App: Error signing in with credential:", err);
-                    alert(`Login failed: ${err.message}. Code: ${err.code}`);
-                }
-            } else if (event.data && event.data.type === 'authError') {
-                console.error("Main App: Auth Error from popup:", event.data.message);
-                alert(`Login process failed: ${event.data.message}`);
-            }
-        });
-        
-        const handleLogout = () => {
-            auth.signOut().then(() => {
-                alert('You have been logged out.');
-            }).catch(error => {
-                console.error("Logout error:", error);
-                alert(`Logout failed: ${error.message}`);
-            });
-        };
-
-        // --- MEME DATA HANDLING ---
-        database.ref('memes').on('value', snapshot => {
-            const memesData = snapshot.val() || {};
-            allMemes = Object.keys(memesData).map(key => ({
-                id: key,
-                ...memesData[key]
-            }));
-            console.log("Fetched memes:", allMemes.length);
-            applySearchFilter(); // This will update filteredMemes and call renderGallery
-        }, error => {
-            console.error("Error fetching memes from Firebase:", error);
-            document.getElementById('meme-gallery').innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: red;">Could not load memes. Check console for errors.</p>';
-        });
-
-        // --- SEARCH FUNCTIONALITY ---
-        const searchBar = document.getElementById('search-bar');
-        const applySearchFilter = () => {
-            const searchTerm = searchBar.value.toLowerCase().trim();
-            if (searchTerm === '') {
-                filteredMemes = [...allMemes];
-            } else {
-                filteredMemes = allMemes.filter(meme => 
-                    (meme.description && meme.description.toLowerCase().includes(searchTerm)) ||
-                    (meme.creatorName && meme.creatorName.toLowerCase().includes(searchTerm))
-                );
-            }
-            renderGallery(filteredMemes);
-        };
-        searchBar.addEventListener('input', applySearchFilter);
-
-
-        // --- THEME SELECTOR ---
-        const themeSelector = document.getElementById('theme-selector');
-        const currentTheme = localStorage.getItem('theme') || 'vaporwave'; // Default to vaporwave
-        document.body.setAttribute('data-theme', currentTheme);
-        themeSelector.value = currentTheme;
-
-        themeSelector.addEventListener('change', (e) => {
-            document.body.setAttribute('data-theme', e.target.value);
-            localStorage.setItem('theme', e.target.value);
-        });
-        
-        // --- GLOBAL CLICK HANDLERS (Event Delegation might be better for many dynamic elements) ---
-        document.addEventListener('click', (e) => {
-            const target = e.target;
-            if (target.id === 'loginPromptBtn') openModal('auth');
-            else if (target.id === 'uploadBtn' && currentUser) openModal('upload');
-            else if (target.id === 'uploadBtn' && !currentUser) alert("Please login to upload.");
-            // Logout is handled by updateUIForAuthState adding a specific listener
-            else if (target.id === 'home-link') {
-                e.preventDefault(); 
-                // Could implement routing or just reload for simplicity here
-                window.location.reload(); 
-            }
-        });
-
-        // Initial render (will show "Loading memes..." until Firebase data arrives)
-        renderGallery(); 
-    });
     </script>
 </body>
 </html>
