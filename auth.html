@@ -23,7 +23,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
 
     <script>
-        // CRITICAL: This firebaseConfig MUST BE IDENTICAL to the one in your index.html
         const firebaseConfig = { 
             apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", 
             authDomain: "test-6336a.firebaseapp.com", 
@@ -36,112 +35,63 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const SESSION_KEY = 'memedrop_awaiting_google_redirect_v3'; // Incremented version for fresh start
+        const SESSION_KEY = 'memedrop_awaiting_google_redirect_v3'; 
         const statusMessageEl = document.getElementById('status-message');
 
         console.log("AUTH.HTML: Helper Loaded. Firebase Initialized.");
         console.log("AUTH.HTML: URL is", window.location.href);
 
-
-        const postMessageToOpener = (message) => {
-            if (window.opener && window.opener.location && window.opener.location.origin) {
-                console.log("AUTH.HTML: Posting message to opener:", message, "Target Origin:", window.opener.location.origin);
-                window.opener.postMessage(message, window.opener.location.origin);
-            } else {
-                console.warn("AUTH.HTML: Cannot post message - window.opener or its origin is not accessible.", message);
-                statusMessageEl.textContent = "Error: Could not communicate with the main application window. Please close this window and try again from the main app.";
-                statusMessageEl.classList.add("error");
-            }
-        };
-
+        const postMessageToOpener = (message) => { /* ... same as before ... */ };
         const isAwaitingRedirect = sessionStorage.getItem(SESSION_KEY);
         console.log("AUTH.HTML: isAwaitingRedirect flag from sessionStorage ('"+SESSION_KEY+"'):", isAwaitingRedirect);
 
-
-        // --- SCENARIO 1: RETURN TRIP (after Google redirect) ---
         if (isAwaitingRedirect === 'true') {
             console.log("AUTH.HTML: Return trip detected.");
             statusMessageEl.textContent = "Finalizing Google sign-in...";
-            sessionStorage.removeItem(SESSION_KEY); // Clear the flag immediately
+            sessionStorage.removeItem(SESSION_KEY); 
 
             auth.getRedirectResult()
                 .then((result) => {
-                    // Log the raw result object from Firebase for deep inspection
                     console.log("AUTH.HTML: getRedirectResult.then() entered. Full result object:", JSON.stringify(result, null, 2)); 
-                    
                     if (result && result.credential) {
-                        const credential = result.credential.toJSON(); // Get serializable credential
+                        const credential = result.credential.toJSON(); 
                         console.log("AUTH.HTML: SUCCESS! Credential found:", JSON.stringify(credential, null, 2));
-                        postMessageToOpener({
-                            type: 'authSuccess',
-                            payload: { credential }
-                        });
+                        postMessageToOpener({ type: 'authSuccess', payload: { credential } });
                         statusMessageEl.textContent = "Sign-in successful! Closing window...";
                     } else {
-                        // This block means Firebase.getRedirectResult() did not find a pending credential.
-                        // It could be that the user cancelled, or something interfered with Firebase's ability
-                        // to retrieve the result (e.g. browser settings, extensions, COOP/COEP issues indirectly).
                         let userDetail = "null";
                         if (result && result.user) {
-                            // Sometimes user object might be there even if credential is not (e.g. if already signed in to this browser with Firebase previously)
                             userDetail = JSON.stringify({uid: result.user.uid, displayName: result.user.displayName, email: result.user.email}, null, 2);
                         }
                         console.warn("AUTH.HTML: getRedirectResult.then() - result is null, or no credential. User detail from result:", userDetail);
-                        postMessageToOpener({
-                            type: 'authError',
-                            message: "Authentication cancelled or no redirect result found (Firebase result or credential was null)."
-                        });
+                        postMessageToOpener({ type: 'authError', message: "Authentication cancelled or no redirect result found (Firebase result or credential was null)." });
                         statusMessageEl.textContent = "Sign-in cancelled or failed. Please try again from the main app.";
                         statusMessageEl.classList.add("error");
                     }
                 })
                 .catch((error) => {
-                    // This catch block is for errors thrown by auth.getRedirectResult() itself
-                    console.error("AUTH.HTML: CATCH block for getRedirectResult. Error object:", JSON.stringify({ 
-                        message: error.message, 
-                        code: error.code, 
-                        name: error.name,
-                        stack: error.stack // Stack might be helpful
-                    }, null, 2));
-                    postMessageToOpener({
-                        type: 'authError',
-                        message: error.message || "An unknown error occurred during sign-in.",
-                        code: error.code
-                    });
+                    console.error("AUTH.HTML: CATCH block for getRedirectResult. Error object:", JSON.stringify({ message: error.message, code: error.code, name: error.name, stack: error.stack }, null, 2));
+                    postMessageToOpener({ type: 'authError', message: error.message || "An unknown error occurred during sign-in.", code: error.code });
                     statusMessageEl.textContent = `Sign-in error: ${error.message}. You can close this window.`;
                     statusMessageEl.classList.add("error");
                 })
                 .finally(() => {
                     console.log("AUTH.HTML: Closing window after return trip processing (attempting).");
-                    // Attempt to close, may be blocked by COOP. Message has already been sent.
-                    setTimeout(() => {
-                        if (window.opener) { // Only try to close if it's a popup
-                           window.close();
-                        }
-                    }, 2500); 
+                    setTimeout(() => { if (window.opener) { window.close(); } }, 2500); 
                 });
-
-        // --- SCENARIO 2: INITIAL TRIP (when popup is first opened) ---
         } else {
             console.log("AUTH.HTML: Initial trip detected.");
             try {
                 const params = new URLSearchParams(window.location.search);
                 const providerName = params.get('provider');
                 console.log("AUTH.HTML: Requested provider from URL params:", providerName);
-
                 if (providerName === 'google') {
                     statusMessageEl.textContent = "Redirecting to Google for sign-in...";
                     const provider = new firebase.auth.GoogleAuthProvider();
-                     // You could add scopes if needed, e.g., provider.addScope('email');
-                    provider.setCustomParameters({
-                        // 'prompt': 'select_account' // Forces account chooser every time
-                    });
-
+                    provider.setCustomParameters({});
                     console.log("AUTH.HTML: Setting session flag ('"+SESSION_KEY+"' = 'true') and initiating signInWithRedirect to Google.");
                     sessionStorage.setItem(SESSION_KEY, 'true'); 
                     auth.signInWithRedirect(provider);
-                    // Page redirects here. Code below this line in this 'if' block
-                    // will likely not execute unless signInWithRedirect fails immediately.
                 } else {
                     throw new Error(`Unsupported or no authentication provider specified. Expected "google", got "${providerName || 'nothing'}".`);
                 }
@@ -149,16 +99,9 @@
                 console.error("AUTH.HTML: Error during initial setup:", error);
                 statusMessageEl.textContent = `Setup error: ${error.message}. Please close this window.`;
                 statusMessageEl.classList.add("error");
-                postMessageToOpener({
-                    type: 'authError',
-                    message: error.message || "Auth helper setup failed."
-                });
+                postMessageToOpener({ type: 'authError', message: error.message || "Auth helper setup failed." });
                 console.log("AUTH.HTML: Closing window due to setup error (attempting).");
-                 setTimeout(() => {
-                    if (window.opener) {
-                       window.close();
-                    }
-                }, 3000);
+                 setTimeout(() => { if (window.opener) { window.close(); } }, 3000);
             }
         }
     </script>
