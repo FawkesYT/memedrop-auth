@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&display=swap" rel="stylesheet">
     <style>
+        /* All necessary CSS from the previous full version */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
@@ -137,7 +138,7 @@
             background-color: rgba(0,0,0,0.03);
             border-top: 1px solid #eee;
             animation: fadeIn 0.3s;
-            max-height: 300px; /* Limit height and make scrollable */
+            max-height: 300px; 
             overflow-y: auto;
         }
         body[data-theme="dark"] .comments-section { background-color: rgba(255,255,255,0.05); border-top-color: #333; }
@@ -155,13 +156,13 @@
         .comment strong { color: var(--primary-color); }
         .comment p { margin: 5px 0 0 0; white-space: pre-wrap; word-break: break-word; }
         .add-comment-form textarea {
-            width: calc(100% - 22px); /* Account for padding */
+            width: calc(100% - 22px); 
             padding: 10px;
             margin-top: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            background-color: var(--bg-color); /* Themeable */
-            color: var(--text-color); /* Themeable */
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
             resize: vertical;
             min-height: 50px;
             box-sizing: border-box;
@@ -180,7 +181,7 @@
             right: 20px;
             z-index: 9999;
             display: flex;
-            flex-direction: column-reverse; /* New notifications appear on top */
+            flex-direction: column-reverse; 
             gap: 10px;
             max-width: 320px;
         }
@@ -191,10 +192,10 @@
             border-radius: 6px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
             opacity: 0;
-            transform: translateX(120%); /* Start further off-screen */
-            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother transition */
+            transform: translateX(120%); 
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); 
             border-left: 5px solid var(--primary-color);
-            cursor: pointer; /* Allow clicking to dismiss */
+            cursor: pointer; 
         }
         .notification.show {
             opacity: 1;
@@ -282,7 +283,7 @@
 
         let currentUser = null;
         let allMemes = [];
-        let currentFeedMemes = []; // Memes for the currently active feed/filter
+        let currentFeedMemes = []; 
         const modalContainer = document.getElementById('modal-container');
         const notificationArea = document.getElementById('notification-area');
         let activeFeed = 'for-you'; 
@@ -293,7 +294,7 @@
             notification.className = `notification ${type}`;
             notification.textContent = message;
             
-            notification.addEventListener('click', () => { // Click to dismiss early
+            notification.addEventListener('click', () => { 
                 notification.classList.remove('show');
                 notification.addEventListener('transitionend', () => notification.remove(), { once: true });
             });
@@ -302,7 +303,7 @@
             setTimeout(() => notification.classList.add('show'), 10); 
 
             setTimeout(() => {
-                if (notification.parentElement) { // Check if still in DOM
+                if (notification.parentElement) { 
                     notification.classList.remove('show');
                     notification.addEventListener('transitionend', () => notification.remove(), { once: true });
                 }
@@ -361,9 +362,9 @@
             post.appendChild(actionsDiv);
 
             const commentsSection = document.createElement('div');
-            commentsSection.className = 'comments-section hidden'; // Start hidden
+            commentsSection.className = 'comments-section hidden'; 
             commentsSection.innerHTML = `<h4>Comments</h4>
-                                         <div class="comments-list">Click "View Comments" again to load.</div>
+                                         <div class="comments-list">Click the comment icon again to load.</div>
                                          ${currentUser ? `<form class="add-comment-form">
                                              <textarea name="commentText" placeholder="Add a comment..." required></textarea>
                                              <button type="submit" class="nav-button">Post</button>
@@ -378,7 +379,7 @@
             if (commentToggleButton) {
                 commentToggleButton.addEventListener('click', () => toggleComments(meme.id, post));
             }
-            if (currentUser) { // Only add form listener if user is logged in
+            if (currentUser) { 
                 const addCommentForm = commentsSection.querySelector('.add-comment-form');
                 if (addCommentForm) {
                     addCommentForm.addEventListener('submit', (e) => handleAddComment(e, meme.id));
@@ -389,12 +390,10 @@
 
         const renderGallery = () => {
             const galleryContainer = document.getElementById('meme-gallery');
-            const scrollTop = galleryContainer.scrollTop; // Preserve scroll position attempt
+            const scrollTop = galleryContainer.scrollTop; 
             galleryContainer.innerHTML = ''; 
             
             let memesToDisplay = [];
-            // "For You" and "New" currently show the same, sorted by newest.
-            // Later, "For You" could have algorithmic sorting or "Following" feed.
             if (activeFeed === 'new' || activeFeed === 'for-you') { 
                  memesToDisplay = [...allMemes].sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
             } 
@@ -405,26 +404,25 @@
                  galleryContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">No memes found. Be the first to upload!</p>';
                  return;
             }
-            // Apply staggered animation
             currentFeedMemes.forEach((meme, index) => {
                 const memeEl = createMemeElement(meme);
-                memeEl.style.animationDelay = `${index * 0.05}s`; // Stagger the animation
+                memeEl.style.animationDelay = `${index * 0.05}s`; 
                 galleryContainer.appendChild(memeEl);
             });
-            galleryContainer.scrollTop = scrollTop; // Restore scroll position
+            galleryContainer.scrollTop = scrollTop; 
         };
         
         const updateUIForAuthState = (user) => {
             const userInfoEl = document.getElementById('userInfo');
             const loginBtn = document.getElementById('loginPromptBtn');
             const uploadBtn = document.getElementById('uploadBtn');
-            const logoutBtnInstance = document.getElementById('logoutBtn'); // For removing listener
+            const logoutBtnInstance = document.getElementById('logoutBtn');
             if (logoutBtnInstance) {
                 logoutBtnInstance.removeEventListener('click', handleLogout);
             }
             if (user) {
                 userInfoEl.innerHTML = `<span>Hi, ${user.displayName || 'User'}!</span> <button id="logoutBtn" class="nav-button">Logout</button>`;
-                const newLogoutBtn = document.getElementById('logoutBtn'); // Get the new button
+                const newLogoutBtn = document.getElementById('logoutBtn');
                 if(newLogoutBtn) { 
                     newLogoutBtn.addEventListener('click', handleLogout);
                 }
@@ -437,7 +435,7 @@
                 loginBtn.classList.remove('hidden');
                 uploadBtn.classList.add('hidden');
             }
-            renderGallery(); // Re-render to update like/comment UI based on auth state
+            renderGallery(); 
         };
 
         const openModal = (modalType) => {
@@ -484,7 +482,6 @@
                                 if (result.user) {
                                     const user = result.user;
                                     const userRef = database.ref('users/' + user.uid);
-                                    // Check if user exists before setting/updating for efficiency
                                     userRef.once('value', (userSnap) => {
                                         if (!userSnap.exists()) { 
                                             userRef.set({ displayName: user.displayName || 'Meme Lover', email: user.email, photoURL: user.photoURL, createdAt: firebase.database.ServerValue.TIMESTAMP, lastLogin: firebase.database.ServerValue.TIMESTAMP });
@@ -533,7 +530,7 @@
                                     creatorName: currentUser.displayName || currentUser.email || 'Anonymous Dropper', 
                                     createdAt: firebase.database.ServerValue.TIMESTAMP,
                                     likeCount: 0, 
-                                    commentCount: 0, // Initialize comment count
+                                    commentCount: 0,
                                     likes: {}       
                                 };
                                 database.ref('memes').push(memeData)
@@ -577,7 +574,6 @@
                 ...memesData[key]
             }));
             console.log("INDEX: Fetched/updated memes count:", allMemes.length);
-            // Instead of applySearchFilter, call renderGallery directly to use currentFeedMemes logic
             renderGallery(); 
         }, error => { 
             console.error("Error fetching memes from Firebase:", error); 
@@ -618,7 +614,6 @@
                     showInPageNotification("Could not update like, please try again.", "info");
                 } else {
                     console.log('Like transaction committed!');
-                    // UI updates via the 'value' listener on memesRef
                 }
             });
         };
@@ -631,13 +626,13 @@
             const commentsListDiv = commentsSection.querySelector('.comments-list');
             const isHidden = commentsSection.classList.toggle('hidden');
 
-            if (!isHidden) { // Comments are now visible
+            if (!isHidden) { 
                 commentsListDiv.innerHTML = '<p>Loading comments...</p>'; 
                 if (!commentsListeners[memeId] || !commentsListeners[memeId].isActive) { 
                     console.log(`INDEX: Attaching comment listener for meme ${memeId}`);
-                    const memeCommentsRef = database.ref(`comments/${memeId}`).orderByChild('createdAt').limitToLast(50); // Get latest 50
+                    const memeCommentsRef = database.ref(`comments/${memeId}`).orderByChild('createdAt').limitToLast(50); 
                     
-                    const listener = memeCommentsRef.on('value', snapshot => {
+                    const listenerCallback = snapshot => {
                         console.log(`INDEX: Comments data received for meme ${memeId}`);
                         renderComments(snapshot, commentsListDiv);
                         const commentCount = snapshot.numChildren();
@@ -646,23 +641,29 @@
                         
                         const memeInAll = allMemes.find(m => m.id === memeId);
                         if (memeInAll && memeInAll.commentCount !== commentCount) {
-                           database.ref(`memes/${memeId}/commentCount`).set(commentCount); // Keep meme's commentCount updated
+                           database.ref(`memes/${memeId}/commentCount`).set(commentCount); 
                         }
-                    }, error => {
+                    };
+                    const errorCallback = error => {
                         console.error(`Error fetching comments for meme ${memeId}:`, error);
                         commentsListDiv.innerHTML = '<p style="color:red;">Could not load comments.</p>';
                         showInPageNotification("Failed to load comments: " + error.message, "error");
-                    });
-                    commentsListeners[memeId] = { ref: memeCommentsRef, listener: listener, isActive: true };
+                    };
+                    
+                    memeCommentsRef.on('value', listenerCallback, errorCallback);
+                    commentsListeners[memeId] = { ref: memeCommentsRef, listener: listenerCallback, errorCb: errorCallback, isActive: true };
                 }
-            } else { // Comments are now hidden
-                // To save resources, you might detach the listener when comments are hidden
-                // This is optional and adds complexity. For now, we'll keep them active.
-                // if (commentsListeners[memeId] && commentsListeners[memeId].isActive) {
-                //     console.log(`INDEX: Detaching comment listener for meme ${memeId}`);
-                //     commentsListeners[memeId].ref.off('value', commentsListeners[memeId].listener);
-                //     commentsListeners[memeId].isActive = false; 
-                // }
+            } else { 
+                // Optionally detach listener when comments are hidden to save resources
+                if (commentsListeners[memeId] && commentsListeners[memeId].isActive) {
+                    console.log(`INDEX: Detaching comment listener for meme ${memeId}`);
+                    commentsListeners[memeId].ref.off('value', commentsListeners[memeId].listener);
+                    // If you also attached the error callback separately, you might need to .off() it too,
+                    // or ensure that .off('value', callback) removes all listeners for that event type if callback is specified.
+                    // Firebase's .off() without a specific callback removes ALL listeners for that event type on that ref.
+                    // For more granular control: commentsListeners[memeId].ref.off('value', commentsListeners[memeId].listener, commentsListeners[memeId].contextForListener);
+                    commentsListeners[memeId].isActive = false; 
+                }
             }
         };
 
@@ -676,8 +677,6 @@
             snapshot.forEach(childSnapshot => {
                 commentsArray.push({ id: childSnapshot.key, ...childSnapshot.val() });
             });
-            // Comments from Firebase are often ordered ascending by key if using push, 
-            // or by 'createdAt' if ordered by child. We want newest on top.
             commentsArray.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); 
 
             commentsArray.forEach(comment => {
@@ -715,11 +714,15 @@
                 userName: currentUser.displayName || 'Anonymous Commenter',
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             };
+            // Debug logs for comment posting
+            console.log("INDEX: Attempting to post commentData:", JSON.stringify(commentData));
+            console.log("INDEX: Current auth.currentUser.uid on client for comment:", auth.currentUser ? auth.currentUser.uid : "No auth.currentUser");
+
 
             const newCommentRef = database.ref(`comments/${memeId}`).push();
             newCommentRef.set(commentData)
                 .then(() => {
-                    commentTextarea.value = ''; // Clear the textarea
+                    commentTextarea.value = ''; 
                     showInPageNotification("Comment posted!", "success");
                     database.ref(`memes/${memeId}/commentCount`).transaction(count => (count || 0) + 1);
                 })
@@ -733,19 +736,18 @@
         const searchBar = document.getElementById('search-bar');
         const applySearchFilter = () => {
             const searchTerm = searchBar.value.toLowerCase().trim();
-            let memesToFilter = [...allMemes]; // Start with all memes or feed-specific memes
+            // This logic will be refined when activeFeed has more distinct sources than just allMemes
+            let baseMemesForFilter = [...allMemes]; 
 
-            // This needs to be integrated with activeFeed logic if feeds differ beyond sorting
-            // For now, search applies to allMemes then renderGallery handles activeFeed sorting
             if (searchTerm === '') {
-                currentFeedMemes = [...allMemes]; // If no search, use all memes for currentFeed logic
+                currentFeedMemes = baseMemesForFilter;
             } else {
-                currentFeedMemes = allMemes.filter(meme => 
+                currentFeedMemes = baseMemesForFilter.filter(meme => 
                     (meme.description && meme.description.toLowerCase().includes(searchTerm)) ||
                     (meme.creatorName && meme.creatorName.toLowerCase().includes(searchTerm))
                 );
             }
-            renderGallery(); // renderGallery will use currentFeedMemes and apply sorting based on activeFeed
+            renderGallery(); // renderGallery will apply sorting based on activeFeed to currentFeedMemes
         };
         searchBar.addEventListener('input', applySearchFilter);
 
@@ -758,7 +760,7 @@
             const activeBtn = document.getElementById(`feed-${feedName}`);
             if (activeBtn) activeBtn.classList.add('active');
             
-            applySearchFilter(); // Re-apply search on the full dataset, then renderGallery sorts
+            applySearchFilter(); 
             showInPageNotification(`Switched to "${feedName.replace('-', ' ')}" feed.`, 'info', 1500);
         };
 
@@ -787,7 +789,48 @@
             else if (target.id === 'home-link') { e.preventDefault(); window.location.reload(); }
         });
 
-        applySearchFilter(); // Initial load (will call renderGallery)
+        applySearchFilter(); 
+        /*
+        REMINDER: Update Firebase Realtime Database Rules!
+        Example rules (Tailor these to your exact needs):
+        {
+          "rules": {
+            "users": {
+              "$uid": {
+                ".read": "$uid === auth.uid || root.child('users').child($uid).child('profilePublic').val() === true",
+                ".write": "$uid === auth.uid"
+              }
+            },
+            "memes": {
+              ".read": true,
+              "$memeId": {
+                ".write": "auth != null && (newData.child('creatorId').val() === auth.uid || !data.exists())",
+                ".validate": "newData.hasChildren(['imageBase64', 'description', 'creatorId', 'creatorName', 'createdAt', 'likeCount', 'commentCount'])",
+                "likeCount": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+                "commentCount": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+                "likes": {
+                  "$uid": {
+                    ".write": "auth != null && $uid === auth.uid",
+                    ".validate": "newData.isBoolean() || newData.val() === null"
+                  }
+                },
+                "$other": { ".validate": false }
+              }
+            },
+            "comments": {
+              "$memeId": {
+                ".read": true,
+                ".indexOn": "createdAt", // For performance with orderByChild('createdAt')
+                "$commentId": {
+                  ".write": "auth != null && newData.child('userId').val() === auth.uid && (!data.exists() || data.child('userId').val() === auth.uid)",
+                  ".validate": "newData.hasChildren(['text', 'userId', 'userName', 'createdAt']) && newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length < 500 && newData.child('userId').isString() && newData.child('userId').val() === auth.uid && newData.child('userName').isString() && (newData.child('createdAt').isNumber() || newData.child('createdAt').val() === '.sv_timestamp')",
+                  "$other": { ".validate": false }
+                }
+              }
+            }
+          }
+        }
+        */
     });
     </script>
 </body>
