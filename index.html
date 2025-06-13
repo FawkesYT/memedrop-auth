@@ -245,7 +245,7 @@
                 try {
                     const credential = firebase.auth.OAuthProvider.credentialFromJSON(event.data.payload.credential);
                     const result = await auth.signInWithCredential(credential);
-                    const user = result..user;
+                    const user = result.user;
                     console.log("INDEX: Main App: Successfully signed in with credential. User:", user);
                     
                     const userRef = database.ref('users/' + user.uid);
