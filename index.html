@@ -8,75 +8,176 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* --- Animations --- */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 80% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes subtleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0.4); } 70% { box-shadow: 0 0 0 10px rgba(var(--primary-color-rgb), 0); } 100% { box-shadow: 0 0 0 0 rgba(var(--primary-color-rgb), 0); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes bellshake { 0% { transform: rotate(0); } 15% { transform: rotate(5deg); } 30% { transform: rotate(-5deg); } 45% { transform: rotate(4deg); } 60% { transform: rotate(-4deg); } 75% { transform: rotate(2deg); } 85% { transform: rotate(-2deg); } 100% { transform: rotate(0); } }
 
+
+        /* --- Base Theme Variables (Light) --- */
         :root {
             --primary-color: #007bff; --primary-color-rgb: 0, 123, 255;
             --secondary-color: #6c757d;
             --bg-color: #f8f9fa; 
             --card-bg-color: #ffffff; 
             --text-color: #212529;
+            --text-color-secondary: #495057;
             --border-color: #dee2e6;
             --input-bg-color: #f1f3f5;
-            --success-color: #28a745;
-            --error-color: #dc3545;
-            --info-color: #17a2b8;
+            --success-color: #28a745; --success-color-rgb: 40, 167, 69;
+            --error-color: #dc3545;   --error-color-rgb: 220, 53, 69;
+            --info-color: #17a2b8;    --info-color-rgb: 23, 162, 184;
+            --warning-color: #ffc107; --warning-color-rgb: 255, 193, 7;
+            --card-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            --card-hover-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.15);
+            --font-main: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            --font-logo: 'Source Code Pro', monospace;
         }
+
+        /* --- Dark Theme --- */
         body[data-theme="dark"] {
             --primary-color: #0d8eff; --primary-color-rgb: 13, 142, 255;
             --secondary-color: #adb5bd; 
             --bg-color: #121212; 
             --card-bg-color: #1e1e1e; 
             --text-color: #e9ecef;
+            --text-color-secondary: #adb5bd;
             --border-color: #495057;
             --input-bg-color: #2c2c2c;
+            --card-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            --card-hover-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.25);
         }
+
+        /* --- Vaporwave Theme --- */
         body[data-theme="vaporwave"] {
             --primary-color: #ff71ce; --primary-color-rgb: 255, 113, 206;
             --secondary-color: #01cdfe; 
             --bg-color: #0d0d24; 
             --card-bg-color: #1a1a3a; 
             --text-color: #01cdfe; 
+            --text-color-secondary: #a2a2c2; 
             --border-color: #01cdfe40; 
             --input-bg-color: #232347;
-            --text-color-secondary-vapor: #f5f5f5; 
+            --card-shadow: 0 0 15px 0px rgba(var(--primary-color-rgb), 0.3);
+            --card-hover-shadow: 0 0 25px 0px rgba(var(--primary-color-rgb), 0.6);
         }
+
+        /* --- NEW THEME: Synthwave '84 --- */
+        body[data-theme="synthwave84"] {
+            --primary-color: #f92aad; --primary-color-rgb: 249, 42, 173;
+            --secondary-color: #26c1d3;
+            --bg-color: #2a2139;
+            --card-bg-color: #3b3054;
+            --text-color: #fedc55; 
+            --text-color-secondary: #bca4a3;
+            --border-color: #7f2e63;
+            --input-bg-color: #34294a;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            --card-hover-shadow: 0 5px 15px rgba(var(--primary-color-rgb),0.4);
+        }
+
+        /* --- NEW THEME: Forest Whisper --- */
+        body[data-theme="forest"] {
+            --primary-color: #4CAF50; --primary-color-rgb: 76, 175, 80; 
+            --secondary-color: #FF9800; 
+            --bg-color: #f0f4f0; 
+            --card-bg-color: #ffffff;
+            --text-color: #3E2723; 
+            --text-color-secondary: #795548; 
+            --border-color: #D7CCC8; 
+            --input-bg-color: #E8F5E9; 
+            --card-shadow: 0 2px 6px rgba(62, 39, 35, 0.1);
+            --card-hover-shadow: 0 6px 18px rgba(var(--primary-color-rgb),0.2);
+        }
+
+        /* --- NEW THEME: Ocean Deep --- */
+        body[data-theme="ocean"] {
+            --primary-color: #00BCD4; --primary-color-rgb: 0, 188, 212; 
+            --secondary-color: #FFC107; 
+            --bg-color: #001f3f; 
+            --card-bg-color: #003366; 
+            --text-color: #E0F7FA; 
+            --text-color-secondary: #B2EBF2; 
+            --border-color: #004080; 
+            --input-bg-color: #002a50;
+            --card-shadow: 0 3px 8px rgba(0,0,0,0.3);
+            --card-hover-shadow: 0 6px 20px rgba(var(--primary-color-rgb),0.3);
+        }
+        
+        /* --- NEW THEME: Sunset Glow --- */
+        body[data-theme="sunset"] {
+            --primary-color: #FF5722; --primary-color-rgb: 255, 87, 34; 
+            --secondary-color: #673AB7; 
+            --bg-color: #FFF3E0; 
+            --card-bg-color: #FFFFFF;
+            --text-color: #4E342E; 
+            --text-color-secondary: #795548; 
+            --border-color: #FFCCBC; 
+            --input-bg-color: #FFE0B2; 
+            --card-shadow: 0 2px 7px rgba(255,87,34, 0.15);
+            --card-hover-shadow: 0 5px 20px rgba(var(--primary-color-rgb),0.25);
+        }
+
+        /* --- NEW THEME: Monochrome Cool --- */
+        body[data-theme="monochrome"] {
+            --primary-color: #007bff; --primary-color-rgb: 0, 123, 255; 
+            --secondary-color: #868e96; 
+            --bg-color: #f8f9fa; 
+            --card-bg-color: #ffffff;
+            --text-color: #212529; 
+            --text-color-secondary: #495057; 
+            --border-color: #ced4da; 
+            --input-bg-color: #e9ecef;
+            --card-shadow: 0 2px 5px rgba(0,0,0,0.07);
+            --card-hover-shadow: 0 5px 15px rgba(var(--primary-color-rgb),0.1);
+        }
+
+        /* --- Global Styles --- */
         body { 
-            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            font-family: var(--font-main); 
             background-color: var(--bg-color); 
             margin: 0; 
             color: var(--text-color); 
-            transition: background-color 0.3s, color 0.3s; 
+            transition: background-color 0.4s ease, color 0.4s ease; 
             overflow-x: hidden; 
             line-height: 1.6;
         }
         .hidden { display: none !important; }
         .view { animation: fadeIn 0.5s ease-out; }
+
+        /* --- Header & Navigation --- */
         header { 
-            background-color: rgba(var(--card-bg-color-val, 255,255,255),0.85); 
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px); 
+            background-color: rgba(var(--card-bg-color-val-rgb, 255,255,255),0.85); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
             border-bottom: 1px solid var(--border-color); 
             padding: 10px 20px; 
             position: sticky; top: 0; 
             z-index: 1000; 
-            transition: background-color 0.3s, border-bottom-color 0.3s; 
+            transition: background-color 0.4s ease, border-bottom-color 0.4s ease; 
         }
-        body[data-theme="dark"] header { --card-bg-color-val: 30,30,30; }
-        body[data-theme="vaporwave"] header { --card-bg-color-val: 26,26,58; }
+        body[data-theme="light"] header { --card-bg-color-val-rgb: 248,249,250; } /* Light theme header bg */
+        body[data-theme="dark"] header { --card-bg-color-val-rgb: 30,30,30; }
+        body[data-theme="vaporwave"] header { --card-bg-color-val-rgb: 26,26,58; }
+        body[data-theme="synthwave84"] header { --card-bg-color-val-rgb: 59,48,84; }
+        body[data-theme="forest"] header { --card-bg-color-val-rgb: 240,244,240; }
+        body[data-theme="ocean"] header { --card-bg-color-val-rgb: 0,51,102; }
+        body[data-theme="sunset"] header { --card-bg-color-val-rgb: 255,243,224; }
+        body[data-theme="monochrome"] header { --card-bg-color-val-rgb: 248,249,250; }
 
         nav { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; gap: 15px; flex-wrap: wrap; }
         nav h1 { 
             margin: 0; font-size: 1.9em; 
             color: var(--primary-color); 
             cursor: pointer; 
-            font-family: 'Source Code Pro', monospace; 
+            font-family: var(--font-logo); 
             animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; 
             font-weight: 600;
+            transition: color 0.4s ease;
         }
         .nav-center { flex-grow: 1; display: flex; justify-content: center; padding: 0 10px; }
         #search-bar { 
@@ -87,7 +188,7 @@
             background-color: var(--input-bg-color); 
             font-size: 1em; 
             color: var(--text-color);
-            transition: background-color 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.2s; 
+            transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.2s ease; 
         }
         #search-bar:focus {
             outline: none;
@@ -96,7 +197,7 @@
         }
         
         .nav-right { display: flex; align-items: center; gap: 10px; }
-        .nav-button { 
+        .nav-button, #notificationsBtn, #theme-selector { 
             padding: 9px 18px; 
             border: none; 
             border-radius: 8px; 
@@ -104,18 +205,78 @@
             color: white; 
             font-weight: 500; 
             cursor: pointer; 
-            transition: background-color 0.2s, transform 0.1s; 
+            transition: background-color 0.2s ease, transform 0.15s ease-out, box-shadow 0.2s ease; 
             font-size: 0.95em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex; /* For aligning icon and text if any */
+            align-items: center;
+            justify-content: center;
         }
-        .nav-button:hover { filter: brightness(1.15); transform: translateY(-1px); }
-        .nav-button:active { transform: translateY(0px); filter: brightness(1.05); }
+        .nav-button:hover, #notificationsBtn:hover, #theme-selector:hover { 
+            filter: brightness(1.15); 
+            transform: translateY(-2px) scale(1.02); 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+        }
+        .nav-button:active, #notificationsBtn:active, #theme-selector:active { 
+            transform: translateY(0px) scale(1); 
+            filter: brightness(1); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+        }
         #logoutBtn { background-color: var(--secondary-color); }
-        #userInfo { font-weight: 500; display: flex; align-items: center; gap: 8px; font-size: 0.95em; }
+        #userInfo { font-weight: 500; display: flex; align-items: center; gap: 8px; font-size: 0.95em; color: var(--text-color); }
         #userInfo span { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
+        #notificationsBtn { padding: 8px; position: relative; background-color: transparent; border: 1px solid var(--border-color); color: var(--text-color); box-shadow: none; }
+        #notificationsBtn:hover { background-color: rgba(var(--primary-color-rgb),0.1); color: var(--primary-color); }
         #notificationsBtn svg { transition: transform 0.2s; }
-        #notificationsBtn:hover svg { animation: subtleBounce 0.5s ease-in-out; }
+        #notificationsBtn.active svg { animation: bellshake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        #notification-badge {
+            position: absolute;
+            top: -6px; 
+            right: -6px; 
+            background: var(--error-color); 
+            color: white;
+            border-radius: 50%;
+            width: 18px; 
+            height: 18px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid var(--card-bg-color); 
+            animation: pulse 1.5s infinite;
+            transform-origin: center; /* For better scaling animation if added */
+        }
+        .notification-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1010;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .notification-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .notification-item:last-child { border-bottom: none; }
+        .notification-item:hover { background-color: rgba(var(--primary-color-rgb), 0.05); }
+        .notification-item.unread { font-weight: bold; background-color: rgba(var(--primary-color-rgb), 0.02); }
+        .notification-message { display: block; margin-bottom: 4px; }
+        .notification-timestamp { font-size: 0.8em; color: var(--text-color-secondary); }
 
+
+        /* --- Meme Gallery & Posts --- */
         .meme-gallery { 
             max-width: 1200px; 
             margin: 25px auto; 
@@ -131,32 +292,28 @@
             border-radius: 12px; 
             overflow: hidden; 
             transition: background-color 0.3s, border-color 0.3s, transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease-out; 
-            box-shadow: 0 3px 10px rgba(0,0,0,0.08); 
+            box-shadow: var(--card-shadow); 
             display: flex; 
             flex-direction: column; 
             animation: slideInUp 0.4s ease-out forwards;
             opacity: 0; 
             transform: translateY(30px);
-            cursor: pointer; 
         }
-        .meme-post:hover {
-            transform: translateY(-6px); 
-            box-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.15);
-        }
-        body[data-theme="dark"] .meme-post { border-color: #333; } /* Explicit for dark theme */
-        body[data-theme="vaporwave"] .meme-post { border-color: var(--border-color); } /* Use theme variable */
-        body[data-theme="vaporwave"] .meme-post:hover { box-shadow: 0 0 20px 0px rgba(var(--primary-color-rgb), 0.5); }
-        
+        .meme-post-image-container { cursor: pointer; overflow: hidden; position: relative; }
+        .meme-post-image-container:hover img { transform: scale(1.05); }
         .meme-post img { 
             width: 100%; 
             display: block; 
             aspect-ratio: 1 / 1; 
             object-fit: cover; 
-            background-color: #eee; 
+            background-color: var(--input-bg-color); /* More fitting placeholder */
+            transition: transform 0.3s ease-out;
         }
-        body[data-theme="dark"] .meme-post img { background-color: #333; }
-        body[data-theme="vaporwave"] .meme-post img { background-color: #101025; }
-
+        .meme-post:hover {
+            transform: translateY(-6px); 
+            box-shadow: var(--card-hover-shadow);
+        }
+        
         .meme-info { padding: 15px 18px; flex-grow: 1; }
         .meme-description {
             font-size: 0.95em;
@@ -170,12 +327,12 @@
         .meme-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .meme-creator {
             font-size: 0.85em;
-            color: var(--secondary-color);
+            color: var(--text-color-secondary);
             font-weight: 500;
         }
         .meme-timestamp {
             font-size: 0.8em;
-            color: var(--secondary-color);
+            color: var(--text-color-secondary);
             opacity: 0.9;
         }
         .meme-actions {
@@ -189,7 +346,7 @@
         .action-button {
             background: none;
             border: none;
-            color: var(--secondary-color); 
+            color: var(--text-color-secondary); 
             cursor: pointer;
             padding: 6px; 
             font-size: 1em;
@@ -220,38 +377,39 @@
             stroke: var(--error-color);
         }
         .action-button.disliked { color: var(--error-color); font-weight: 500; }
+        .action-button.favorited svg { /* For favorite button */
+            fill: var(--warning-color); /* e.g. gold/yellow */
+            stroke: var(--warning-color);
+        }
+        .action-button.favorited { color: var(--warning-color); font-weight: 500; }
+
 
         .like-count, .dislike-count, .comment-count-display {
             font-size: 0.9em;
             font-weight: 500;
         }
 
-        /* Comment Section Styles */
+        /* --- Comment Section Styles --- */
         .comments-section {
             margin-top: 12px;
             padding: 12px;
-            background-color: rgba(0,0,0,0.02);
+            background-color: rgba(var(--primary-color-rgb), 0.02); /* Subtle relation to primary */
             border-top: 1px solid var(--border-color);
             animation: fadeIn 0.4s;
             max-height: 300px; 
             overflow-y: auto;
             border-radius: 0 0 8px 8px; 
         }
-        body[data-theme="dark"] .comments-section { background-color: rgba(255,255,255,0.03); }
-        body[data-theme="vaporwave"] .comments-section { background-color: rgba(var(--primary-color-rgb), 0.05); }
-
         .comment {
             padding: 10px 0;
             border-bottom: 1px solid var(--border-color);
             font-size: 0.9em;
             animation: fadeIn 0.4s;
         }
-        body[data-theme="dark"] .comment { border-bottom-color: #444; }
-        body[data-theme="vaporwave"] .comment { border-bottom-color: var(--border-color); }
         .comment:last-child { border-bottom: none; }
         .comment strong { color: var(--primary-color); font-weight: 500; }
         .comment p { margin: 4px 0 0 0; white-space: pre-wrap; word-break: break-word; line-height: 1.4; }
-        .comment-timestamp { font-size: 0.75em; color: var(--secondary-color); margin-left: 8px; opacity: 0.8; }
+        .comment-timestamp { font-size: 0.75em; color: var(--text-color-secondary); margin-left: 8px; opacity: 0.8; }
 
         .add-comment-form textarea {
             width: 100%; 
@@ -277,7 +435,7 @@
             float: right; 
         }
 
-        /* In-page Notification System */
+        /* --- In-page Notification System --- */
         #notification-area {
             position: fixed;
             bottom: 20px;
@@ -302,15 +460,19 @@
             font-size: 0.95em;
         }
         .notification.show { opacity: 1; transform: translateX(0); }
-        .notification.error { border-left-color: var(--error-color); }
-        .notification.success { border-left-color: var(--success-color); }
-        .notification.info { border-left-color: var(--info-color); }
+        .notification.error { border-left-color: var(--error-color); background-color: rgba(var(--error-color-rgb), 0.1); }
+        .notification.success { border-left-color: var(--success-color); background-color: rgba(var(--success-color-rgb), 0.1); }
+        .notification.info { border-left-color: var(--info-color); background-color: rgba(var(--info-color-rgb), 0.1); }
+        .notification.warning { border-left-color: var(--warning-color); background-color: rgba(var(--warning-color-rgb), 0.1); color: #5b4600; } /* Warning needs text color too */
+        body[data-theme="dark"] .notification.warning, body[data-theme="vaporwave"] .notification.warning,
+        body[data-theme="synthwave84"] .notification.warning, body[data-theme="ocean"] .notification.warning { color: var(--text-color); }
 
-        /* Meme Detail Modal (Click to Open) */
+
+        /* --- Meme Detail Modal (Click to Open) --- */
         .meme-detail-modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.75); 
+            background: rgba(0,0,0,0.8); /* Darker overlay */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -333,6 +495,7 @@
             animation: popIn 0.3s 0.1s ease-out forwards; 
             opacity: 0; 
             overflow: hidden; 
+            position: relative; /* For close button positioning */
         }
         .meme-detail-modal-content img {
             display: block;
@@ -343,75 +506,151 @@
         }
         .meme-detail-close-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.5);
+            top: 10px; /* Adjusted */
+            right: 10px; /* Adjusted */
+            background: rgba(30,30,30,0.6);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 20px;
-            line-height: 30px;
+            width: 32px; /* Slightly larger */
+            height: 32px;
+            font-size: 22px; /* Adjusted */
+            line-height: 32px;
             text-align: center;
             cursor: pointer;
             z-index: 3001; 
-            transition: background-color 0.2s;
+            transition: background-color 0.2s, transform 0.2s;
         }
         .meme-detail-close-btn:hover {
             background: rgba(0,0,0,0.8);
+            transform: scale(1.1);
         }
 
-
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; animation: fadeIn 0.3s; }
-        .modal-content { background: var(--card-bg-color); padding: 25px 35px; border-radius: 8px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); animation: popIn 0.3s ease-out forwards; }
+        /* --- General Modals (Auth, Upload) --- */
+        .modal-overlay { /* Shared styles for other modals */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 2000; 
+            animation: fadeIn 0.3s; 
+        }
+        .modal-content { /* Shared styles for other modals */
+            background: var(--card-bg-color); 
+            padding: 25px 35px; 
+            border-radius: 8px; 
+            max-width: 400px; width: 90%; 
+            text-align: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+            animation: popIn 0.3s ease-out forwards; 
+        }
         .modal-content h2 { margin-top: 0; color: var(--primary-color); }
-        .modal-content input[type="file"], .modal-content textarea { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--input-bg-color); color: var(--text-color); }
+        .modal-content input[type="file"], .modal-content textarea { 
+            width: 100%; padding: 10px; margin: 10px 0; 
+            box-sizing: border-box; border: 1px solid var(--border-color); 
+            border-radius: 6px; background-color: var(--input-bg-color); 
+            color: var(--text-color); 
+        }
+        .modal-content input[type="file"]:focus, .modal-content textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.2);
+        }
         .modal-flex-buttons { display: flex; gap: 10px; margin-top: 10px; }
         #googleLoginBtn { background-color: #db4437; flex: 1; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; font-size: 1em; }
         #googleLoginBtn:hover { background-color: #c23321; }
-        #theme-selector { padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--card-bg-color); color: var(--text-color); font-size: 0.9em; }
         
+        /* --- Theme Selector --- */
+        #theme-selector { 
+            padding: 9px 12px; 
+            border-radius: 8px; 
+            border: 1px solid var(--border-color); 
+            background-color: var(--card-bg-color); 
+            color: var(--text-color); 
+            font-size: 0.9em; 
+            cursor: pointer;
+            box-shadow: none;
+        }
+        #theme-selector:focus { outline: none; border-color: var(--primary-color); }
+        
+        /* --- Feed Controls --- */
         .feed-controls { max-width: 1200px; margin: 25px auto 15px; padding: 0 15px; }
         .feed-tabs { display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
-        .feed-tabs button { background: none; border: none; padding: 10px 18px; font-size: 1.05em; color: var(--secondary-color); cursor: pointer; border-bottom: 3px solid transparent; transition: color 0.2s, border-bottom-color 0.2s; font-weight: 500; }
+        .feed-tabs button { 
+            background: none; border: none; 
+            padding: 10px 18px; font-size: 1.05em; 
+            color: var(--text-color-secondary); 
+            cursor: pointer; 
+            border-bottom: 3px solid transparent; 
+            transition: color 0.2s ease, border-bottom-color 0.2s ease; 
+            font-weight: 500; 
+        }
         .feed-tabs button:hover { color: var(--primary-color); }
         .feed-tabs button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); font-weight: 700; }
         .cancel-btn { background-color: var(--secondary-color) !important; }
+
+        /* Utility for screen readers only */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
     </style>
 </head>
-<body data-theme="vaporwave">
+<body data-theme="vaporwave"> <!-- Default theme -->
+
     <header>
         <nav>
             <h1 id="home-link">MemeDrop</h1>
-            <div class="nav-center"><input type="search" id="search-bar" placeholder="Search memes..."></div>
+            <div class="nav-center"><input type="search" id="search-bar" placeholder="Search memes, tags, users..."></div>
             <div class="nav-right">
-                <button class="nav-button" id="notificationsBtn" title="Notifications" style="padding: 8px; position: relative;">
+                <button class="nav-button" id="notificationsBtn" title="Notifications" aria-label="View Notifications">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    <span id="notification-badge" class="hidden" style="position:absolute; top:-5px; right:-5px; background:var(--error-color); color:white; border-radius:50%; width:16px; height:16px; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:bold;"></span>
+                    <span id="notification-badge" class="hidden">0</span>
                 </button>
-                <button id="uploadBtn" class="nav-button hidden">Upload</button>
-                <select id="theme-selector" title="Change Theme">
+                <div id="notification-dropdown-container" style="position: relative;">
+                    <!-- Notification dropdown will be appended here by JS -->
+                </div>
+
+                <button id="uploadBtn" class="nav-button hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Upload
+                </button>
+                <select id="theme-selector" title="Change Theme" aria-label="Change Theme">
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
                     <option value="vaporwave">Vaporwave</option>
+                    <option value="synthwave84">Synthwave '84</option>
+                    <option value="forest">Forest Whisper</option>
+                    <option value="ocean">Ocean Deep</option>
+                    <option value="sunset">Sunset Glow</option>
+                    <option value="monochrome">Monochrome</option>
                 </select>
                 <span id="userInfo" class="hidden"></span>
                 <button id="loginPromptBtn" class="nav-button">Login</button>
             </div>
         </nav>
     </header>
+
     <main>
         <div id="gallery-view" class="view">
             <div class="feed-controls">
                 <div class="feed-tabs">
-                    <button id="feed-for-you" class="active">For You</button>
-                    <button id="feed-new">New</button>
+                    <button id="feed-for-you" class="active" aria-pressed="true">For You</button>
+                    <button id="feed-new" aria-pressed="false">New</button>
+                    <!-- <button id="feed-following" class="hidden" aria-pressed="false">Following</button> -->
                 </div>
             </div>
-            <div id="meme-gallery" class="meme-gallery"><p>Loading memes...</p></div>
+            <div id="meme-gallery" class="meme-gallery" aria-live="polite"><p>Loading memes...</p></div>
         </div>
     </main>
+
     <div id="modal-container"></div>
     <div id="notification-area"></div>
 
@@ -439,15 +678,21 @@
         let currentFeedMemes = []; 
         const modalContainer = document.getElementById('modal-container');
         const notificationArea = document.getElementById('notification-area');
+        const notificationBadge = document.getElementById('notification-badge');
+        const notificationDropdownContainer = document.getElementById('notification-dropdown-container');
         let activeFeed = 'for-you'; 
         const commentsListeners = {};
+        let userNotificationsListener = null;
+        let unreadNotificationCount = 0;
 
         const showInPageNotification = (message, type = 'info', duration = 3500) => {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
+            notification.setAttribute('role', 'alert');
             notification.addEventListener('click', () => { 
-                notification.classList.remove('show');
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(120%)';
                 notification.addEventListener('transitionend', () => notification.remove(), { once: true });
             });
             notificationArea.appendChild(notification);
@@ -455,7 +700,8 @@
             notification.classList.add('show');
             setTimeout(() => {
                 if (notification.parentElement) { 
-                    notification.classList.remove('show');
+                    notification.style.opacity = '0';
+                    notification.style.transform = 'translateX(120%)';
                     notification.addEventListener('transitionend', () => notification.remove(), { once: true });
                 }
             }, duration);
@@ -465,6 +711,7 @@
             if (!timestamp) return '';
             const now = new Date();
             const seconds = Math.round((now - new Date(timestamp)) / 1000);
+
             if (seconds < 5) return 'just now';
             if (seconds < 60) return `${seconds}s ago`;
             const minutes = Math.round(seconds / 60);
@@ -474,7 +721,7 @@
             const days = Math.round(hours / 24);
             if (days < 7) return `${days}d ago`;
             const weeks = Math.round(days / 7);
-            if (weeks < 5) return `${weeks}w ago`;
+            if (weeks < 5) return `${weeks}w ago`; 
             const months = Math.round(days / 30.44);
             if (months < 12) return `${months}mo ago`;
             const years = Math.round(days / 365);
@@ -485,18 +732,29 @@
             const post = document.createElement('article');
             post.className = 'meme-post';
             post.dataset.memeId = meme.id;
+            post.setAttribute('tabindex', '0'); // Make it focusable
+            post.setAttribute('aria-labelledby', `meme-desc-${meme.id}`);
 
+
+            const imageContainer = document.createElement('div');
+            imageContainer.className = 'meme-post-image-container';
             const img = document.createElement('img');
             img.src = meme.imageBase64;
             const altText = (meme.description || 'A meme from MemeDrop').replace(/"/g, '"');
             img.alt = altText;
-            img.addEventListener('click', (e) => {
-                // Prevent comment section toggle if image itself is clicked for detail view
-                if (e.target === img) { 
+            imageContainer.appendChild(img);
+            post.appendChild(imageContainer);
+
+            imageContainer.addEventListener('click', (e) => {
+                 openMemeDetail(meme);
+            });
+             post.addEventListener('keydown', (e) => { // Open with Enter/Space if focused
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
                     openMemeDetail(meme);
                 }
             });
-            post.appendChild(img);
+
 
             const memeInfoDiv = document.createElement('div');
             memeInfoDiv.className = 'meme-info';
@@ -504,6 +762,7 @@
             if (meme.description) {
                 const descriptionP = document.createElement('p');
                 descriptionP.className = 'meme-description';
+                descriptionP.id = `meme-desc-${meme.id}`;
                 descriptionP.textContent = meme.description;
                 memeInfoDiv.appendChild(descriptionP);
             }
@@ -530,45 +789,60 @@
             const commentCount = meme.commentCount || 0; 
             const isLikedByCurrentUser = currentUser && meme.likes && meme.likes[currentUser.uid];
             const isDislikedByCurrentUser = currentUser && meme.dislikes && meme.dislikes[currentUser.uid];
+            const isFavoritedByCurrentUser = false; // Placeholder for favorite state
 
             actionsDiv.innerHTML = `
-                <button class="action-button like-button ${isLikedByCurrentUser ? 'liked' : ''}" title="Like">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isLikedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button class="action-button like-button ${isLikedByCurrentUser ? 'liked' : ''}" title="Like" aria-pressed="${!!isLikedByCurrentUser}">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isLikedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                     <span class="like-count">${likeCount}</span>
+                    <span class="sr-only">Likes</span>
                 </button>
-                <button class="action-button dislike-button ${isDislikedByCurrentUser ? 'disliked' : ''}" title="Dislike">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isDislikedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button class="action-button dislike-button ${isDislikedByCurrentUser ? 'disliked' : ''}" title="Dislike" aria-pressed="${!!isDislikedByCurrentUser}">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isDislikedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3L8 14M5 2h4v10H5z"/>
                     </svg>
                     <span class="dislike-count">${dislikeCount}</span>
+                    <span class="sr-only">Dislikes</span>
                 </button>
-                <button class="action-button comment-toggle-button" title="View Comments">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button class="action-button comment-toggle-button" title="View Comments" aria-expanded="false">
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                     <span class="comment-count-display">${commentCount}</span>
+                    <span class="sr-only">Comments</span>
                 </button>
-                <button class="action-button remix-button" title="Remix (Coming Soon)" style="margin-left: auto; opacity: 0.5; cursor: not-allowed;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11.6V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 12.4V15a4 4 0 0 1-4 4H3"></path></svg>
+                <button class="action-button favorite-button ${isFavoritedByCurrentUser ? 'favorited' : ''}" title="Favorite (Coming Soon)" style="opacity: 0.5; cursor: not-allowed;" disabled>
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isFavoritedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </button>
+                <button class="action-button remix-button" title="Remix (Coming Soon)" style="margin-left: auto; opacity: 0.5; cursor: not-allowed;" disabled>
+                    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11.6V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 12.4V15a4 4 0 0 1-4 4H3"></path></svg>
                 </button>
             `;
             post.appendChild(actionsDiv);
 
             const commentsSection = document.createElement('div');
             commentsSection.className = 'comments-section hidden'; 
+            commentsSection.id = `comments-for-${meme.id}`;
             commentsSection.innerHTML = `<h4>Comments</h4>
-                                         <div class="comments-list">Click the comment icon again to load.</div>
-                                         ${currentUser ? `<form class="add-comment-form">
-                                             <textarea name="commentText" placeholder="Add a comment..." required></textarea>
+                                         <div class="comments-list" aria-live="polite">Click the comment icon again to load.</div>
+                                         ${currentUser ? `<form class="add-comment-form" aria-labelledby="comment-form-label-${meme.id}">
+                                             <label id="comment-form-label-${meme.id}" class="sr-only">Add a comment for meme: ${altText}</label>
+                                             <textarea name="commentText" placeholder="Add a comment..." required aria-required="true"></textarea>
                                              <button type="submit" class="nav-button">Post</button>
                                          </form>` : '<p><small>Login to post comments.</small></p>'}`;
             post.appendChild(commentsSection);
 
             post.querySelector('.like-button')?.addEventListener('click', (e) => { e.stopPropagation(); handleLike(meme.id); });
             post.querySelector('.dislike-button')?.addEventListener('click', (e) => { e.stopPropagation(); handleDislike(meme.id); });
-            post.querySelector('.comment-toggle-button')?.addEventListener('click', (e) => { e.stopPropagation(); toggleComments(meme.id, post); });
+            const commentToggleButton = post.querySelector('.comment-toggle-button');
+            if (commentToggleButton) {
+                commentToggleButton.addEventListener('click', (e) => { 
+                    e.stopPropagation(); 
+                    toggleComments(meme.id, post, commentToggleButton); 
+                });
+            }
             
             if (currentUser) { 
                 const addCommentForm = commentsSection.querySelector('.add-comment-form');
@@ -618,11 +892,18 @@
                 userInfoEl.classList.remove('hidden');
                 loginBtn.classList.add('hidden');
                 uploadBtn.classList.remove('hidden');
+                listenToUserNotifications(user.uid); // Start listening for notifications
             } else {
                 userInfoEl.classList.add('hidden');
                 userInfoEl.innerHTML = '';
                 loginBtn.classList.remove('hidden');
                 uploadBtn.classList.add('hidden');
+                if (userNotificationsListener) { // Stop listening if logged out
+                    database.ref(`user-notifications/${currentUser?.uid}`).off('value', userNotificationsListener);
+                    userNotificationsListener = null;
+                }
+                updateNotificationBadge(0); // Clear badge on logout
+                closeNotificationDropdown();
             }
             renderGallery(); 
         };
@@ -650,8 +931,8 @@
                     if (data && data.meme) {
                         modalOverlay.classList.add('meme-detail-modal-overlay'); 
                         modalHTML = `<div class="meme-detail-modal-content">
-                                        <button class="meme-detail-close-btn">×</button>
-                                        <img src="${data.meme.imageBase64}" alt="${(data.meme.description || '').replace(/"/g, '"')}"/>
+                                        <button class="meme-detail-close-btn" aria-label="Close meme detail view">×</button>
+                                        <img src="${data.meme.imageBase64}" alt="${(data.meme.description || 'Meme image').replace(/"/g, '"')}"/>
                                      </div>`;
                     } else {
                         showInPageNotification("Error: Meme data not found for detail view.", "error");
@@ -672,9 +953,8 @@
                 }
             });
             const escListener = (e) => {
-                if (e.key === "Escape") {
+                if (e.key === "Escape" && modalContainer.contains(modalOverlayElement)) { // Check if modal is still active
                     closeLogic();
-                    document.removeEventListener('keydown', escListener);
                 }
             };
             document.addEventListener('keydown', escListener);
@@ -764,6 +1044,7 @@
                     }
                     break;
                 case 'memeDetail':
+                    // No specific listeners needed here other than close, handled above
                     break;
             }
         }
@@ -771,7 +1052,7 @@
         auth.onAuthStateChanged(user => {
             console.log("INDEX: Auth state changed, current user:", user ? {uid: user.uid, displayName: user.displayName} : null);
             currentUser = user;
-            updateUIForAuthState(user);
+            updateUIForAuthState(user); // This now also handles notification listener setup/teardown
         });
         
         const handleLogout = () => {
@@ -794,74 +1075,70 @@
             renderGallery(); 
         }, error => { 
             console.error("Error fetching memes from Firebase:", error); 
-            document.getElementById('meme-gallery').innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: red;">Could not load memes. Check console.</p>';
+            const galleryContainer = document.getElementById('meme-gallery');
+            if (galleryContainer) galleryContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: red;">Could not load memes. Check console.</p>';
             showInPageNotification("Could not load memes. " + error.message, "error");
         });
 
-        const handleLike = (memeId) => {
+        const handleLikeDislike = (memeId, actionType) => {
             if (!currentUser) { showInPageNotification("Please login to interact!", "error"); openModal('auth'); return; }
-            console.log(`INDEX: Toggling like for meme ${memeId} by user ${currentUser.uid}`);
+            console.log(`INDEX: Toggling ${actionType} for meme ${memeId} by user ${currentUser.uid}`);
+            
             database.ref(`memes/${memeId}`).transaction(memeData => {
                 if (memeData) {
+                    // Initialize if undefined
                     memeData.likes = memeData.likes || {};
                     memeData.dislikes = memeData.dislikes || {};
                     memeData.likeCount = typeof memeData.likeCount === 'number' ? memeData.likeCount : 0;
                     memeData.dislikeCount = typeof memeData.dislikeCount === 'number' ? memeData.dislikeCount : 0;
 
-                    if (memeData.likes[currentUser.uid]) { 
-                        memeData.likeCount--;
-                        memeData.likes[currentUser.uid] = null;
-                    } else { 
-                        memeData.likeCount++;
-                        memeData.likes[currentUser.uid] = true;
-                        if (memeData.dislikes[currentUser.uid]) { 
+                    const userUid = currentUser.uid;
+                    const wasLiked = memeData.likes[userUid];
+                    const wasDisliked = memeData.dislikes[userUid];
+
+                    if (actionType === 'like') {
+                        if (wasLiked) { // Unlike
+                            memeData.likeCount--;
+                            memeData.likes[userUid] = null;
+                        } else { // Like
+                            memeData.likeCount++;
+                            memeData.likes[userUid] = true;
+                            if (wasDisliked) { // If was disliked, remove dislike
+                                memeData.dislikeCount--;
+                                memeData.dislikes[userUid] = null;
+                            }
+                        }
+                    } else if (actionType === 'dislike') {
+                        if (wasDisliked) { // Undislike
                             memeData.dislikeCount--;
-                            memeData.dislikes[currentUser.uid] = null;
+                            memeData.dislikes[userUid] = null;
+                        } else { // Dislike
+                            memeData.dislikeCount++;
+                            memeData.dislikes[userUid] = true;
+                            if (wasLiked) { // If was liked, remove like
+                                memeData.likeCount--;
+                                memeData.likes[userUid] = null;
+                            }
                         }
                     }
                 }
                 return memeData; 
             }, (error, committed, snapshot) => {
-                if (error) { console.error('Like transaction failed!', error); showInPageNotification("Could not process like: " + error.message, "error");
-                } else if (!committed) { console.warn('Like transaction not committed.'); showInPageNotification("Could not update like, please try again.", "info");
-                } else { console.log('Like transaction committed!'); }
+                if (error) { console.error(`${actionType} transaction failed!`, error); showInPageNotification(`Could not process ${actionType}: ${error.message}`, "error");
+                } else if (!committed) { console.warn(`${actionType} transaction not committed.`); showInPageNotification(`Could not update ${actionType}, please try again.`, "info");
+                } else { console.log(`${actionType} transaction committed!`); }
             });
         };
-
-        const handleDislike = (memeId) => {
-            if (!currentUser) { showInPageNotification("Please login to interact!", "error"); openModal('auth'); return; }
-            console.log(`INDEX: Toggling dislike for meme ${memeId} by user ${currentUser.uid}`);
-            database.ref(`memes/${memeId}`).transaction(memeData => {
-                if (memeData) {
-                    memeData.likes = memeData.likes || {};
-                    memeData.dislikes = memeData.dislikes || {};
-                    memeData.likeCount = typeof memeData.likeCount === 'number' ? memeData.likeCount : 0;
-                    memeData.dislikeCount = typeof memeData.dislikeCount === 'number' ? memeData.dislikeCount : 0;
-
-                    if (memeData.dislikes[currentUser.uid]) { 
-                        memeData.dislikeCount--;
-                        memeData.dislikes[currentUser.uid] = null;
-                    } else { 
-                        memeData.dislikeCount++;
-                        memeData.dislikes[currentUser.uid] = true;
-                        if (memeData.likes[currentUser.uid]) { 
-                            memeData.likeCount--;
-                            memeData.likes[currentUser.uid] = null;
-                        }
-                    }
-                }
-                return memeData;
-            }, (error, committed, snapshot) => {
-                if (error) { console.error('Dislike transaction failed!', error); showInPageNotification("Could not process dislike: " + error.message, "error");
-                } else if (!committed) { console.warn('Dislike transaction not committed.'); showInPageNotification("Could not update dislike, please try again.", "info");
-                } else { console.log('Dislike transaction committed!'); }
-            });
-        };
+        const handleLike = (memeId) => handleLikeDislike(memeId, 'like');
+        const handleDislike = (memeId) => handleLikeDislike(memeId, 'dislike');
         
-        const toggleComments = (memeId, postElement) => {
+        const toggleComments = (memeId, postElement, toggleButton) => {
             const commentsSection = postElement.querySelector('.comments-section');
+            if (!commentsSection) return;
             const commentsListDiv = commentsSection.querySelector('.comments-list');
             const isHidden = commentsSection.classList.toggle('hidden');
+            toggleButton.setAttribute('aria-expanded', !isHidden);
+
 
             if (!isHidden) { 
                 commentsListDiv.innerHTML = '<p>Loading comments...</p>'; 
@@ -877,12 +1154,13 @@
                         if (commentCountDisplay) commentCountDisplay.textContent = commentCount;
                         
                         if (allMemes.find(m => m.id === memeId)?.commentCount !== commentCount) {
-                           database.ref(`memes/${memeId}/commentCount`).set(commentCount); 
+                           database.ref(`memes/${memeId}/commentCount`).set(commentCount)
+                            .catch(err => console.warn("Failed to update meme comment count:", err)); 
                         }
                     };
                     const errorCallback = error => {
                         console.error(`Error fetching comments for meme ${memeId}:`, error);
-                        commentsListDiv.innerHTML = '<p style="color:red;">Could not load comments.</p>';
+                        if(commentsListDiv) commentsListDiv.innerHTML = '<p style="color:red;">Could not load comments.</p>';
                         showInPageNotification("Failed to load comments: " + error.message, "error");
                     };
                     
@@ -899,6 +1177,7 @@
         };
 
         const renderComments = (snapshot, commentsListDiv) => {
+            if (!commentsListDiv) return;
             commentsListDiv.innerHTML = ''; 
             if (!snapshot.exists() || snapshot.numChildren() === 0) {
                 commentsListDiv.innerHTML = '<p>No comments yet. Be the first!</p>';
@@ -959,6 +1238,19 @@
                     commentTextarea.value = ''; 
                     showInPageNotification("Comment posted!", "success");
                     database.ref(`memes/${memeId}/commentCount`).transaction(count => (count || 0) + 1);
+
+                    // --- Create Notification for Meme Owner (if not self) ---
+                    const memeOwnerId = allMemes.find(m => m.id === memeId)?.creatorId;
+                    if (memeOwnerId && memeOwnerId !== currentUser.uid) {
+                        createNotification(
+                            memeOwnerId,
+                            'comment',
+                            currentUser.uid,
+                            currentUser.displayName || 'Someone',
+                            memeId,
+                            `commented on your meme: "${commentText.substring(0, 30)}${commentText.length > 30 ? '...' : ''}"`
+                        );
+                    }
                 })
                 .catch(error => {
                     console.error("Error posting comment:", error);
@@ -986,35 +1278,169 @@
         };
         searchBar.addEventListener('input', applySearchFilter);
 
-        document.getElementById('feed-for-you').addEventListener('click', () => switchFeed('for-you'));
-        document.getElementById('feed-new').addEventListener('click', () => switchFeed('new'));
+        document.getElementById('feed-for-you').addEventListener('click', (e) => switchFeed('for-you', e.target));
+        document.getElementById('feed-new').addEventListener('click', (e) => switchFeed('new', e.target));
 
-        const switchFeed = (feedName) => {
+        const switchFeed = (feedName, clickedButton) => {
             activeFeed = feedName;
-            document.querySelectorAll('.feed-tabs button').forEach(btn => btn.classList.remove('active'));
-            const activeBtn = document.getElementById(`feed-${feedName}`);
-            if (activeBtn) activeBtn.classList.add('active');
+            document.querySelectorAll('.feed-tabs button').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+            });
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+                clickedButton.setAttribute('aria-pressed', 'true');
+            }
             applySearchFilter(); 
             showInPageNotification(`Switched to "${feedName.replace('-', ' ')}" feed.`, 'info', 1500);
         };
 
         const themeSelector = document.getElementById('theme-selector');
-        const savedTheme = localStorage.getItem('theme');
-        const defaultTheme = 'vaporwave'; 
-        const currentTheme = savedTheme || defaultTheme;
-        document.body.setAttribute('data-theme', currentTheme);
-        if(themeSelector) themeSelector.value = currentTheme; 
+        const savedTheme = localStorage.getItem('theme') || 'vaporwave'; 
+        document.body.setAttribute('data-theme', savedTheme);
+        if(themeSelector) themeSelector.value = savedTheme; 
         if(themeSelector) {
             themeSelector.addEventListener('change', (e) => {
                 document.body.setAttribute('data-theme', e.target.value);
                 localStorage.setItem('theme', e.target.value);
             });
         }
+
+        // --- NOTIFICATIONS LOGIC (Client-side creation & basic display) ---
+        const createNotification = (receivingUserId, type, actorUid, actorName, targetId = null, messageContent = null) => {
+            if (!receivingUserId || !type || !actorUid || !actorName) return;
+
+            const notificationData = {
+                type: type, // 'like', 'comment', 'follow', 'remix_on_yours', 'remix_of_followed'
+                actorUid: actorUid,
+                actorName: actorName,
+                targetId: targetId, // e.g., memeId, or userId for follow
+                message: messageContent || `${actorName} ${type}d your content.`, // Generic fallback
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                read: false
+            };
+            database.ref(`user-notifications/${receivingUserId}`).push(notificationData)
+                .then(() => console.log("Notification created for", receivingUserId))
+                .catch(err => console.error("Error creating notification:", err));
+        };
         
-        document.getElementById('notificationsBtn').addEventListener('click', () => {
-            showInPageNotification("Notifications panel not implemented yet.", "info");
+        const updateNotificationBadge = (count) => {
+            if (notificationBadge) {
+                if (count > 0) {
+                    notificationBadge.textContent = count > 9 ? '9+' : count;
+                    notificationBadge.classList.remove('hidden');
+                } else {
+                    notificationBadge.classList.add('hidden');
+                }
+            }
+        };
+
+        const listenToUserNotifications = (userId) => {
+            if (userNotificationsListener) { // Remove previous listener if any
+                database.ref(`user-notifications/${currentUser?.uid}`).off('value', userNotificationsListener);
+            }
+            const userNotificationsRef = database.ref(`user-notifications/${userId}`).orderByChild('timestamp').limitToLast(20); // Get latest 20
+            
+            userNotificationsListener = userNotificationsRef.on('value', snapshot => {
+                const notifications = [];
+                let unreadCount = 0;
+                snapshot.forEach(childSnap => {
+                    const notif = { id: childSnap.key, ...childSnap.val() };
+                    notifications.unshift(notif); // Newest first
+                    if (!notif.read) {
+                        unreadCount++;
+                    }
+                });
+                unreadNotificationCount = unreadCount;
+                updateNotificationBadge(unreadCount);
+                renderNotificationDropdown(notifications); // If dropdown is open, re-render
+            }, error => {
+                console.error("Error fetching notifications:", error);
+                showInPageNotification("Could not load notifications.", "error");
+            });
+        };
+
+        const renderNotificationDropdown = (notifications) => {
+            let dropdown = notificationDropdownContainer.querySelector('.notification-dropdown');
+            if (!dropdown) return; // Only render if dropdown is meant to be visible
+
+            dropdown.innerHTML = ''; // Clear previous
+            if (notifications.length === 0) {
+                dropdown.innerHTML = '<div class="notification-item">No new notifications.</div>';
+                return;
+            }
+            notifications.forEach(notif => {
+                const item = document.createElement('div');
+                item.className = `notification-item ${!notif.read ? 'unread' : ''}`;
+                item.dataset.notificationId = notif.id;
+                item.innerHTML = `<span class="notification-message">${notif.message || `${notif.actorName} performed an action.`}</span>
+                                  <span class="notification-timestamp">${timeAgo(notif.timestamp)}</span>`;
+                item.addEventListener('click', () => handleNotificationClick(notif));
+                dropdown.appendChild(item);
+            });
+        };
+
+        const handleNotificationClick = (notification) => {
+            console.log("Clicked notification:", notification);
+            // Mark as read
+            if (!notification.read && currentUser) {
+                database.ref(`user-notifications/${currentUser.uid}/${notification.id}/read`).set(true);
+            }
+            // Navigate to target if applicable (e.g., open meme detail, user profile)
+            if (notification.type === 'like' || notification.type === 'comment' || notification.type === 'remix_on_yours') {
+                if (notification.targetId) {
+                    const targetMeme = allMemes.find(m => m.id === notification.targetId);
+                    if (targetMeme) openMemeDetail(targetMeme);
+                }
+            }
+            closeNotificationDropdown();
+        };
+
+        const toggleNotificationDropdown = () => {
+            let dropdown = notificationDropdownContainer.querySelector('.notification-dropdown');
+            if (dropdown) {
+                dropdown.remove();
+                document.getElementById('notificationsBtn').setAttribute('aria-expanded', 'false');
+            } else {
+                dropdown = document.createElement('div');
+                dropdown.className = 'notification-dropdown';
+                dropdown.setAttribute('aria-label', 'Notifications List');
+                notificationDropdownContainer.appendChild(dropdown);
+                document.getElementById('notificationsBtn').setAttribute('aria-expanded', 'true');
+                // Fetch and render immediately
+                if (currentUser) {
+                    // Trigger a re-render by fetching (listener should already be active if logged in)
+                    database.ref(`user-notifications/${currentUser.uid}`).orderByChild('timestamp').limitToLast(20).once('value', snapshot => {
+                         const notifications = [];
+                         snapshot.forEach(childSnap => notifications.unshift({ id: childSnap.key, ...childSnap.val() }));
+                         renderNotificationDropdown(notifications);
+                    });
+                } else {
+                     renderNotificationDropdown([]); // Show empty state if not logged in
+                }
+            }
+        };
+        
+        const closeNotificationDropdown = () => {
+            const dropdown = notificationDropdownContainer.querySelector('.notification-dropdown');
+            if (dropdown) {
+                dropdown.remove();
+                document.getElementById('notificationsBtn').setAttribute('aria-expanded', 'false');
+            }
+        };
+
+        document.getElementById('notificationsBtn').addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent body click from closing it immediately
+            toggleNotificationDropdown();
         });
-        
+        // Close dropdown if clicking outside
+        document.body.addEventListener('click', (e) => {
+            if (!notificationDropdownContainer.contains(e.target) && e.target !== document.getElementById('notificationsBtn') && !document.getElementById('notificationsBtn').contains(e.target)) {
+                closeNotificationDropdown();
+            }
+        });
+
+
         document.addEventListener('click', (e) => {
             const target = e.target;
             if (target.id === 'loginPromptBtn') openModal('auth');
