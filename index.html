@@ -234,12 +234,18 @@
             return post;
         };
 
-        const escapeHTML = (str) => {
-            if (typeof str !== 'string') return '';
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&', '<': '<', '>': '>', "'": ''', '"': '"' }[tag] || tag)
-            );
-        };
+       const escapeHTML = (str) => {
+    if (typeof str !== 'string') return '';
+    return str.replace(/[&<>'"]/g, 
+        tag => ({
+            '&': '&',
+            '<': '<',
+            '>': '>',
+            "'": ''', // Use HTML entity for single quote
+            '"': '"'  // Use HTML entity for double quote
+        }[tag] || tag)
+    );
+};
 
         const renderGallery = (memesToDisplay = filteredMemes) => {
             const galleryContainer = document.getElementById('meme-gallery');
