@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedTheme = localStorage.getItem('theme') || userFollowData?.settings?.theme || 'vaporwave';
         document.body.setAttribute('data-theme', savedTheme);
         if (themeSelector) themeSelector.value = savedTheme;
-        const settingsModalThemeSelector = document.querySelector('#settingsFormModal #settingThemeModal');
+        const settingsModalThemeSelector = document.querySelector('#settingsFormModal #settingThemeModal'); // ID for modal's selector
         if (settingsModalThemeSelector) settingsModalThemeSelector.value = savedTheme;
     };
 
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentVisibleView = viewToShow;
             window.scrollTo(0, 0);
         } else {
-            galleryView.classList.remove('hidden');
+            galleryView.classList.remove('hidden'); // Fallback to gallery
             currentVisibleView = galleryView;
         }
     };
@@ -251,12 +251,48 @@ document.addEventListener('DOMContentLoaded', () => {
             if (userNotificationsListener && prevUid) { database.ref(`user-notifications/${prevUid}`).off('value', userNotificationsListener); userNotificationsListener = null; }
             updateNotificationBadge(0); closeNotificationDropdown();
         }
-        if (currentVisibleView === galleryView) { if ((activeFeed==='favorites'||activeFeed==='following')&&!user){renderGallery([],'meme-gallery'); setActiveFeedTab('for-you');} else {renderGalleryForCurrentFeed();} }
-        else if (currentVisibleView === accountView) { if (!user) {switchMainView(galleryView); setActiveFeedTab('for-you'); renderGalleryForCurrentFeed();} else if (currentAccountPageUserId){loadAccountPage(currentAccountPageUserId);} }
+        // Refresh current view based on auth state - renderGalleryForCurrentFeed is called within specific load functions or feed switches.
+        if (currentVisibleView === galleryView) {
+             if ((activeFeed === 'favorites' || activeFeed === 'following') && !user) {
+                renderGallery([], 'meme-gallery'); // Clear these specific feeds
+                setActiveFeedTab('for-you'); // Default back to a public feed
+                renderGalleryForCurrentFeed(); // Render the new public feed
+            } else {
+                renderGalleryForCurrentFeed(); // Re-render current general feed
+            }
+        } else if (currentVisibleView === accountView) {
+            if (!user) { // If on account page and logs out, go to gallery
+                switchMainView(galleryView);
+                setActiveFeedTab('for-you');
+                renderGalleryForCurrentFeed();
+            } else if (currentAccountPageUserId) { // If still logged in, refresh account page content
+                loadAccountPage(currentAccountPageUserId);
+            }
+        }
     };
     const handleLogout = () => { auth.signOut().then(() => showInPageNotification('Logged out.', 'info')).catch(err => showInPageNotification(`Logout failed: ${err.message}`, "error")); };
 
-    // --- Meme Rendering, Interaction, Comments ---
+    // --- Meme Rendering (General) ---
+    const renderGallery = (memesToDisplay, galleryElementId = 'meme-gallery') => {
+        const galleryContainer = document.getElementById(galleryElementId);
+        if (!galleryContainer) { console.warn(`Gallery container #${galleryElementId} not found.`); return; }
+        galleryContainer.innerHTML = '';
+        if (!memesToDisplay || memesToDisplay.length === 0) {
+            galleryContainer.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; padding: 40px 0;">No memes here yet! Try a different feed or upload your own.</p>`;
+            return;
+        }
+        const fragment = document.createDocumentFragment();
+        memesToDisplay.forEach((meme, index) => {
+            const memeEl = createMemeElement(meme);
+            if (memeEl) {
+                memeEl.style.animationDelay = `${index * 0.05}s`;
+                fragment.appendChild(memeEl);
+            }
+        });
+        galleryContainer.appendChild(fragment);
+    };
+
+    // --- Meme Element Creation & Interactions ---
     const createMemeElement = (meme) => {
         const post = document.createElement('article'); post.className = 'meme-post'; post.dataset.memeId = meme.id; post.setAttribute('tabindex', '0'); post.setAttribute('aria-labelledby', `meme-desc-${meme.id}`);
         const imageContainer = document.createElement('div'); imageContainer.className = 'meme-post-image-container';
@@ -279,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const cTB=document.createElement('button');cTB.className='action-button comment-toggle-button';cTB.title="View Comments";cTB.setAttribute('aria-expanded','false');cTB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span class="comment-count-display">${cC}</span>`;cTB.onclick=(e)=>{e.stopPropagation();toggleComments(meme.id,post,cTB);};actionsDiv.appendChild(cTB);
         const favB=document.createElement('button');favB.className=`action-button favorite-button ${iF?'favorited':''}`;favB.title=iF?"Unfavorite":"Favorite";favB.setAttribute('aria-pressed',String(!!iF));favB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${iF?'var(--favorite-color)':'none'}" stroke="var(--favorite-color)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span class="sr-only">Favorite</span>`;favB.onclick=(e)=>{e.stopPropagation();handleFavoriteToggle(meme.id,e.currentTarget);};actionsDiv.appendChild(favB);
         const vCS=document.createElement('span');vCS.className='meme-views-counter';vCS.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> <span>${meme.viewCount||0}</span>`;actionsDiv.appendChild(vCS);
-        if(currentUser&&tUser.uid===meme.creatorId){const oB=document.createElement('button');oB.className='action-button post-options-button';oB.title="More options";oB.setAttribute('aria-haspopup','true');oB.setAttribute('aria-expanded','false');oB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg><span class="sr-only">More options</span>`;oB.onclick=(e)=>{e.stopPropagation();togglePostOptionsMenu(meme,oB);};actionsDiv.appendChild(oB);}
+        if(currentUser&¤tUser.uid===meme.creatorId){const oB=document.createElement('button');oB.className='action-button post-options-button';oB.title="More options";oB.setAttribute('aria-haspopup','true');oB.setAttribute('aria-expanded','false');oB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg><span class="sr-only">More options</span>`;oB.onclick=(e)=>{e.stopPropagation();togglePostOptionsMenu(meme,oB);};actionsDiv.appendChild(oB);}
         post.appendChild(actionsDiv);
         const comS=document.createElement('div');comS.className='comments-section hidden';comS.id=`comments-for-${meme.id}`;const aTFC=(meme.description||'this meme').substring(0,50).replace(/"/g,'"');const cLAL=`Comments for ${aTFC}`;comS.innerHTML=`<h4>Comments</h4><div class="comments-list" aria-live="polite" aria-label="${cLAL}"><p>Click comment icon to load/refresh.</p></div>${currentUser?`<form class="add-comment-form" data-meme-id="${meme.id}" aria-labelledby="comment-form-label-${meme.id}"><label id="comment-form-label-${meme.id}" class="sr-only">Add a comment for ${aTFC}</label><textarea name="commentText" placeholder="Add a comment..." required aria-required="true" rows="3"></textarea><button type="submit" class="nav-button">Post</button></form>`:'<p><small>Login to post comments.</small></p>'}`;post.appendChild(comS);
         const addCF=comS.querySelector('.add-comment-form');if(addCF){addCF.addEventListener('submit',(e)=>{e.preventDefault();e.stopPropagation();handleAddComment(e,meme.id);});}
@@ -319,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentUser || !memeId) { if (!currentUser) openModal('auth'); return; }
         showSpinner(); const cU = currentUser.uid; const iCF = !!(userFollowData.favorites && userFollowData.favorites[memeId]);
         const oBS = {isFavorited:iCF, title:buttonElement.title, fill:buttonElement.querySelector('svg')?.style.fill};
-        checkAndSetFavoriteButtonState(memeId, buttonElement, !iCF); // Optimistic UI
+        checkAndSetFavoriteButtonState(memeId, buttonElement, !iCF);
         if (iCF) delete userFollowData.favorites[memeId]; else userFollowData.favorites[memeId] = true;
         const updates = {}; updates[`/user-favorites/${cU}/${memeId}`] = iCF ? null : true;
         try {
@@ -365,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!snapshot.exists() || snapshot.numChildren() === 0) { commentsListDiv.innerHTML = '<p>No comments yet. Be the first!</p>'; }
         else {
             const arr = []; snapshot.forEach(cs => arr.push({ id: cs.key, ...cs.val() }));
-            arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); // Oldest first
             const frag = document.createDocumentFragment();
             arr.forEach(c => {
                 const cDiv = document.createElement('div'); cDiv.className = 'comment';
@@ -452,13 +488,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(menu); activeContextMenu = menu;
         setTimeout(() => { document.addEventListener('click', handleClickOutsideContextMenu, { once: true }); }, 0);
     };
-    // closeActiveContextMenu is already defined above openModal
+    // closeActiveContextMenu is defined above openModal
     const handleClickOutsideContextMenu = (event) => { if (activeContextMenu && !activeContextMenu.contains(event.target) && !event.target.closest('.post-options-button')) { closeActiveContextMenu(); } else if (activeContextMenu) { document.addEventListener('click', handleClickOutsideContextMenu, { once: true }); } };
     const handleDeleteMeme = (memeId) => {
         if (!currentUser) return; const mTD = allMemes.find(m=>m.id===memeId); if (!mTD||mTD.creatorId!==currentUser.uid){showInPageNotification("Only owner can delete.","error");return;}
         if (confirm("Delete this meme forever? This will also delete all its comments.")) {
             showSpinner(); const upd={}; upd[`/memes/${memeId}`]=null;upd[`/comments/${memeId}`]=null;
-            // TODO: Advanced cleanup: Remove from user-favorites of all users. This typically needs a Cloud Function.
             database.ref().update(upd)
                 .then(()=>showInPageNotification("Meme deleted.","success"))
                 .catch(e=>{console.error("Delete error:",e);showInPageNotification("Delete failed: "+e.message,"error");})
@@ -532,7 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const [fS,frS,fvS,stS] = await Promise.all([database.ref(`following/${userId}`).once('value'),database.ref(`followers/${userId}`).once('value'),database.ref(`user-favorites/${userId}`).once('value'),database.ref(`users/${userId}/settings`).once('value')]);
             userFollowData.following=fS.val()||{}; userFollowData.followers=frS.val()||{}; userFollowData.favorites=fvS.val()||{}; userFollowData.settings=stS.val()||{theme:localStorage.getItem('theme')||'vaporwave',emailNotifications:false};
             initTheme();
-            if (currentVisibleView===galleryView)renderGalleryForCurrentFeed(); else if(currentVisibleView===accountView&&tAccountPageUserId)loadAccountPage(currentAccountPageUserId);
+            if (currentVisibleView===galleryView)renderGalleryForCurrentFeed(); else if(currentVisibleView===accountView&¤tAccountPageUserId)loadAccountPage(currentAccountPageUserId);
         } catch (e) { console.error("Error loading user data bundle:",e); initTheme(); }
     };
     const handleFollowToggle = async (targetUserId, buttonElement) => {
@@ -544,13 +579,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await database.ref().update(upd);
             document.querySelectorAll(`.follow-creator-btn[data-user-id="${targetUserId}"], .follow-action-btn[data-user-id="${targetUserId}"]`).forEach(b=>checkAndSetFollowButtonState(targetUserId,b));
-            if(currentVisibleView===accountView&&(currentAccountPageUserId===cU||currentAccountPageUserId===targetUserId)){const dId=currentAccountPageUserId;const[nFrC,nFgC]=await Promise.all([database.ref(`followers/${dId}`).once('value').then(s=>s.numChildren()),database.ref(`following/${dId}`).once('value').then(s=>s.numChildren())]);if(accountFollowerCountStatEl&&tAccountPageUserId===dId)accountFollowerCountStatEl.innerHTML=`Followers: <strong>${nFrC}</strong>`;if(accountFollowingCountStatEl&&tAccountPageUserId===dId)accountFollowingCountStatEl.innerHTML=`Following: <strong>${nFgC}</strong>`;}
+            if(currentVisibleView===accountView&&(currentAccountPageUserId===cU||currentAccountPageUserId===targetUserId)){const dId=currentAccountPageUserId;const[nFrC,nFgC]=await Promise.all([database.ref(`followers/${dId}`).once('value').then(s=>s.numChildren()),database.ref(`following/${dId}`).once('value').then(s=>s.numChildren())]);if(accountFollowerCountStatEl&¤tAccountPageUserId===dId)accountFollowerCountStatEl.innerHTML=`Followers: <strong>${nFrC}</strong>`;if(accountFollowingCountStatEl&¤tAccountPageUserId===dId)accountFollowingCountStatEl.innerHTML=`Following: <strong>${nFgC}</strong>`;}
             if(!iCF){createNotification(targetUserId,'follow',currentUser.uid,currentUser.displayName||'Someone',null,`${currentUser.displayName||'Someone'} started following you.`,'user');}
             showInPageNotification(iCF?`Unfollowed.`:`Now following.`,'success');
         } catch(e){console.error("Follow toggle error:",e);showInPageNotification("Follow update failed: "+e.message,"error");userFollowData.following=oBS.isFollowing?{...userFollowData.following,[targetUserId]:true}:(delete userFollowData.following[targetUserId],userFollowData.following);if(buttonElement)checkAndSetFollowButtonState(targetUserId,buttonElement, oBS.isFollowing);} finally {hideSpinner();}
     };
     const checkAndSetFollowButtonState = (targetUserId, buttonElement, isFollowingState) => {
-        if(!buttonElement) return; // Guard clause
+        if(!buttonElement) return;
         if(!currentUser||currentUser.uid===targetUserId){buttonElement.classList.add('hidden');return;} buttonElement.classList.remove('hidden');
         const iF = (typeof isFollowingState === 'boolean') ? isFollowingState : (userFollowData.following&&userFollowData.following[targetUserId]);
         buttonElement.textContent=iF?'Unfollow':'Follow'; buttonElement.classList.toggle('following',!!iF);
@@ -560,7 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
     auth.onAuthStateChanged(user => {
         console.log("Auth state changed. User:", user ? user.uid : null);
         const previousUserUid = currentUser?.uid;
-        updateUIForAuthState(user);
+        updateUIForAuthState(user); // Sets currentUser, loads userFollowData, updates nav
         if (user && !previousUserUid) { loadInitialData(true); }
         else if (!user && previousUserUid) { if (currentVisibleView === accountView || (currentVisibleView === galleryView && (activeFeed === 'favorites' || activeFeed === 'following'))) { window.location.hash = ''; switchMainView(galleryView); setActiveFeedTab('for-you'); renderGalleryForCurrentFeed(); } currentAccountPageUserId = null; }
         else if (!user && !previousUserUid) { loadInitialData(false); }
