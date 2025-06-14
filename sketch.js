@@ -552,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleNotificationClick = (notification) => {
         if (!notification.read && currentUser) { database.ref(`user-notifications/${currentUser.uid}/${notification.id}/read`).set(true).catch(e=>console.warn("Mark as read failed:",e));}
         closeNotificationDropdown();
-    if (notification.targetType === 'meme' && notification.targetId) { // Corrected from &¬ to &&
+ if (notification.targetType === 'meme' && notification.targetId) {
     const targetMeme = allMemes.find(m => m.id === notification.targetId);
     if (targetMeme) {
         openMemeDetail(targetMeme);
