@@ -670,8 +670,20 @@ else if (currentVisibleView === accountView && currentAccountPageUserId) loadAcc
         try {
             await database.ref().update(upd);
             document.querySelectorAll(`.follow-creator-btn[data-user-id="${targetUserId}"], .follow-action-btn[data-user-id="${targetUserId}"]`).forEach(b=>checkAndSetFollowButtonState(targetUserId,b));
-            if(currentVisibleView===accountView&&(currentAccountPageUserId===cU||currentAccountPageUserId===targetUserId)){const dId=currentAccountPageUserId;const[nFrC,nFgC]=await Promise.all([database.ref(`followers/${dId}`).once('value').then(s=>s.numChildren()),database.ref(`following/${dId}`).once('value').then(s=>s.numChildren())]);if(accountFollowerCountStatEl&¤tAccountPageUserId===dId)accountFollowerCountStatEl.innerHTML=`Followers: <strong>${nFrC}</strong>`;if(accountFollowingCountStatEl&¤tAccountPageUserId===dId)accountFollowingCountStatEl.innerHTML=`Following: <strong>${nFgC}</strong>`;}
-            if(!iCF){createNotification(targetUserId,'follow',currentUser.uid,currentUser.displayName||'Someone',null,`${currentUser.displayName||'Someone'} started following you.`,'user');}
+if (
+  currentVisibleView === accountView &&
+  (currentAccountPageUserId === cU || currentAccountPageUserId === targetUserId)
+) {
+  const dId = currentAccountPageUserId;
+  const [nFrC, nFgC] = await Promise.all([
+    database.ref(`followers/${dId}`).once('value').then(s => s.numChildren()),
+    database.ref(`following/${dId}`).once('value').then(s => s.numChildren())
+  ]);
+  if (accountFollowerCountStatEl && currentAccountPageUserId === dId)
+    accountFollowerCountStatEl.innerHTML = `Followers: <strong>${nFrC}</strong>`;
+  if (accountFollowingCountStatEl && currentAccountPageUserId === dId)
+    accountFollowingCountStatEl.innerHTML = `Following: <strong>${nFgC}</strong>`;
+}if(!iCF){createNotification(targetUserId,'follow',currentUser.uid,currentUser.displayName||'Someone',null,`${currentUser.displayName||'Someone'} started following you.`,'user');}
             showInPageNotification(iCF?`Unfollowed.`:`Now following.`,'success');
         } catch(e){console.error("Follow toggle error:",e);showInPageNotification("Follow update failed: "+e.message,"error");userFollowData.following=oBS.isFollowing?{...userFollowData.following,[targetUserId]:true}:(delete userFollowData.following[targetUserId],userFollowData.following);if(buttonElement){buttonElement.textContent=oBS.text;buttonElement.className=oBS.classList;} } finally {hideSpinner();}
     };
