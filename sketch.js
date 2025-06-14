@@ -145,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (settingsModalThemeSelector) settingsModalThemeSelector.value = savedTheme;
     };
 
+
     // --- View Management ---
     let currentVisibleView = galleryView;
     const switchMainView = (viewToShow) => {
@@ -158,6 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
             currentVisibleView = galleryView;
         }
     };
+
+    // --- Context Menu (Post Options) ---
+    const closeActiveContextMenu = () => { if (activeContextMenu) { activeContextMenu.remove(); activeContextMenu = null; document.removeEventListener('click', handleClickOutsideContextMenu); } };
 
     // --- Modal Management ---
     const openModal = (modalType, data = null) => {
@@ -253,164 +257,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleLogout = () => { auth.signOut().then(() => showInPageNotification('Logged out.', 'info')).catch(err => showInPageNotification(`Logout failed: ${err.message}`, "error")); };
 
     // --- Meme Rendering, Interaction, Comments ---
-// sketch.js
-
-// ... (Keep all code before createMemeElement) ...
-
     const createMemeElement = (meme) => {
-        const post = document.createElement('article');
-        post.className = 'meme-post';
-        post.dataset.memeId = meme.id;
-        post.setAttribute('tabindex', '0');
-        post.setAttribute('aria-labelledby', `meme-desc-${meme.id}`);
-
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'meme-post-image-container';
-        const img = document.createElement('img');
-        img.src = meme.imageBase64;
-        img.alt = (meme.description || `Meme by ${meme.creatorName || 'User'}`).substring(0, 100).replace(/"/g, '"');
-        img.loading = 'lazy';
-        imageContainer.appendChild(img);
-        post.appendChild(imageContainer);
-
+        const post = document.createElement('article'); post.className = 'meme-post'; post.dataset.memeId = meme.id; post.setAttribute('tabindex', '0'); post.setAttribute('aria-labelledby', `meme-desc-${meme.id}`);
+        const imageContainer = document.createElement('div'); imageContainer.className = 'meme-post-image-container';
+        const img = document.createElement('img'); img.src = meme.imageBase64; img.alt = (meme.description || `Meme by ${meme.creatorName || 'User'}`).substring(0, 100).replace(/"/g, '"'); img.loading = 'lazy'; imageContainer.appendChild(img); post.appendChild(imageContainer);
         imageContainer.addEventListener('click', (e) => { e.stopPropagation(); incrementMemeViewCount(meme.id); openMemeDetail(meme); });
         post.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { if (document.activeElement === post) { e.preventDefault(); incrementMemeViewCount(meme.id); openMemeDetail(meme); } } });
-
-        const memeInfoDiv = document.createElement('div');
-        memeInfoDiv.className = 'meme-info';
-        if (meme.description) {
-            const descriptionP = document.createElement('p');
-            descriptionP.className = 'meme-description';
-            descriptionP.id = `meme-desc-${meme.id}`;
-            descriptionP.textContent = meme.description;
-            memeInfoDiv.appendChild(descriptionP);
-        }
-
-        const metaDiv = document.createElement('div');
-        metaDiv.className = 'meme-meta';
-        const creatorDiv = document.createElement('div');
-        creatorDiv.className = 'meme-creator';
-        const creatorLink = document.createElement('a');
-        creatorLink.className = 'meme-creator-link';
-        creatorLink.textContent = `${meme.creatorName || 'Anonymous'}`;
-        creatorLink.href = `#/user/${meme.creatorId}`;
-        creatorLink.dataset.userId = meme.creatorId;
-        creatorLink.addEventListener('click', (e) => { e.preventDefault(); navigateToAccountPage(meme.creatorId); });
-        creatorDiv.appendChild(creatorLink);
-
-        if (currentUser && currentUser.uid !== meme.creatorId) {
-            const followBtn = document.createElement('button');
-            followBtn.className = 'follow-creator-btn';
-            followBtn.dataset.userId = meme.creatorId;
-            checkAndSetFollowButtonState(meme.creatorId, followBtn); // checkAndSet will set initial text
-            followBtn.addEventListener('click', (e) => { e.stopPropagation(); handleFollowToggle(meme.creatorId, e.currentTarget); });
-            creatorDiv.appendChild(followBtn);
-        }
+        const memeInfoDiv = document.createElement('div'); memeInfoDiv.className = 'meme-info';
+        if (meme.description) { const dP = document.createElement('p'); dP.className = 'meme-description'; dP.id = `meme-desc-${meme.id}`; dP.textContent = meme.description; memeInfoDiv.appendChild(dP); }
+        const metaDiv = document.createElement('div'); metaDiv.className = 'meme-meta';
+        const creatorDiv = document.createElement('div'); creatorDiv.className = 'meme-creator';
+        const creatorLink = document.createElement('a'); creatorLink.className = 'meme-creator-link'; creatorLink.textContent = `${meme.creatorName || 'Anonymous'}`; creatorLink.href = `#/user/${meme.creatorId}`; creatorLink.dataset.userId = meme.creatorId; creatorLink.addEventListener('click', (e) => { e.preventDefault(); navigateToAccountPage(meme.creatorId); }); creatorDiv.appendChild(creatorLink);
+        if (currentUser && currentUser.uid !== meme.creatorId) { const fB = document.createElement('button'); fB.className = 'follow-creator-btn'; fB.dataset.userId = meme.creatorId; checkAndSetFollowButtonState(meme.creatorId, fB); fB.addEventListener('click', (e) => { e.stopPropagation(); handleFollowToggle(meme.creatorId, e.currentTarget); }); creatorDiv.appendChild(fB); }
         metaDiv.appendChild(creatorDiv);
-
-        const timestampP = document.createElement('p');
-        timestampP.className = 'meme-timestamp';
-        timestampP.textContent = timeAgo(meme.createdAt);
-        metaDiv.appendChild(timestampP);
-        memeInfoDiv.appendChild(metaDiv);
-        post.appendChild(memeInfoDiv);
-
-        const actionsDiv = document.createElement('div');
-        actionsDiv.className = 'meme-actions';
-
-        const likeCount = meme.likeCount || 0;
-        const dislikeCount = meme.dislikeCount || 0;
-        const commentCount = meme.commentCount || 0;
-        const isLiked = currentUser && meme.likes && meme.likes[currentUser.uid];
-        const isDisliked = currentUser && meme.dislikes && meme.dislikes[currentUser.uid];
-        const isFavorited = currentUser && userFollowData.favorites && userFollowData.favorites[meme.id];
-
-        const likeButton = document.createElement('button');
-        likeButton.className = `action-button like-button ${isLiked ? 'liked' : ''}`;
-        likeButton.title = isLiked ? "Unlike" : "Like";
-        likeButton.setAttribute('aria-pressed', String(!!isLiked)); // Use String() for boolean attributes
-        likeButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="like-count">${likeCount}</span>`;
-        likeButton.onclick = (e) => { e.stopPropagation(); handleLike(meme.id); };
-        actionsDiv.appendChild(likeButton);
-
-        const dislikeButton = document.createElement('button');
-        dislikeButton.className = `action-button dislike-button ${isDisliked ? 'disliked' : ''}`;
-        dislikeButton.title = isDisliked ? "Remove Dislike" : "Dislike";
-        dislikeButton.setAttribute('aria-pressed', String(!!isDisliked));
-        dislikeButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isDisliked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3L8 14M5 2h4v10H5z"/></svg><span class="dislike-count">${dislikeCount}</span>`;
-        dislikeButton.onclick = (e) => { e.stopPropagation(); handleDislike(meme.id); };
-        actionsDiv.appendChild(dislikeButton);
-
-        const commentToggleButton = document.createElement('button');
-        commentToggleButton.className = 'action-button comment-toggle-button';
-        commentToggleButton.title = "View Comments";
-        commentToggleButton.setAttribute('aria-expanded', 'false');
-        commentToggleButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span class="comment-count-display">${commentCount}</span>`;
-        commentToggleButton.onclick = (e) => { e.stopPropagation(); toggleComments(meme.id, post, commentToggleButton); };
-        actionsDiv.appendChild(commentToggleButton);
-
-        const favoriteButton = document.createElement('button');
-        favoriteButton.className = `action-button favorite-button ${isFavorited ? 'favorited' : ''}`;
-        favoriteButton.title = isFavorited ? "Unfavorite" : "Favorite";
-        favoriteButton.setAttribute('aria-pressed', String(!!isFavorited));
-        favoriteButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isFavorited ? 'var(--favorite-color)' : 'none'}" stroke="var(--favorite-color)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span class="sr-only">Favorite</span>`;
-        favoriteButton.onclick = (e) => { e.stopPropagation(); handleFavoriteToggle(meme.id, e.currentTarget); };
-        actionsDiv.appendChild(favoriteButton);
-
-        const viewsCounterSpan = document.createElement('span');
-        viewsCounterSpan.className = 'meme-views-counter';
-        viewsCounterSpan.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> <span>${meme.viewCount || 0}</span>`;
-        actionsDiv.appendChild(viewsCounterSpan);
-
-        if (currentUser && currentUser.uid === meme.creatorId) {
-            const optionsButton = document.createElement('button');
-            optionsButton.className = 'action-button post-options-button';
-            optionsButton.title = "More options";
-            optionsButton.setAttribute('aria-haspopup', 'true');
-            optionsButton.setAttribute('aria-expanded', 'false');
-            optionsButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg><span class="sr-only">More options</span>`;
-            optionsButton.onclick = (e) => { e.stopPropagation(); togglePostOptionsMenu(meme, optionsButton); };
-            actionsDiv.appendChild(optionsButton);
-        }
+        const tP = document.createElement('p'); tP.className = 'meme-timestamp'; tP.textContent = timeAgo(meme.createdAt); metaDiv.appendChild(tP); memeInfoDiv.appendChild(metaDiv); post.appendChild(memeInfoDiv);
+        const actionsDiv = document.createElement('div'); actionsDiv.className = 'meme-actions';
+        const lC = meme.likeCount||0, dLC=meme.dislikeCount||0, cC=meme.commentCount||0;
+        const iL=currentUser&&meme.likes&&meme.likes[currentUser.uid], iDL=currentUser&&meme.dislikes&&meme.dislikes[currentUser.uid], iF=currentUser&&userFollowData.favorites&&userFollowData.favorites[meme.id];
+        const lB=document.createElement('button');lB.className=`action-button like-button ${iL?'liked':''}`;lB.title=iL?"Unlike":"Like";lB.setAttribute('aria-pressed',String(!!iL));lB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${iL?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="like-count">${lC}</span>`;lB.onclick=(e)=>{e.stopPropagation();handleLike(meme.id);};actionsDiv.appendChild(lB);
+        const dlB=document.createElement('button');dlB.className=`action-button dislike-button ${iDL?'disliked':''}`;dlB.title=iDL?"Remove Dislike":"Dislike";dlB.setAttribute('aria-pressed',String(!!iDL));dlB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${iDL?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3L8 14M5 2h4v10H5z"/></svg><span class="dislike-count">${dLC}</span>`;dlB.onclick=(e)=>{e.stopPropagation();handleDislike(meme.id);};actionsDiv.appendChild(dlB);
+        const cTB=document.createElement('button');cTB.className='action-button comment-toggle-button';cTB.title="View Comments";cTB.setAttribute('aria-expanded','false');cTB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span class="comment-count-display">${cC}</span>`;cTB.onclick=(e)=>{e.stopPropagation();toggleComments(meme.id,post,cTB);};actionsDiv.appendChild(cTB);
+        const favB=document.createElement('button');favB.className=`action-button favorite-button ${iF?'favorited':''}`;favB.title=iF?"Unfavorite":"Favorite";favB.setAttribute('aria-pressed',String(!!iF));favB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${iF?'var(--favorite-color)':'none'}" stroke="var(--favorite-color)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span class="sr-only">Favorite</span>`;favB.onclick=(e)=>{e.stopPropagation();handleFavoriteToggle(meme.id,e.currentTarget);};actionsDiv.appendChild(favB);
+        const vCS=document.createElement('span');vCS.className='meme-views-counter';vCS.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> <span>${meme.viewCount||0}</span>`;actionsDiv.appendChild(vCS);
+        if(currentUser&¤tUser.uid===meme.creatorId){const oB=document.createElement('button');oB.className='action-button post-options-button';oB.title="More options";oB.setAttribute('aria-haspopup','true');oB.setAttribute('aria-expanded','false');oB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg><span class="sr-only">More options</span>`;oB.onclick=(e)=>{e.stopPropagation();togglePostOptionsMenu(meme,oB);};actionsDiv.appendChild(oB);}
         post.appendChild(actionsDiv);
-
-        const commentsSection = document.createElement('div');
-        commentsSection.className = 'comments-section hidden';
-        commentsSection.id = `comments-for-${meme.id}`;
-        const altTextForComment = (meme.description || 'this meme').substring(0, 50).replace(/"/g, '"');
-        const commentsListAriaLabel = `Comments for ${altTextForComment}`;
-        commentsSection.innerHTML = `<h4>Comments</h4><div class="comments-list" aria-live="polite" aria-label="${commentsListAriaLabel}"><p>Click comment icon to load/refresh.</p></div>${currentUser ? `<form class="add-comment-form" data-meme-id="${meme.id}" aria-labelledby="comment-form-label-${meme.id}"><label id="comment-form-label-${meme.id}" class="sr-only">Add a comment for ${altTextForComment}</label><textarea name="commentText" placeholder="Add a comment..." required aria-required="true" rows="3"></textarea><button type="submit" class="nav-button">Post</button></form>` : '<p><small>Login to post comments.</small></p>'}`;
-        post.appendChild(commentsSection);
-        const addCommentForm = commentsSection.querySelector('.add-comment-form');
-        if (addCommentForm) {
-            addCommentForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleAddComment(e, meme.id);
-            });
-        }
+        const comS=document.createElement('div');comS.className='comments-section hidden';comS.id=`comments-for-${meme.id}`;const aTFC=(meme.description||'this meme').substring(0,50).replace(/"/g,'"');const cLAL=`Comments for ${aTFC}`;comS.innerHTML=`<h4>Comments</h4><div class="comments-list" aria-live="polite" aria-label="${cLAL}"><p>Click comment icon to load/refresh.</p></div>${currentUser?`<form class="add-comment-form" data-meme-id="${meme.id}" aria-labelledby="comment-form-label-${meme.id}"><label id="comment-form-label-${meme.id}" class="sr-only">Add a comment for ${aTFC}</label><textarea name="commentText" placeholder="Add a comment..." required aria-required="true" rows="3"></textarea><button type="submit" class="nav-button">Post</button></form>`:'<p><small>Login to post comments.</small></p>'}`;post.appendChild(comS);
+        const addCF=comS.querySelector('.add-comment-form');if(addCF){addCF.addEventListener('submit',(e)=>{e.preventDefault();e.stopPropagation();handleAddComment(e,meme.id);});}
         return post;
-    };
-
-// ... (Rest of your sketch.js file starting from renderGallery) ...
-
-    const renderGallery = (memesToDisplay, galleryElementId = 'meme-gallery') => {
-        const galleryContainer = document.getElementById(galleryElementId);
-        if (!galleryContainer) { console.warn(`Gallery container #${galleryElementId} not found.`); return; }
-        galleryContainer.innerHTML = '';
-        if (!memesToDisplay || memesToDisplay.length === 0) {
-            galleryContainer.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; padding: 40px 0;">No memes here yet! Try a different feed or upload your own.</p>`;
-            return;
-        }
-        const fragment = document.createDocumentFragment();
-        memesToDisplay.forEach((meme, index) => {
-            const memeEl = createMemeElement(meme);
-            if (memeEl) {
-                memeEl.style.animationDelay = `${index * 0.05}s`;
-                fragment.appendChild(memeEl);
-            }
-        });
-        galleryContainer.appendChild(fragment);
     };
 
     const openMemeDetail = (meme) => { openModal('memeDetail', { meme }); };
@@ -446,8 +319,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentUser || !memeId) { if (!currentUser) openModal('auth'); return; }
         showSpinner(); const cU = currentUser.uid; const iCF = !!(userFollowData.favorites && userFollowData.favorites[memeId]);
         const oBS = {isFavorited:iCF, title:buttonElement.title, fill:buttonElement.querySelector('svg')?.style.fill};
-        buttonElement.classList.toggle('favorited', !iCF); buttonElement.title = iCF ? "Favorite" : "Unfavorite"; const svg = buttonElement.querySelector('svg'); if (svg) svg.style.fill = !iCF ? 'var(--favorite-color)' : 'none';
+        // Optimistic UI Update
+        checkAndSetFavoriteButtonState(memeId, buttonElement, !iCF); // Pass the new state
         if (iCF) delete userFollowData.favorites[memeId]; else userFollowData.favorites[memeId] = true;
+
         const updates = {}; updates[`/user-favorites/${cU}/${memeId}`] = iCF ? null : true;
         try {
             await database.ref().update(updates);
@@ -458,17 +333,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if(currentVisibleView===galleryView && activeFeed==='favorites'){renderGalleryForCurrentFeed();} else if(currentVisibleView===accountView && activeAccountTab==='account-favorites-content' && currentAccountPageUserId===cU){loadUserFavorites(cU);}
         } catch (error) {
             console.error("Error toggling favorite:", error); showInPageNotification("Favorite update failed: "+error.message, "error");
+            // Revert optimistic UI and cache
             userFollowData.favorites = oBS.isFavorited ? {...userFollowData.favorites,[memeId]:true} : (delete userFollowData.favorites[memeId],userFollowData.favorites);
-            if(buttonElement){buttonElement.classList.toggle('favorited',oBS.isFavorited);buttonElement.title=oBS.title;const sR=buttonElement.querySelector('svg');if(sR)sR.style.fill=oBS.fill;}
+            if(buttonElement) checkAndSetFavoriteButtonState(memeId, buttonElement, oBS.isFavorited);
         } finally { hideSpinner(); }
     };
 
-    const checkAndSetFavoriteButtonState = (memeId, buttonElement) => {
+    const checkAndSetFavoriteButtonState = (memeId, buttonElement, isFavoritedState) => { // Added isFavoritedState param
         if (!buttonElement || !currentUser) return;
-        const isFavorited = userFollowData.favorites && userFollowData.favorites[memeId];
-        buttonElement.classList.toggle('favorited', !!isFavorited);
-        buttonElement.title = isFavorited ? "Unfavorite" : "Favorite";
-        const svg = buttonElement.querySelector('svg'); if (svg) svg.style.fill = isFavorited ? 'var(--favorite-color)' : 'none';
+        const isFav = (typeof isFavoritedState === 'boolean') ? isFavoritedState : (userFollowData.favorites && userFollowData.favorites[memeId]);
+        buttonElement.classList.toggle('favorited', !!isFav);
+        buttonElement.title = isFav ? "Unfavorite" : "Favorite";
+        const svg = buttonElement.querySelector('svg'); if (svg) svg.style.fill = isFav ? 'var(--favorite-color)' : 'none';
     };
 
     const toggleComments = (memeId, postElement, toggleButton) => {
@@ -477,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleButton.setAttribute('aria-expanded', String(!isHidden));
         if (!isHidden) {
             commentsListDiv.innerHTML = '<p>Loading comments...</p>';
-            if (commentsListeners[memeId]?.isActive) { /* Already active, could re-fetch or rely on listener */ }
+            if (commentsListeners[memeId]?.isActive) { /* Could re-fetch or rely on listener */ }
             else {
                 const ref = database.ref(`comments/${memeId}`).orderByChild('createdAt').limitToLast(50);
                 const cb = s => renderComments(s, commentsListDiv, memeId);
@@ -492,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!snapshot.exists() || snapshot.numChildren() === 0) { commentsListDiv.innerHTML = '<p>No comments yet. Be the first!</p>'; }
         else {
             const arr = []; snapshot.forEach(cs => arr.push({ id: cs.key, ...cs.val() }));
-            arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); // Oldest first
             const frag = document.createDocumentFragment();
             arr.forEach(c => {
                 const cDiv = document.createElement('div'); cDiv.className = 'comment';
@@ -500,8 +376,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const str = document.createElement('strong'); str.textContent = (c.userName||'User'); str.style.cursor='pointer'; str.onclick=()=>navigateToAccountPage(c.userId);
                 const t = document.createElement('span'); t.className = 'comment-timestamp'; t.textContent = ` - ${timeAgo(c.createdAt)}`;
                 hDiv.appendChild(str); hDiv.appendChild(t);
-                const p = document.createElement('p'); p.textContent = c.text;
-                cDiv.appendChild(hDiv); cDiv.appendChild(p); frag.appendChild(cDiv);
+                const pText = document.createElement('p'); pText.textContent = c.text; // Renamed variable
+                cDiv.appendChild(hDiv); cDiv.appendChild(pText); frag.appendChild(cDiv);
             });
             commentsListDiv.appendChild(frag);
         }
@@ -514,6 +390,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = event.target; const ta = form.querySelector('textarea[name="commentText"]'); const txt = ta.value.trim();
         if (!txt) { showInPageNotification("Comment cannot be empty.", "warning"); return; }
         const cD = {text:txt, userId:currentUser.uid, userName:currentUser.displayName||'Anon', createdAt:serverTimestamp};
+        const submitButton = form.querySelector('button[type="submit"]');
+        if(submitButton) submitButton.disabled = true; // Prevent double submission
         showSpinner();
         try {
             await database.ref(`comments/${memeId}`).push(cD); ta.value = ''; showInPageNotification("Comment posted!", "success");
@@ -521,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const mDSnap = await database.ref(`memes/${memeId}`).once('value'); const mOI = mDSnap.val()?.creatorId;
             if (mOI && mOI !== currentUser.uid) { createNotification(mOI,'comment',currentUser.uid,currentUser.displayName||'Someone',memeId,`commented: "${txt.substring(0,30)}${txt.length>30?'...':''}"`,'meme');}
         } catch (e) { console.error("Comment post error:",e); showInPageNotification("Comment post failed: "+e.message,"error");}
-        finally { hideSpinner(); }
+        finally { hideSpinner(); if(submitButton) submitButton.disabled = false; }
     };
 
     // --- Notification Logic ---
@@ -552,25 +430,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleNotificationClick = (notification) => {
         if (!notification.read && currentUser) { database.ref(`user-notifications/${currentUser.uid}/${notification.id}/read`).set(true).catch(e=>console.warn("Mark as read failed:",e));}
         closeNotificationDropdown();
- if (notification.targetType === 'meme' && notification.targetId) {
-    const targetMeme = allMemes.find(m => m.id === notification.targetId);
-    if (targetMeme) {
-        openMemeDetail(targetMeme);
-    } else {
-        database.ref(`memes/${notification.targetId}`).once('value').then(snap => {
-            if (snap.exists()) {
-                openMemeDetail({ id: snap.key, ...snap.val() });
-            } else {
-                showInPageNotification("Related meme not found.", "warning");
+        if (notification.targetType === 'meme' && notification.targetId) {
+            const targetMeme = allMemes.find(m => m.id === notification.targetId);
+            if (targetMeme) { openMemeDetail(targetMeme); }
+            else {
+                database.ref(`memes/${notification.targetId}`).once('value').then(snap => {
+                    if (snap.exists()) { openMemeDetail({ id: snap.key, ...snap.val() }); }
+                    else { showInPageNotification("Related meme not found.", "warning"); }
+                }).catch(err => { console.error("Error fetching meme for notification click:", err); showInPageNotification("Could not retrieve meme details.", "error"); });
             }
-        }).catch(err => { // Also good to catch potential errors from the DB call
-            console.error("Error fetching meme for notification click:", err);
-            showInPageNotification("Could not retrieve meme details.", "error");
-        });
-    }
-} else if (notification.targetType === 'user' && notification.actorUid) {
-    navigateToAccountPage(notification.actorUid);
-}
+        } else if (notification.targetType === 'user' && notification.actorUid) {
+            navigateToAccountPage(notification.actorUid);
+        }
     };
     const closeNotificationDropdown = () => { const dr=notificationDropdownContainer.querySelector('.notification-dropdown'); if(dr){dr.remove();notificationsBtn?.setAttribute('aria-expanded','false');}};
 
@@ -588,7 +459,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleClickOutsideContextMenu = (event) => { if (activeContextMenu && !activeContextMenu.contains(event.target) && !event.target.closest('.post-options-button')) { closeActiveContextMenu(); } else if (activeContextMenu) { document.addEventListener('click', handleClickOutsideContextMenu, { once: true }); } };
     const handleDeleteMeme = (memeId) => {
         if (!currentUser) return; const mTD = allMemes.find(m=>m.id===memeId); if (!mTD||mTD.creatorId!==currentUser.uid){showInPageNotification("Only owner can delete.","error");return;}
-        if (confirm("Delete this meme forever?")) { showSpinner(); const upd={}; upd[`/memes/${memeId}`]=null;upd[`/comments/${memeId}`]=null; database.ref().update(upd).then(()=>showInPageNotification("Meme deleted.","success")).catch(e=>{console.error("Delete error:",e);showInPageNotification("Delete failed: "+e.message,"error");}).finally(hideSpinner);}
+        if (confirm("Delete this meme forever? This will also delete all its comments.")) {
+            showSpinner(); const upd={}; upd[`/memes/${memeId}`]=null;upd[`/comments/${memeId}`]=null;
+            // Advanced: Clean up from user-favorites across all users (requires more complex logic or Cloud Function)
+            // For now, just delete the meme and its direct comments.
+            database.ref().update(upd)
+                .then(()=>showInPageNotification("Meme deleted.","success"))
+                .catch(e=>{console.error("Delete error:",e);showInPageNotification("Delete failed: "+e.message,"error");})
+                .finally(hideSpinner);
+        }
     };
 
     // --- Feed Management & Rendering ---
@@ -603,7 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const navigateToAccountPage = (userId) => { if (!userId) return; currentAccountPageUserId = userId; switchMainView(accountView); loadAccountPage(userId); window.location.hash = `#/user/${userId}`; };
     const loadAccountPage = async (userId) => {
         if (!userId || !accountView) return; showSpinner();
-        accountPhotoEl.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; accountDisplayNameEl.textContent = 'Loading...'; accountEmailEl.textContent = ''; accountEmailEl.classList.add('hidden'); accountMemeCountStatEl.textContent = 'Memes: ...'; accountFollowerCountStatEl.textContent = 'Followers: ...'; accountFollowingCountStatEl.textContent = 'Following: ...'; accountFollowUnfollowBtn.classList.add('hidden'); accountEditProfileBtn.classList.add('hidden');
+        accountPhotoEl.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; accountDisplayNameEl.textContent = 'Loading...'; accountEmailEl.textContent = ''; accountEmailEl.classList.add('hidden'); accountMemeCountStatEl.innerHTML = 'Memes: <strong>...</strong>'; accountFollowerCountStatEl.innerHTML = 'Followers: <strong>...</strong>'; accountFollowingCountStatEl.innerHTML = 'Following: <strong>...</strong>'; accountFollowUnfollowBtn.classList.add('hidden'); accountEditProfileBtn.classList.add('hidden');
         try {
             const userSnap = await database.ref(`users/${userId}`).once('value'); const userData = userSnap.val();
             if (!userData) { accountDisplayNameEl.textContent = 'User Not Found'; showInPageNotification("User not found.","error"); hideSpinner(); return; }
@@ -634,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadUserMemes = async (userId) => {
         if (!userId) return; const gE = accountMemeGallery; if(gE) gE.innerHTML = '<p>Loading memes...</p>'; else return;
         try { let uM = allMemes.filter(m=>m.creatorId===userId); if(uM.length===0&&allMemes.length>0){const s=await database.ref('memes').orderByChild('creatorId').equalTo(userId).once('value'); uM=[];s.forEach(cs=>uM.push({id:cs.key,...cs.val()}));} renderGallery(uM.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)), gE.id);
-        } catch (e) { console.error(`Error loading user memes ${userId}:`, e); if(gE) gE.innerHTML = '<p>Could not load memes.</p>'; }
+        } catch (e) { console.error(`Error loading user memes ${userId}:`, e); if(gE) gE.innerHTML = '<p>Could not load user memes.</p>'; }
     };
     const loadUserFavorites = async (userIdToLoadFavoritesFor) => {
         if (!userIdToLoadFavoritesFor) return; const gE = accountFavoritesGallery; if(gE) gE.innerHTML = '<p>Loading favorites...</p>'; else return;
@@ -656,34 +535,21 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const [fS,frS,fvS,stS] = await Promise.all([database.ref(`following/${userId}`).once('value'),database.ref(`followers/${userId}`).once('value'),database.ref(`user-favorites/${userId}`).once('value'),database.ref(`users/${userId}/settings`).once('value')]);
             userFollowData.following=fS.val()||{}; userFollowData.followers=frS.val()||{}; userFollowData.favorites=fvS.val()||{}; userFollowData.settings=stS.val()||{theme:localStorage.getItem('theme')||'vaporwave',emailNotifications:false};
-            initTheme(); // Apply theme after settings are loaded/defaulted
-     if (currentVisibleView === galleryView) renderGalleryForCurrentFeed(); 
-else if (currentVisibleView === accountView && currentAccountPageUserId) loadAccountPage(currentAccountPageUserId);
-        } catch (e) { console.error("Error loading user data bundle:",e); initTheme(); /* Still apply default/localStorage theme */ }
+            initTheme();
+            if (currentVisibleView===galleryView)renderGalleryForCurrentFeed(); else if(currentVisibleView===accountView&¤tAccountPageUserId)loadAccountPage(currentAccountPageUserId);
+        } catch (e) { console.error("Error loading user data bundle:",e); initTheme(); }
     };
     const handleFollowToggle = async (targetUserId, buttonElement) => {
         if(!currentUser||!targetUserId||currentUser.uid===targetUserId){if(!currentUser)openModal('auth');return;} showSpinner();const cU=currentUser.uid;const iCF=!!userFollowData.following[targetUserId];
-        const oBS={isFollowing:iCF,text:buttonElement.textContent,classList:buttonElement.className}; // Save original button state
-        buttonElement.textContent=iCF?'Follow':'Unfollow';buttonElement.classList.toggle('following',!iCF); // Optimistic UI
+        const oBS={isFollowing:iCF,text:buttonElement.textContent,className:buttonElement.className};
+        buttonElement.textContent=iCF?'Follow':'Unfollow';buttonElement.classList.toggle('following',!iCF);
         if(iCF)delete userFollowData.following[targetUserId];else userFollowData.following[targetUserId]=true;
         const upd={};if(iCF){upd[`/following/${cU}/${targetUserId}`]=null;upd[`/followers/${targetUserId}/${cU}`]=null;}else{upd[`/following/${cU}/${targetUserId}`]=true;upd[`/followers/${targetUserId}/${cU}`]=true;}
         try {
             await database.ref().update(upd);
             document.querySelectorAll(`.follow-creator-btn[data-user-id="${targetUserId}"], .follow-action-btn[data-user-id="${targetUserId}"]`).forEach(b=>checkAndSetFollowButtonState(targetUserId,b));
-if (
-  currentVisibleView === accountView &&
-  (currentAccountPageUserId === cU || currentAccountPageUserId === targetUserId)
-) {
-  const dId = currentAccountPageUserId;
-  const [nFrC, nFgC] = await Promise.all([
-    database.ref(`followers/${dId}`).once('value').then(s => s.numChildren()),
-    database.ref(`following/${dId}`).once('value').then(s => s.numChildren())
-  ]);
-  if (accountFollowerCountStatEl && currentAccountPageUserId === dId)
-    accountFollowerCountStatEl.innerHTML = `Followers: <strong>${nFrC}</strong>`;
-  if (accountFollowingCountStatEl && currentAccountPageUserId === dId)
-    accountFollowingCountStatEl.innerHTML = `Following: <strong>${nFgC}</strong>`;
-}if(!iCF){createNotification(targetUserId,'follow',currentUser.uid,currentUser.displayName||'Someone',null,`${currentUser.displayName||'Someone'} started following you.`,'user');}
+            if(currentVisibleView===accountView&&(currentAccountPageUserId===cU||currentAccountPageUserId===targetUserId)){const dId=currentAccountPageUserId;const[nFrC,nFgC]=await Promise.all([database.ref(`followers/${dId}`).once('value').then(s=>s.numChildren()),database.ref(`following/${dId}`).once('value').then(s=>s.numChildren())]);if(accountFollowerCountStatEl&¤tAccountPageUserId===dId)accountFollowerCountStatEl.innerHTML=`Followers: <strong>${nFrC}</strong>`;if(accountFollowingCountStatEl&¤tAccountPageUserId===dId)accountFollowingCountStatEl.innerHTML=`Following: <strong>${nFgC}</strong>`;}
+            if(!iCF){createNotification(targetUserId,'follow',currentUser.uid,currentUser.displayName||'Someone',null,`${currentUser.displayName||'Someone'} started following you.`,'user');}
             showInPageNotification(iCF?`Unfollowed.`:`Now following.`,'success');
         } catch(e){console.error("Follow toggle error:",e);showInPageNotification("Follow update failed: "+e.message,"error");userFollowData.following=oBS.isFollowing?{...userFollowData.following,[targetUserId]:true}:(delete userFollowData.following[targetUserId],userFollowData.following);if(buttonElement){buttonElement.textContent=oBS.text;buttonElement.className=oBS.classList;} } finally {hideSpinner();}
     };
@@ -692,20 +558,15 @@ if (
         const iF=userFollowData.following&&userFollowData.following[targetUserId]; buttonElement.textContent=iF?'Unfollow':'Follow'; buttonElement.classList.toggle('following',!!iF);
     };
 
-
     // --- Auth State Change Handler ---
     auth.onAuthStateChanged(user => {
         console.log("Auth state changed. User:", user ? user.uid : null);
         const previousUserUid = currentUser?.uid;
-        updateUIForAuthState(user); // Sets currentUser, loads userFollowData, updates nav
-        if (user && !previousUserUid) { loadInitialData(true); } // Just logged in
-        else if (!user && previousUserUid) { // Just logged out
-            if (currentVisibleView === accountView || (currentVisibleView === galleryView && (activeFeed === 'favorites' || activeFeed === 'following'))) { window.location.hash = ''; switchMainView(galleryView); setActiveFeedTab('for-you'); renderGalleryForCurrentFeed(); }
-            currentAccountPageUserId = null;
-        } else if (!user && !previousUserUid) { loadInitialData(false); } // Initial load, no user session
-        else if (user && previousUserUid && user.uid === previousUserUid) { // Session refreshed
-            loadUserFollowData(user.uid).then(() => { if (currentVisibleView === galleryView) renderGalleryForCurrentFeed(); else if (currentVisibleView === accountView && currentAccountPageUserId) loadAccountPage(currentAccountPageUserId); });
-        }
+        updateUIForAuthState(user);
+        if (user && !previousUserUid) { loadInitialData(true); }
+        else if (!user && previousUserUid) { if (currentVisibleView === accountView || (currentVisibleView === galleryView && (activeFeed === 'favorites' || activeFeed === 'following'))) { window.location.hash = ''; switchMainView(galleryView); setActiveFeedTab('for-you'); renderGalleryForCurrentFeed(); } currentAccountPageUserId = null; }
+        else if (!user && !previousUserUid) { loadInitialData(false); }
+        else if (user && previousUserUid && user.uid === previousUserUid) { loadUserFollowData(user.uid).then(() => { if (currentVisibleView === galleryView) renderGalleryForCurrentFeed(); else if (currentVisibleView === accountView && currentAccountPageUserId) loadAccountPage(currentAccountPageUserId); }); }
     });
 
     // --- Event Listeners ---
@@ -714,14 +575,14 @@ if (
     feedTabsContainer?.addEventListener('click', (e) => { const b = e.target.closest('.feed-tab-btn'); if (b) { const fN = b.dataset.feed; if (fN) { if ((fN==='following'||fN==='favorites')&&!currentUser) {openModal('auth');return;} switchMainView(galleryView); switchFeed(fN);}}});
     accountTabsContainer?.addEventListener('click', (e) => { const b = e.target.closest('.tab-btn'); if (b) { const tId = b.dataset.tabTarget; if (tId) setActiveAccountTab(tId, b);}});
     accountFollowUnfollowBtn?.addEventListener('click', (e) => { const tId = e.currentTarget.dataset.targetUserId; if (tId) handleFollowToggle(tId, e.currentTarget); });
-    accountEditProfileBtn?.addEventListener('click', () => { if(currentUser) openModal('settings'); else showInPageNotification("Login to edit settings.", "info");}); // Changed to open settings modal
+    accountEditProfileBtn?.addEventListener('click', () => { if(currentUser) openModal('settings'); else showInPageNotification("Login to edit settings.", "info");});
     loginPromptBtn?.addEventListener('click', () => openModal('auth'));
     uploadBtn?.addEventListener('click', () => { if(currentUser) openModal('upload'); else openModal('auth');});
     settingsBtn?.addEventListener('click', () => openModal('settings'));
     themeSelector?.addEventListener('change', (e) => { const nt = e.target.value; document.body.setAttribute('data-theme', nt); localStorage.setItem('theme', nt); const smts = document.querySelector('#settingsFormModal #settingThemeModal'); if(smts)smts.value=nt; if(currentUser && userFollowData.settings) { userFollowData.settings.theme = nt; database.ref(`users/${currentUser.uid}/settings/theme`).set(nt).catch(err => console.warn("Failed to save theme to DB:", err));}});
     searchBar?.addEventListener('input', applySearchFilter);
     notificationsBtn?.addEventListener('click', (e) => { e.stopPropagation(); const dr = notificationDropdownContainer.querySelector('.notification-dropdown'); if(dr){closeNotificationDropdown();}else{if(!currentUser){showInPageNotification("Login to see notifications.","info");return;} const nd=document.createElement('div');nd.className='notification-dropdown';nd.setAttribute('aria-label','Notifications List');nd.innerHTML='<p style="text-align:center; padding:10px;">Loading...</p>';notificationDropdownContainer.appendChild(nd);notificationsBtn.setAttribute('aria-expanded','true');database.ref(`user-notifications/${currentUser.uid}`).orderByChild('timestamp').limitToLast(20).once('value').then(s=>{const nlist=[];s.forEach(cs=>nlist.unshift({id:cs.key,...cs.val()}));renderNotificationDropdown(nlist);}).catch(err=>{console.error("Error fetching notifications for dropdown:",err);if(nd)nd.innerHTML='<p style="color:var(--error-color);text-align:center;padding:10px;">Could not load notifications.</p>';});}});
-    document.body.addEventListener('click', (e) => { if (notificationDropdownContainer && !notificationDropdownContainer.contains(e.target) && e.target !== notificationsBtn && !notificationsBtn?.contains(e.target)) { closeNotificationDropdown(); } if (activeContextMenu && !activeContextMenu.contains(e.target) && !e.target.closest('.post-options-button')) { closeActiveContextMenu(); }});
+    document.body.addEventListener('click', (e) => { if (notificationDropdownContainer && !notificationDropdownContainer.contains(e.target) && e.target !== notificationsBtn && !notificationsBtn?.contains(e.target)) { closeNotificationDropdown(); } if (activeContextMenu && !activeContextMenu.contains(event.target) && !event.target.closest('.post-options-button')) { closeActiveContextMenu(); }}); // Corrected event to event
 
     // --- Hash-based Routing ---
     const handleHashChange = () => {
@@ -735,43 +596,27 @@ if (
     // --- Initial Load Function ---
     let initialDataLoaded = false;
     const loadInitialData = (isUserContextJustKnown = false) => {
-        if(initialDataLoaded && !isUserContextJustKnown && !isUserContextJustKnown) { // Avoid re-entry unless user state newly known OR forceReload
-             if(currentVisibleView === galleryView) renderGalleryForCurrentFeed(); // Still refresh gallery if memes updated
-             return;
-        }
+        if(initialDataLoaded && !isUserContextJustKnown) { if(currentVisibleView === galleryView) renderGalleryForCurrentFeed(); return;}
         showSpinner();
-        if(!initialDataLoaded) initTheme(); // Set theme on very first load attempt
+        if(!initialDataLoaded) initTheme();
 
-        database.ref('memes').on('value', snapshot => { // Persistent listener for memes
+        database.ref('memes').on('value', snapshot => {
             allMemes = []; const memesData = snapshot.val() || {};
             for (const key in memesData) { allMemes.push({ id: key, ...memesData[key] }); }
             console.log("All memes updated/fetched:", allMemes.length);
-
             if (!initialDataLoaded || isUserContextJustKnown) {
-                if (!window.location.hash) {
-                    if (currentVisibleView !== galleryView) switchMainView(galleryView);
-                    setActiveFeedTab(currentUser && activeFeed !== 'for-you' && activeFeed !== 'new' ? activeFeed : 'for-you');
-                    renderGalleryForCurrentFeed();
-                } else {
-                    handleHashChange();
-                }
+                if (!window.location.hash) { if (currentVisibleView !== galleryView) switchMainView(galleryView); setActiveFeedTab(currentUser && activeFeed !== 'for-you' && activeFeed !== 'new' ? activeFeed : 'for-you'); renderGalleryForCurrentFeed(); }
+                else { handleHashChange(); }
                 initialDataLoaded = true;
-            } else { // Subsequent meme updates from the listener
-                if (currentVisibleView === galleryView) renderGalleryForCurrentFeed();
-                else if (currentVisibleView === accountView) {
-                     if (activeAccountTab === 'account-memes-content' && currentAccountPageUserId) loadUserMemes(currentAccountPageUserId);
-                     else if (activeAccountTab === 'account-favorites-content' && currentAccountPageUserId) loadUserFavorites(currentAccountPageUserId);
-                }
-            }
-            hideSpinner(); // Usually hide after the first gallery render or update
+            } else { if (currentVisibleView === galleryView) renderGalleryForCurrentFeed(); else if (currentVisibleView === accountView) { if (activeAccountTab === 'account-memes-content' && currentAccountPageUserId) loadUserMemes(currentAccountPageUserId); else if (activeAccountTab === 'account-favorites-content' && currentAccountPageUserId) loadUserFavorites(currentAccountPageUserId);}}
+            hideSpinner();
         }, error => {
             console.error("Error fetching initial memes:", error);
-            if(memeGallery) memeGallery.innerHTML = '<p style="color:red;">Could not load memes. Check connection.</p>';
+            if(memeGallery) memeGallery.innerHTML = '<p style="color:red;">Could not load memes.</p>';
             hideSpinner();
         });
     };
 
     initTheme();
-    // auth.onAuthStateChanged will trigger the first meaningful data load.
     console.log("MemeDrop App: Structure Initialized. Waiting for Firebase auth.");
 }); // End DOMContentLoaded
