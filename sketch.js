@@ -319,10 +319,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!currentUser || !memeId) { if (!currentUser) openModal('auth'); return; }
         showSpinner(); const cU = currentUser.uid; const iCF = !!(userFollowData.favorites && userFollowData.favorites[memeId]);
         const oBS = {isFavorited:iCF, title:buttonElement.title, fill:buttonElement.querySelector('svg')?.style.fill};
-        // Optimistic UI Update
-        checkAndSetFavoriteButtonState(memeId, buttonElement, !iCF); // Pass the new state
+        checkAndSetFavoriteButtonState(memeId, buttonElement, !iCF); // Optimistic UI
         if (iCF) delete userFollowData.favorites[memeId]; else userFollowData.favorites[memeId] = true;
-
         const updates = {}; updates[`/user-favorites/${cU}/${memeId}`] = iCF ? null : true;
         try {
             await database.ref().update(updates);
@@ -333,13 +331,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if(currentVisibleView===galleryView && activeFeed==='favorites'){renderGalleryForCurrentFeed();} else if(currentVisibleView===accountView && activeAccountTab==='account-favorites-content' && currentAccountPageUserId===cU){loadUserFavorites(cU);}
         } catch (error) {
             console.error("Error toggling favorite:", error); showInPageNotification("Favorite update failed: "+error.message, "error");
-            // Revert optimistic UI and cache
             userFollowData.favorites = oBS.isFavorited ? {...userFollowData.favorites,[memeId]:true} : (delete userFollowData.favorites[memeId],userFollowData.favorites);
             if(buttonElement) checkAndSetFavoriteButtonState(memeId, buttonElement, oBS.isFavorited);
         } finally { hideSpinner(); }
     };
 
-    const checkAndSetFavoriteButtonState = (memeId, buttonElement, isFavoritedState) => { // Added isFavoritedState param
+    const checkAndSetFavoriteButtonState = (memeId, buttonElement, isFavoritedState) => {
         if (!buttonElement || !currentUser) return;
         const isFav = (typeof isFavoritedState === 'boolean') ? isFavoritedState : (userFollowData.favorites && userFollowData.favorites[memeId]);
         buttonElement.classList.toggle('favorited', !!isFav);
@@ -368,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!snapshot.exists() || snapshot.numChildren() === 0) { commentsListDiv.innerHTML = '<p>No comments yet. Be the first!</p>'; }
         else {
             const arr = []; snapshot.forEach(cs => arr.push({ id: cs.key, ...cs.val() }));
-            arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)); // Oldest first
+            arr.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
             const frag = document.createDocumentFragment();
             arr.forEach(c => {
                 const cDiv = document.createElement('div'); cDiv.className = 'comment';
@@ -376,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const str = document.createElement('strong'); str.textContent = (c.userName||'User'); str.style.cursor='pointer'; str.onclick=()=>navigateToAccountPage(c.userId);
                 const t = document.createElement('span'); t.className = 'comment-timestamp'; t.textContent = ` - ${timeAgo(c.createdAt)}`;
                 hDiv.appendChild(str); hDiv.appendChild(t);
-                const pText = document.createElement('p'); pText.textContent = c.text; // Renamed variable
+                const pText = document.createElement('p'); pText.textContent = c.text;
                 cDiv.appendChild(hDiv); cDiv.appendChild(pText); frag.appendChild(cDiv);
             });
             commentsListDiv.appendChild(frag);
@@ -391,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!txt) { showInPageNotification("Comment cannot be empty.", "warning"); return; }
         const cD = {text:txt, userId:currentUser.uid, userName:currentUser.displayName||'Anon', createdAt:serverTimestamp};
         const submitButton = form.querySelector('button[type="submit"]');
-        if(submitButton) submitButton.disabled = true; // Prevent double submission
+        if(submitButton) submitButton.disabled = true;
         showSpinner();
         try {
             await database.ref(`comments/${memeId}`).push(cD); ta.value = ''; showInPageNotification("Comment posted!", "success");
@@ -455,14 +452,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(menu); activeContextMenu = menu;
         setTimeout(() => { document.addEventListener('click', handleClickOutsideContextMenu, { once: true }); }, 0);
     };
-    const closeActiveContextMenu = () => { if (activeContextMenu) { activeContextMenu.remove(); activeContextMenu = null; document.removeEventListener('click', handleClickOutsideContextMenu); } };
+    // closeActiveContextMenu is already defined above openModal
     const handleClickOutsideContextMenu = (event) => { if (activeContextMenu && !activeContextMenu.contains(event.target) && !event.target.closest('.post-options-button')) { closeActiveContextMenu(); } else if (activeContextMenu) { document.addEventListener('click', handleClickOutsideContextMenu, { once: true }); } };
     const handleDeleteMeme = (memeId) => {
         if (!currentUser) return; const mTD = allMemes.find(m=>m.id===memeId); if (!mTD||mTD.creatorId!==currentUser.uid){showInPageNotification("Only owner can delete.","error");return;}
         if (confirm("Delete this meme forever? This will also delete all its comments.")) {
             showSpinner(); const upd={}; upd[`/memes/${memeId}`]=null;upd[`/comments/${memeId}`]=null;
-            // Advanced: Clean up from user-favorites across all users (requires more complex logic or Cloud Function)
-            // For now, just delete the meme and its direct comments.
+            // TODO: Advanced cleanup: Remove from user-favorites of all users. This typically needs a Cloud Function.
             database.ref().update(upd)
                 .then(()=>showInPageNotification("Meme deleted.","success"))
                 .catch(e=>{console.error("Delete error:",e);showInPageNotification("Delete failed: "+e.message,"error");})
@@ -542,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleFollowToggle = async (targetUserId, buttonElement) => {
         if(!currentUser||!targetUserId||currentUser.uid===targetUserId){if(!currentUser)openModal('auth');return;} showSpinner();const cU=currentUser.uid;const iCF=!!userFollowData.following[targetUserId];
         const oBS={isFollowing:iCF,text:buttonElement.textContent,className:buttonElement.className};
-        buttonElement.textContent=iCF?'Follow':'Unfollow';buttonElement.classList.toggle('following',!iCF);
+        checkAndSetFollowButtonState(targetUserId, buttonElement, !iCF); // Optimistic UI
         if(iCF)delete userFollowData.following[targetUserId];else userFollowData.following[targetUserId]=true;
         const upd={};if(iCF){upd[`/following/${cU}/${targetUserId}`]=null;upd[`/followers/${targetUserId}/${cU}`]=null;}else{upd[`/following/${cU}/${targetUserId}`]=true;upd[`/followers/${targetUserId}/${cU}`]=true;}
         try {
@@ -551,11 +547,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if(currentVisibleView===accountView&&(currentAccountPageUserId===cU||currentAccountPageUserId===targetUserId)){const dId=currentAccountPageUserId;const[nFrC,nFgC]=await Promise.all([database.ref(`followers/${dId}`).once('value').then(s=>s.numChildren()),database.ref(`following/${dId}`).once('value').then(s=>s.numChildren())]);if(accountFollowerCountStatEl&¤tAccountPageUserId===dId)accountFollowerCountStatEl.innerHTML=`Followers: <strong>${nFrC}</strong>`;if(accountFollowingCountStatEl&¤tAccountPageUserId===dId)accountFollowingCountStatEl.innerHTML=`Following: <strong>${nFgC}</strong>`;}
             if(!iCF){createNotification(targetUserId,'follow',currentUser.uid,currentUser.displayName||'Someone',null,`${currentUser.displayName||'Someone'} started following you.`,'user');}
             showInPageNotification(iCF?`Unfollowed.`:`Now following.`,'success');
-        } catch(e){console.error("Follow toggle error:",e);showInPageNotification("Follow update failed: "+e.message,"error");userFollowData.following=oBS.isFollowing?{...userFollowData.following,[targetUserId]:true}:(delete userFollowData.following[targetUserId],userFollowData.following);if(buttonElement){buttonElement.textContent=oBS.text;buttonElement.className=oBS.classList;} } finally {hideSpinner();}
+        } catch(e){console.error("Follow toggle error:",e);showInPageNotification("Follow update failed: "+e.message,"error");userFollowData.following=oBS.isFollowing?{...userFollowData.following,[targetUserId]:true}:(delete userFollowData.following[targetUserId],userFollowData.following);if(buttonElement)checkAndSetFollowButtonState(targetUserId,buttonElement, oBS.isFollowing);} finally {hideSpinner();}
     };
-    const checkAndSetFollowButtonState = (targetUserId, buttonElement) => {
-        if(!buttonElement||!currentUser||currentUser.uid===targetUserId){if(buttonElement)buttonElement.classList.add('hidden');return;} buttonElement.classList.remove('hidden');
-        const iF=userFollowData.following&&userFollowData.following[targetUserId]; buttonElement.textContent=iF?'Unfollow':'Follow'; buttonElement.classList.toggle('following',!!iF);
+    const checkAndSetFollowButtonState = (targetUserId, buttonElement, isFollowingState) => {
+        if(!buttonElement) return; // Guard clause
+        if(!currentUser||currentUser.uid===targetUserId){buttonElement.classList.add('hidden');return;} buttonElement.classList.remove('hidden');
+        const iF = (typeof isFollowingState === 'boolean') ? isFollowingState : (userFollowData.following&&userFollowData.following[targetUserId]);
+        buttonElement.textContent=iF?'Unfollow':'Follow'; buttonElement.classList.toggle('following',!!iF);
     };
 
     // --- Auth State Change Handler ---
@@ -582,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
     themeSelector?.addEventListener('change', (e) => { const nt = e.target.value; document.body.setAttribute('data-theme', nt); localStorage.setItem('theme', nt); const smts = document.querySelector('#settingsFormModal #settingThemeModal'); if(smts)smts.value=nt; if(currentUser && userFollowData.settings) { userFollowData.settings.theme = nt; database.ref(`users/${currentUser.uid}/settings/theme`).set(nt).catch(err => console.warn("Failed to save theme to DB:", err));}});
     searchBar?.addEventListener('input', applySearchFilter);
     notificationsBtn?.addEventListener('click', (e) => { e.stopPropagation(); const dr = notificationDropdownContainer.querySelector('.notification-dropdown'); if(dr){closeNotificationDropdown();}else{if(!currentUser){showInPageNotification("Login to see notifications.","info");return;} const nd=document.createElement('div');nd.className='notification-dropdown';nd.setAttribute('aria-label','Notifications List');nd.innerHTML='<p style="text-align:center; padding:10px;">Loading...</p>';notificationDropdownContainer.appendChild(nd);notificationsBtn.setAttribute('aria-expanded','true');database.ref(`user-notifications/${currentUser.uid}`).orderByChild('timestamp').limitToLast(20).once('value').then(s=>{const nlist=[];s.forEach(cs=>nlist.unshift({id:cs.key,...cs.val()}));renderNotificationDropdown(nlist);}).catch(err=>{console.error("Error fetching notifications for dropdown:",err);if(nd)nd.innerHTML='<p style="color:var(--error-color);text-align:center;padding:10px;">Could not load notifications.</p>';});}});
-    document.body.addEventListener('click', (e) => { if (notificationDropdownContainer && !notificationDropdownContainer.contains(e.target) && e.target !== notificationsBtn && !notificationsBtn?.contains(e.target)) { closeNotificationDropdown(); } if (activeContextMenu && !activeContextMenu.contains(event.target) && !event.target.closest('.post-options-button')) { closeActiveContextMenu(); }}); // Corrected event to event
+    document.body.addEventListener('click', (e) => { if (notificationDropdownContainer && !notificationDropdownContainer.contains(e.target) && e.target !== notificationsBtn && !notificationsBtn?.contains(e.target)) { closeNotificationDropdown(); } if (activeContextMenu && !activeContextMenu.contains(e.target) && !e.target.closest('.post-options-button')) { closeActiveContextMenu(); }});
 
     // --- Hash-based Routing ---
     const handleHashChange = () => {
