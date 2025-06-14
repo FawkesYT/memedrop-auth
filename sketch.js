@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const [fS,frS,fvS,stS] = await Promise.all([database.ref(`following/${userId}`).once('value'),database.ref(`followers/${userId}`).once('value'),database.ref(`user-favorites/${userId}`).once('value'),database.ref(`users/${userId}/settings`).once('value')]);
             userFollowData.following=fS.val()||{}; userFollowData.followers=frS.val()||{}; userFollowData.favorites=fvS.val()||{}; userFollowData.settings=stS.val()||{theme:localStorage.getItem('theme')||'vaporwave',emailNotifications:false};
             initTheme();
-            if (currentVisibleView===galleryView)renderGalleryForCurrentFeed(); else if(currentVisibleView===accountView&¤tAccountPageUserId)loadAccountPage(currentAccountPageUserId);
+            if (currentVisibleView===galleryView)renderGalleryForCurrentFeed(); else if(currentVisibleView===accountView&&tAccountPageUserId)loadAccountPage(currentAccountPageUserId);
         } catch (e) { console.error("Error loading user data bundle:",e); initTheme(); }
     };
     const handleFollowToggle = async (targetUserId, buttonElement) => {
