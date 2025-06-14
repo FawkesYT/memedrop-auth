@@ -552,8 +552,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleNotificationClick = (notification) => {
         if (!notification.read && currentUser) { database.ref(`user-notifications/${currentUser.uid}/${notification.id}/read`).set(true).catch(e=>console.warn("Mark as read failed:",e));}
         closeNotificationDropdown();
-        if (notification.targetType==='meme'&¬ification.targetId){const tM=allMemes.find(m=>m.id===notification.targetId);if(tM){openMemeDetail(tM);}else{database.ref(`memes/${notification.targetId}`).once('value').then(s=>{if(s.exists())openMemeDetail({id:s.key,...s.val()});else showInPageNotification("Related meme not found.","warning");});}}
-        else if(notification.targetType==='user'&¬ification.actorUid){navigateToAccountPage(notification.actorUid);}
+    if (notification.targetType === 'meme' && notification.targetId) { // Corrected from &¬ to &&
+    const targetMeme = allMemes.find(m => m.id === notification.targetId);
+    if (targetMeme) {
+        openMemeDetail(targetMeme);
+    } else {
+        database.ref(`memes/${notification.targetId}`).once('value').then(snap => {
+            if (snap.exists()) {
+                openMemeDetail({ id: snap.key, ...snap.val() });
+            } else {
+                showInPageNotification("Related meme not found.", "warning");
+            }
+        }).catch(err => { // Also good to catch potential errors from the DB call
+            console.error("Error fetching meme for notification click:", err);
+            showInPageNotification("Could not retrieve meme details.", "error");
+        });
+    }
+} else if (notification.targetType === 'user' && notification.actorUid) {
+    navigateToAccountPage(notification.actorUid);
+}
     };
     const closeNotificationDropdown = () => { const dr=notificationDropdownContainer.querySelector('.notification-dropdown'); if(dr){dr.remove();notificationsBtn?.setAttribute('aria-expanded','false');}};
 
