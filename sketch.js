@@ -253,34 +253,146 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleLogout = () => { auth.signOut().then(() => showInPageNotification('Logged out.', 'info')).catch(err => showInPageNotification(`Logout failed: ${err.message}`, "error")); };
 
     // --- Meme Rendering, Interaction, Comments ---
+// sketch.js
+
+// ... (Keep all code before createMemeElement) ...
+
     const createMemeElement = (meme) => {
-        const post = document.createElement('article'); post.className = 'meme-post'; post.dataset.memeId = meme.id; post.setAttribute('tabindex', '0'); post.setAttribute('aria-labelledby', `meme-desc-${meme.id}`);
-        const imageContainer = document.createElement('div'); imageContainer.className = 'meme-post-image-container';
-        const img = document.createElement('img'); img.src = meme.imageBase64; img.alt = (meme.description || `Meme by ${meme.creatorName || 'User'}`).substring(0, 100).replace(/"/g, '"'); img.loading = 'lazy'; imageContainer.appendChild(img); post.appendChild(imageContainer);
+        const post = document.createElement('article');
+        post.className = 'meme-post';
+        post.dataset.memeId = meme.id;
+        post.setAttribute('tabindex', '0');
+        post.setAttribute('aria-labelledby', `meme-desc-${meme.id}`);
+
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'meme-post-image-container';
+        const img = document.createElement('img');
+        img.src = meme.imageBase64;
+        img.alt = (meme.description || `Meme by ${meme.creatorName || 'User'}`).substring(0, 100).replace(/"/g, '"');
+        img.loading = 'lazy';
+        imageContainer.appendChild(img);
+        post.appendChild(imageContainer);
+
         imageContainer.addEventListener('click', (e) => { e.stopPropagation(); incrementMemeViewCount(meme.id); openMemeDetail(meme); });
         post.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { if (document.activeElement === post) { e.preventDefault(); incrementMemeViewCount(meme.id); openMemeDetail(meme); } } });
-        const memeInfoDiv = document.createElement('div'); memeInfoDiv.className = 'meme-info';
-        if (meme.description) { const dP = document.createElement('p'); dP.className = 'meme-description'; dP.id = `meme-desc-${meme.id}`; dP.textContent = meme.description; memeInfoDiv.appendChild(dP); }
-        const metaDiv = document.createElement('div'); metaDiv.className = 'meme-meta';
-        const creatorDiv = document.createElement('div'); creatorDiv.className = 'meme-creator';
-        const creatorLink = document.createElement('a'); creatorLink.className = 'meme-creator-link'; creatorLink.textContent = `${meme.creatorName || 'Anonymous'}`; creatorLink.href = `#/user/${meme.creatorId}`; creatorLink.dataset.userId = meme.creatorId; creatorLink.addEventListener('click', (e) => { e.preventDefault(); navigateToAccountPage(meme.creatorId); }); creatorDiv.appendChild(creatorLink);
-        if (currentUser && currentUser.uid !== meme.creatorId) { const fB = document.createElement('button'); fB.className = 'follow-creator-btn'; fB.dataset.userId = meme.creatorId; checkAndSetFollowButtonState(meme.creatorId, fB); fB.addEventListener('click', (e) => { e.stopPropagation(); handleFollowToggle(meme.creatorId, e.currentTarget); }); creatorDiv.appendChild(fB); }
+
+        const memeInfoDiv = document.createElement('div');
+        memeInfoDiv.className = 'meme-info';
+        if (meme.description) {
+            const descriptionP = document.createElement('p');
+            descriptionP.className = 'meme-description';
+            descriptionP.id = `meme-desc-${meme.id}`;
+            descriptionP.textContent = meme.description;
+            memeInfoDiv.appendChild(descriptionP);
+        }
+
+        const metaDiv = document.createElement('div');
+        metaDiv.className = 'meme-meta';
+        const creatorDiv = document.createElement('div');
+        creatorDiv.className = 'meme-creator';
+        const creatorLink = document.createElement('a');
+        creatorLink.className = 'meme-creator-link';
+        creatorLink.textContent = `${meme.creatorName || 'Anonymous'}`;
+        creatorLink.href = `#/user/${meme.creatorId}`;
+        creatorLink.dataset.userId = meme.creatorId;
+        creatorLink.addEventListener('click', (e) => { e.preventDefault(); navigateToAccountPage(meme.creatorId); });
+        creatorDiv.appendChild(creatorLink);
+
+        if (currentUser && currentUser.uid !== meme.creatorId) {
+            const followBtn = document.createElement('button');
+            followBtn.className = 'follow-creator-btn';
+            followBtn.dataset.userId = meme.creatorId;
+            checkAndSetFollowButtonState(meme.creatorId, followBtn); // checkAndSet will set initial text
+            followBtn.addEventListener('click', (e) => { e.stopPropagation(); handleFollowToggle(meme.creatorId, e.currentTarget); });
+            creatorDiv.appendChild(followBtn);
+        }
         metaDiv.appendChild(creatorDiv);
-        const tP = document.createElement('p'); tP.className = 'meme-timestamp'; tP.textContent = timeAgo(meme.createdAt); metaDiv.appendChild(tP); memeInfoDiv.appendChild(metaDiv); post.appendChild(memeInfoDiv);
-        const actionsDiv = document.createElement('div'); actionsDiv.className = 'meme-actions';
-        const lC = meme.likeCount||0, dLC=meme.dislikeCount||0, cC=meme.commentCount||0;
-        const iL=currentUser&&meme.likes&&meme.likes[currentUser.uid], iDL=currentUser&&meme.dislikes&&meme.dislikes[currentUser.uid], iF=currentUser&&userFollowData.favorites&&userFollowData.favorites[meme.id];
-        const lB=document.createElement('button');lB.className=`action-button like-button ${iL?'liked':''}`;lB.title=iL?"Unlike":"Like";lB.setAttribute('aria-pressed',!!iL);lB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${iL?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="like-count">${lC}</span>`;lB.onclick=(e)=>{e.stopPropagation();handleLike(meme.id);};actionsDiv.appendChild(lB);
-        const dlB=document.createElement('button');dlB.className=`action-button dislike-button ${iDL?'disliked':''}`;dlB.title=iDL?"Remove Dislike":"Dislike";dlB.setAttribute('aria-pressed',!!iDL);dlB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${iDL?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3L8 14M5 2h4v10H5z"/></svg><span class="dislike-count">${dLC}</span>`;dlB.onclick=(e)=>{e.stopPropagation();handleDislike(meme.id);};actionsDiv.appendChild(dlB);
-        const cTB=document.createElement('button');cTB.className='action-button comment-toggle-button';cTB.title="View Comments";cTB.setAttribute('aria-expanded','false');cTB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span class="comment-count-display">${cC}</span>`;cTB.onclick=(e)=>{e.stopPropagation();toggleComments(meme.id,post,cTB);};actionsDiv.appendChild(cTB);
-        const favB=document.createElement('button');favB.className=`action-button favorite-button ${iF?'favorited':''}`;favB.title=iF?"Unfavorite":"Favorite";favB.setAttribute('aria-pressed',!!iF);favB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${iF?'var(--favorite-color)':'none'}" stroke="var(--favorite-color)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span class="sr-only">Favorite</span>`;favB.onclick=(e)=>{e.stopPropagation();handleFavoriteToggle(meme.id,e.currentTarget);};actionsDiv.appendChild(favB);
-        const vCS=document.createElement('span');vCS.className='meme-views-counter';vCS.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> <span>${meme.viewCount||0}</span>`;actionsDiv.appendChild(vCS);
-        if(currentUser&¤tUser.uid===meme.creatorId){const oB=document.createElement('button');oB.className='action-button post-options-button';oB.title="More options";oB.innerHTML=`<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>`;oB.onclick=(e)=>{e.stopPropagation();togglePostOptionsMenu(meme,oB);};actionsDiv.appendChild(oB);}
+
+        const timestampP = document.createElement('p');
+        timestampP.className = 'meme-timestamp';
+        timestampP.textContent = timeAgo(meme.createdAt);
+        metaDiv.appendChild(timestampP);
+        memeInfoDiv.appendChild(metaDiv);
+        post.appendChild(memeInfoDiv);
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'meme-actions';
+
+        const likeCount = meme.likeCount || 0;
+        const dislikeCount = meme.dislikeCount || 0;
+        const commentCount = meme.commentCount || 0;
+        const isLiked = currentUser && meme.likes && meme.likes[currentUser.uid];
+        const isDisliked = currentUser && meme.dislikes && meme.dislikes[currentUser.uid];
+        const isFavorited = currentUser && userFollowData.favorites && userFollowData.favorites[meme.id];
+
+        const likeButton = document.createElement('button');
+        likeButton.className = `action-button like-button ${isLiked ? 'liked' : ''}`;
+        likeButton.title = isLiked ? "Unlike" : "Like";
+        likeButton.setAttribute('aria-pressed', String(!!isLiked)); // Use String() for boolean attributes
+        likeButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isLiked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg><span class="like-count">${likeCount}</span>`;
+        likeButton.onclick = (e) => { e.stopPropagation(); handleLike(meme.id); };
+        actionsDiv.appendChild(likeButton);
+
+        const dislikeButton = document.createElement('button');
+        dislikeButton.className = `action-button dislike-button ${isDisliked ? 'disliked' : ''}`;
+        dislikeButton.title = isDisliked ? "Remove Dislike" : "Dislike";
+        dislikeButton.setAttribute('aria-pressed', String(!!isDisliked));
+        dislikeButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isDisliked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3L8 14M5 2h4v10H5z"/></svg><span class="dislike-count">${dislikeCount}</span>`;
+        dislikeButton.onclick = (e) => { e.stopPropagation(); handleDislike(meme.id); };
+        actionsDiv.appendChild(dislikeButton);
+
+        const commentToggleButton = document.createElement('button');
+        commentToggleButton.className = 'action-button comment-toggle-button';
+        commentToggleButton.title = "View Comments";
+        commentToggleButton.setAttribute('aria-expanded', 'false');
+        commentToggleButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span class="comment-count-display">${commentCount}</span>`;
+        commentToggleButton.onclick = (e) => { e.stopPropagation(); toggleComments(meme.id, post, commentToggleButton); };
+        actionsDiv.appendChild(commentToggleButton);
+
+        const favoriteButton = document.createElement('button');
+        favoriteButton.className = `action-button favorite-button ${isFavorited ? 'favorited' : ''}`;
+        favoriteButton.title = isFavorited ? "Unfavorite" : "Favorite";
+        favoriteButton.setAttribute('aria-pressed', String(!!isFavorited));
+        favoriteButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isFavorited ? 'var(--favorite-color)' : 'none'}" stroke="var(--favorite-color)" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span class="sr-only">Favorite</span>`;
+        favoriteButton.onclick = (e) => { e.stopPropagation(); handleFavoriteToggle(meme.id, e.currentTarget); };
+        actionsDiv.appendChild(favoriteButton);
+
+        const viewsCounterSpan = document.createElement('span');
+        viewsCounterSpan.className = 'meme-views-counter';
+        viewsCounterSpan.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> <span>${meme.viewCount || 0}</span>`;
+        actionsDiv.appendChild(viewsCounterSpan);
+
+        if (currentUser && currentUser.uid === meme.creatorId) {
+            const optionsButton = document.createElement('button');
+            optionsButton.className = 'action-button post-options-button';
+            optionsButton.title = "More options";
+            optionsButton.setAttribute('aria-haspopup', 'true');
+            optionsButton.setAttribute('aria-expanded', 'false');
+            optionsButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg><span class="sr-only">More options</span>`;
+            optionsButton.onclick = (e) => { e.stopPropagation(); togglePostOptionsMenu(meme, optionsButton); };
+            actionsDiv.appendChild(optionsButton);
+        }
         post.appendChild(actionsDiv);
-        const comS=document.createElement('div');comS.className='comments-section hidden';comS.id=`comments-for-${meme.id}`;const aTFC=(meme.description||'this meme').substring(0,50).replace(/"/g,'"');const cLAL=`Comments for ${aTFC}`;comS.innerHTML=`<h4>Comments</h4><div class="comments-list" aria-live="polite" aria-label="${cLAL}"><p>Click comment icon to load/refresh.</p></div>${currentUser?`<form class="add-comment-form" data-meme-id="${meme.id}" aria-labelledby="comment-form-label-${meme.id}"><label id="comment-form-label-${meme.id}" class="sr-only">Add a comment for ${aTFC}</label><textarea name="commentText" placeholder="Add a comment..." required aria-required="true" rows="3"></textarea><button type="submit" class="nav-button">Post</button></form>`:'<p><small>Login to post comments.</small></p>'}`;post.appendChild(comS);
-        const addCF=comS.querySelector('.add-comment-form');if(addCF){addCF.addEventListener('submit',(e)=>{e.preventDefault();e.stopPropagation();handleAddComment(e,meme.id);});}
+
+        const commentsSection = document.createElement('div');
+        commentsSection.className = 'comments-section hidden';
+        commentsSection.id = `comments-for-${meme.id}`;
+        const altTextForComment = (meme.description || 'this meme').substring(0, 50).replace(/"/g, '"');
+        const commentsListAriaLabel = `Comments for ${altTextForComment}`;
+        commentsSection.innerHTML = `<h4>Comments</h4><div class="comments-list" aria-live="polite" aria-label="${commentsListAriaLabel}"><p>Click comment icon to load/refresh.</p></div>${currentUser ? `<form class="add-comment-form" data-meme-id="${meme.id}" aria-labelledby="comment-form-label-${meme.id}"><label id="comment-form-label-${meme.id}" class="sr-only">Add a comment for ${altTextForComment}</label><textarea name="commentText" placeholder="Add a comment..." required aria-required="true" rows="3"></textarea><button type="submit" class="nav-button">Post</button></form>` : '<p><small>Login to post comments.</small></p>'}`;
+        post.appendChild(commentsSection);
+        const addCommentForm = commentsSection.querySelector('.add-comment-form');
+        if (addCommentForm) {
+            addCommentForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleAddComment(e, meme.id);
+            });
+        }
         return post;
     };
+
+// ... (Rest of your sketch.js file starting from renderGallery) ...
 
     const renderGallery = (memesToDisplay, galleryElementId = 'meme-gallery') => {
         const galleryContainer = document.getElementById(galleryElementId);
