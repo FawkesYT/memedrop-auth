@@ -32,7 +32,7 @@
             --error-color: #dc3545;   --error-color-rgb: 220, 53, 69;
             --info-color: #17a2b8;    --info-color-rgb: 23, 162, 184;
             --warning-color: #ffc107; --warning-color-rgb: 255, 193, 7;
-            --favorite-color: #ffc107; /* Gold for favorite */
+            --favorite-color: #ffc107; 
             --card-shadow: 0 3px 10px rgba(0,0,0,0.08);
             --card-hover-shadow: 0 8px 25px rgba(var(--primary-color-rgb), 0.15);
             --font-main: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -198,7 +198,7 @@
         }
         
         .nav-right { display: flex; align-items: center; gap: 10px; }
-        .nav-button, #notificationsBtn, #theme-selector { 
+        .nav-button, #notificationsBtn, #theme-selector, #settingsBtn { 
             padding: 9px 18px; 
             border: none; 
             border-radius: 8px; 
@@ -213,12 +213,12 @@
             align-items: center;
             justify-content: center;
         }
-        .nav-button:hover, #notificationsBtn:hover, #theme-selector:hover { 
+        .nav-button:hover, #notificationsBtn:hover, #theme-selector:hover, #settingsBtn:hover { 
             filter: brightness(1.15); 
             transform: translateY(-2px) scale(1.02); 
             box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
         }
-        .nav-button:active, #notificationsBtn:active, #theme-selector:active { 
+        .nav-button:active, #notificationsBtn:active, #theme-selector:active, #settingsBtn:active { 
             transform: translateY(0px) scale(1); 
             filter: brightness(1); 
             box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
@@ -227,8 +227,8 @@
         #userInfo { font-weight: 500; display: flex; align-items: center; gap: 8px; font-size: 0.95em; color: var(--text-color); }
         #userInfo span { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        #notificationsBtn { padding: 8px; position: relative; background-color: transparent; border: 1px solid var(--border-color); color: var(--text-color); box-shadow: none; }
-        #notificationsBtn:hover { background-color: rgba(var(--primary-color-rgb),0.1); color: var(--primary-color); }
+        #notificationsBtn, #settingsBtn { padding: 8px; position: relative; background-color: transparent; border: 1px solid var(--border-color); color: var(--text-color); box-shadow: none; }
+        #notificationsBtn:hover, #settingsBtn:hover { background-color: rgba(var(--primary-color-rgb),0.1); color: var(--primary-color); }
         #notificationsBtn.active svg { animation: bellshake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
         #notification-badge {
             position: absolute;
@@ -246,10 +246,10 @@
             font-weight: bold;
             border: 2px solid var(--card-bg-color); 
             transform-origin: center; 
-            pointer-events: none; /* So it doesn't interfere with button click */
+            pointer-events: none; 
         }
         #notification-badge.popping { animation: popIn 0.3s ease-out; }
-        .notification-dropdown-container { position: relative; } /* For dropdown positioning */
+        .notification-dropdown-container { position: relative; } 
         .notification-dropdown {
             position: absolute;
             top: calc(100% + 10px);
@@ -258,14 +258,14 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-            width: 320px; /* Wider dropdown */
+            width: 320px; 
             max-height: 400px;
             overflow-y: auto;
             z-index: 1010;
             animation: fadeIn 0.2s ease-out;
         }
         .notification-item {
-            padding: 12px 18px; /* More padding */
+            padding: 12px 18px; 
             border-bottom: 1px solid var(--border-color);
             font-size: 0.9em;
             cursor: pointer;
@@ -276,7 +276,7 @@
         .notification-item:last-child { border-bottom: none; }
         .notification-item:hover { background-color: rgba(var(--primary-color-rgb), 0.05); }
         .notification-item.unread { 
-            font-weight: 500; /* Slightly bolder */
+            font-weight: 500; 
             background-color: rgba(var(--primary-color-rgb), 0.03); 
         }
         .notification-item.unread .notification-message { font-weight: 700; }
@@ -338,7 +338,7 @@
             font-size: 0.85em;
             color: var(--text-color-secondary);
             font-weight: 500;
-            cursor: pointer; /* For future profile view */
+            cursor: pointer; 
             transition: color 0.2s;
         }
         .meme-creator:hover { color: var(--primary-color); }
@@ -399,7 +399,7 @@
             font-size: 0.9em;
             font-weight: 500;
         }
-        .post-options-button { margin-left: auto; } /* For edit/delete options */
+        .post-options-button { margin-left: auto; } 
 
         /* --- Comment Section Styles --- */
         .comments-section {
@@ -417,8 +417,8 @@
             border-bottom: 1px solid var(--border-color);
             font-size: 0.9em;
             animation: fadeIn 0.4s;
-            display: flex; /* For aligning username and timestamp */
-            flex-direction: column; /* Stack user/time and comment text */
+            display: flex; 
+            flex-direction: column; 
         }
         .comment:last-child { border-bottom: none; }
         .comment-header { display: flex; align-items: baseline; margin-bottom: 4px; }
@@ -490,7 +490,7 @@
         .meme-detail-modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); /* Even darker overlay */
+            background: rgba(0,0,0,0.85); 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -526,19 +526,19 @@
             position: absolute;
             top: 10px; 
             right: 10px; 
-            background: rgba(30,30,30,0.7); /* Darker, semi-transparent */
+            background: rgba(30,30,30,0.7); 
             color: white;
             border: none;
             border-radius: 50%;
-            width: 36px; /* Larger */
+            width: 36px; 
             height: 36px;
             font-size: 24px; 
-            line-height: 36px; /* Center the X */
+            line-height: 36px; 
             text-align: center;
             cursor: pointer;
             z-index: 3001; 
             transition: background-color 0.2s, transform 0.2s;
-            display: flex; /* For centering X */
+            display: flex; 
             align-items: center;
             justify-content: center;
         }
@@ -570,15 +570,18 @@
             box-sizing: border-box; border: 1px solid var(--border-color); 
             border-radius: 6px; background-color: var(--input-bg-color); 
             color: var(--text-color); 
+            font-size: 0.95em;
         }
-        .modal-content input[type="checkbox"] { margin-right: 8px; }
-        .modal-content label { display: block; text-align: left; margin-bottom: 5px; font-weight: 500; }
+        .modal-content input[type="checkbox"] { margin-right: 8px; vertical-align: middle; }
+        .modal-content label { display: block; text-align: left; margin-bottom: 5px; font-weight: 500; font-size: 0.9em; }
+        .modal-content .checkbox-label { display: inline-block; text-align: left; font-weight: normal;}
+
         .modal-content input[type="file"]:focus, .modal-content textarea:focus, .modal-content input[type="text"]:focus, .modal-content input[type="email"]:focus, .modal-content select:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.2);
         }
-        .modal-flex-buttons { display: flex; gap: 10px; margin-top: 10px; justify-content: flex-end; }
+        .modal-flex-buttons { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; } 
         #googleLoginBtn { background-color: #db4437; flex: 1; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; font-size: 1em; }
         #googleLoginBtn:hover { background-color: #c23321; }
         
@@ -592,7 +595,7 @@
             font-size: 0.9em; 
             cursor: pointer;
             box-shadow: none;
-            margin-left: 5px; /* Add some space */
+            margin-left: 5px; 
         }
         #theme-selector:focus { outline: none; border-color: var(--primary-color); }
         
@@ -626,18 +629,24 @@
         }
 
         /* Spinner for loading states */
-        .spinner-overlay {
+        #spinner-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(var(--bg-color-rgb, 248,249,250), 0.7); /* Use bg color for overlay */
+            background-color: rgba(var(--bg-color-rgb, 248,249,250), 0.7); 
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10000;
+            transition: opacity 0.3s;
         }
-        body[data-theme="dark"] .spinner-overlay { --bg-color-rgb: 18,18,18; }
-        body[data-theme="vaporwave"] .spinner-overlay { --bg-color-rgb: 13,13,36; }
-        /* Add for other themes if bg is dark */
+        body[data-theme="light"] #spinner-overlay { --bg-color-rgb: 248,249,250; }
+        body[data-theme="dark"] #spinner-overlay { --bg-color-rgb: 18,18,18; }
+        body[data-theme="vaporwave"] #spinner-overlay { --bg-color-rgb: 13,13,36; }
+        body[data-theme="synthwave84"] #spinner-overlay { --bg-color-rgb: 42,33,57; }
+        body[data-theme="forest"] #spinner-overlay { --bg-color-rgb: 240,244,240; }
+        body[data-theme="ocean"] #spinner-overlay { --bg-color-rgb: 0,31,63; }
+        body[data-theme="sunset"] #spinner-overlay { --bg-color-rgb: 255,243,224; }
+        body[data-theme="monochrome"] #spinner-overlay { --bg-color-rgb: 248,249,250; }
 
         .spinner {
             border: 5px solid rgba(var(--text-color-rgb, 33,37,41), 0.1);
@@ -647,9 +656,14 @@
             height: 50px;
             animation: spin 0.8s linear infinite;
         }
+        body[data-theme="light"] .spinner { --text-color-rgb: 33,37,41; }
         body[data-theme="dark"] .spinner { --text-color-rgb: 233,236,239; }
         body[data-theme="vaporwave"] .spinner { --text-color-rgb: 1,205,254; }
-        /* Add for other themes for text-color-rgb */
+        body[data-theme="synthwave84"] .spinner { --text-color-rgb: 254,220,85; }
+        body[data-theme="forest"] .spinner { --text-color-rgb: 62,39,35; }
+        body[data-theme="ocean"] .spinner { --text-color-rgb: 224,247,250; }
+        body[data-theme="sunset"] .spinner { --text-color-rgb: 78,52,46; }
+        body[data-theme="monochrome"] .spinner { --text-color-rgb: 33,37,41; }
 
         /* Context Menu (for edit/delete post) */
         .context-menu {
@@ -661,6 +675,7 @@
             z-index: 100;
             padding: 5px 0;
             animation: fadeIn 0.1s ease-out;
+            min-width: 150px; 
         }
         .context-menu button {
             display: block;
@@ -672,24 +687,29 @@
             color: var(--text-color);
             cursor: pointer;
             font-size: 0.9em;
+            transition: background-color 0.2s;
         }
         .context-menu button:hover {
             background-color: rgba(var(--primary-color-rgb), 0.1);
         }
+        .context-menu button.delete-option { color: var(--error-color); }
+        .context-menu button.delete-option:hover {
+            background-color: rgba(var(--error-color-rgb), 0.1);
+        }
     </style>
 </head>
-<body data-theme="vaporwave"> <!-- Default theme -->
+<body data-theme="vaporwave">
 
     <header>
         <nav>
             <h1 id="home-link">MemeDrop</h1>
             <div class="nav-center"><input type="search" id="search-bar" placeholder="Search memes, tags, users..."></div>
             <div class="nav-right">
-                <button class="nav-button" id="notificationsBtn" title="Notifications" aria-label="View Notifications" aria-haspopup="true" aria-expanded="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    <span id="notification-badge" class="hidden">0</span>
-                </button>
                 <div id="notification-dropdown-container">
+                    <button class="nav-button" id="notificationsBtn" title="Notifications" aria-label="View Notifications" aria-haspopup="true" aria-expanded="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        <span id="notification-badge" class="hidden">0</span>
+                    </button>
                     <!-- Notification dropdown will be appended here by JS -->
                 </div>
 
@@ -700,7 +720,7 @@
                 <select id="theme-selector" title="Change Theme" aria-label="Change Theme">
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
-                    <option value="vaporwave" selected>Vaporwave</option>
+                    <option value="vaporwave">Vaporwave</option>
                     <option value="synthwave84">Synthwave '84</option>
                     <option value="forest">Forest Whisper</option>
                     <option value="ocean">Ocean Deep</option>
@@ -722,7 +742,6 @@
                 <div class="feed-tabs">
                     <button id="feed-for-you" class="active" aria-pressed="true">For You</button>
                     <button id="feed-new" aria-pressed="false">New</button>
-                    <!-- <button id="feed-following" class="hidden" aria-pressed="false">Following</button> -->
                 </div>
             </div>
             <div id="meme-gallery" class="meme-gallery" aria-live="polite"><p>Loading memes...</p></div>
@@ -740,6 +759,7 @@
     
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        console.log("INDEX: DOMContentLoaded fired.");
         const firebaseConfig = { 
             apiKey: "AIzaSyAEDWYFwpeSttykkIR60kiCojA5S5UdaA8", 
             authDomain: "test-6336a.firebaseapp.com", 
@@ -749,9 +769,20 @@
             messagingSenderId: "437879418972", 
             appId: "1:437879418972:web:47678bb0b3664edab8f699" 
         };
-        firebase.initializeApp(firebaseConfig);
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log("INDEX: Firebase app initialized successfully.");
+        } catch (e) {
+            console.error("INDEX: Firebase initialization FAILED:", e);
+            const body = document.querySelector('body');
+            if (body) body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50px;">Critical Error: Could not connect to services. Please try again later.</h1>';
+            return; 
+        }
+
         const auth = firebase.auth();
         const database = firebase.database();
+        console.log("INDEX: Firebase auth and database services obtained.");
 
         let currentUser = null;
         let allMemes = [];
@@ -765,13 +796,13 @@
         const commentsListeners = {};
         let userNotificationsListener = null;
         let unreadNotificationCount = 0;
-        let activeContextMenu = null; // To manage only one context menu at a time
+        let activeContextMenu = null;
 
-        // --- Utility Functions ---
-        const showSpinner = () => spinnerOverlay.classList.remove('hidden');
-        const hideSpinner = () => spinnerOverlay.classList.add('hidden');
-
+        const showSpinner = () => spinnerOverlay?.classList.remove('hidden');
+        const hideSpinner = () => spinnerOverlay?.classList.add('hidden');
+        
         const showInPageNotification = (message, type = 'info', duration = 3500) => {
+            if (!notificationArea) return;
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
@@ -814,7 +845,6 @@
             return `${years}y ago`;
         };
 
-        // --- UI & RENDERING ---
         const createMemeElement = (meme) => {
             const post = document.createElement('article');
             post.className = 'meme-post';
@@ -826,7 +856,7 @@
             imageContainer.className = 'meme-post-image-container';
             const img = document.createElement('img');
             img.src = meme.imageBase64;
-            const altText = (meme.description || 'A meme from MemeDrop').replace(/"/g, '"');
+            const altText = (meme.description || 'A meme from MemeDrop').replace(/"/g, '&quot;');
             img.alt = altText;
             imageContainer.appendChild(img);
             post.appendChild(imageContainer);
@@ -836,8 +866,10 @@
             });
              post.addEventListener('keydown', (e) => { 
                 if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openMemeDetail(meme);
+                    if (document.activeElement === post) { // Only if post itself is focused
+                        e.preventDefault();
+                        openMemeDetail(meme);
+                    }
                 }
             });
 
@@ -857,8 +889,6 @@
                 const creatorP = document.createElement('p');
                 creatorP.className = 'meme-creator';
                 creatorP.textContent = `By: ${meme.creatorName || 'Anonymous'}`;
-                // Add click to view user profile later
-                // creatorP.addEventListener('click', (e) => { e.stopPropagation(); viewUserProfile(meme.creatorId); });
                 metaDiv.appendChild(creatorP);
 
                 const timestampP = document.createElement('p');
@@ -874,7 +904,7 @@
             const likeCount = meme.likeCount || 0;
             const dislikeCount = meme.dislikeCount || 0;
             const commentCount = meme.commentCount || 0; 
-            const favoriteCount = meme.favoriteCount || 0; // For favorites
+            const favoriteCount = meme.favoriteCount || 0;
             const isLikedByCurrentUser = currentUser && meme.likes && meme.likes[currentUser.uid];
             const isDislikedByCurrentUser = currentUser && meme.dislikes && meme.dislikes[currentUser.uid];
             const isFavoritedByCurrentUser = currentUser && meme.favorites && meme.favorites[currentUser.uid];
@@ -918,27 +948,26 @@
                 <span class="sr-only">Comments</span>`;
             actionsDiv.appendChild(commentToggleButton);
 
-            // Favorite Button (Placeholder Functionality)
+            // Favorite Button
             const favoriteButton = document.createElement('button');
             favoriteButton.className = `action-button favorite-button ${isFavoritedByCurrentUser ? 'favorited' : ''}`;
             favoriteButton.title = "Favorite";
             favoriteButton.setAttribute('aria-pressed', !!isFavoritedByCurrentUser);
             favoriteButton.innerHTML = `
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="${isFavoritedByCurrentUser ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                <span class="sr-only">Favorite</span>`; // No count for favorites typically shown on button
+                <span class="sr-only">Favorite</span>`;
             actionsDiv.appendChild(favoriteButton);
 
-            // Options button (for edit/delete) - aligned to the right
+            // Options button (for edit/delete)
             const optionsButton = document.createElement('button');
             optionsButton.className = 'action-button post-options-button';
             optionsButton.title = 'More options';
             optionsButton.setAttribute('aria-haspopup', 'true');
             optionsButton.setAttribute('aria-expanded', 'false');
-            optionsButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg> <span class="sr-only">More options</span>`;
+            optionsButton.innerHTML = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg> <span class="sr-only">More options for this meme</span>`;
             if (currentUser && currentUser.uid === meme.creatorId) {
-                actionsDiv.appendChild(optionsButton); // Only show if creator
+                actionsDiv.appendChild(optionsButton);
             }
-
             post.appendChild(actionsDiv);
 
             const commentsSection = document.createElement('div');
@@ -970,6 +999,7 @@
 
         const renderGallery = () => {
             const galleryContainer = document.getElementById('meme-gallery');
+            if (!galleryContainer) return;
             galleryContainer.innerHTML = ''; 
             
             let memesToDisplay = [];
@@ -1001,24 +1031,28 @@
                 logoutBtnInstance.removeEventListener('click', handleLogout);
             }
             if (user) {
-                userInfoEl.innerHTML = `<span>Hi, ${user.displayName || 'User'}!</span> <button id="logoutBtn" class="nav-button">Logout</button>`;
+                if (userInfoEl) userInfoEl.innerHTML = `<span>Hi, ${user.displayName || 'User'}!</span> <button id="logoutBtn" class="nav-button">Logout</button>`;
                 const newLogoutBtn = document.getElementById('logoutBtn');
                 if(newLogoutBtn) { 
                     newLogoutBtn.addEventListener('click', handleLogout);
                 }
-                userInfoEl.classList.remove('hidden');
-                loginBtn.classList.add('hidden');
-                uploadBtn.classList.remove('hidden');
-                settingsBtn.classList.remove('hidden');
+                if (userInfoEl) userInfoEl.classList.remove('hidden');
+                if (loginBtn) loginBtn.classList.add('hidden');
+                if (uploadBtn) uploadBtn.classList.remove('hidden');
+                if (settingsBtn) settingsBtn.classList.remove('hidden');
                 listenToUserNotifications(user.uid); 
             } else {
-                userInfoEl.classList.add('hidden');
-                userInfoEl.innerHTML = '';
-                loginBtn.classList.remove('hidden');
-                uploadBtn.classList.add('hidden');
-                settingsBtn.classList.add('hidden');
-                if (userNotificationsListener && currentUser) { // Check if currentUser was set before logout
-                    database.ref(`user-notifications/${currentUser.uid}`).off('value', userNotificationsListener);
+                if (userInfoEl) {
+                    userInfoEl.classList.add('hidden');
+                    userInfoEl.innerHTML = '';
+                }
+                if (loginBtn) loginBtn.classList.remove('hidden');
+                if (uploadBtn) uploadBtn.classList.add('hidden');
+                if (settingsBtn) settingsBtn.classList.add('hidden');
+                
+                const currentUserIdBeforeLogout = currentUser?.uid; 
+                if (userNotificationsListener && currentUserIdBeforeLogout) { 
+                    database.ref(`user-notifications/${currentUserIdBeforeLogout}`).off('value', userNotificationsListener);
                     userNotificationsListener = null;
                 }
                 updateNotificationBadge(0); 
@@ -1028,7 +1062,8 @@
         };
 
         const openModal = (modalType, data = null) => {
-            closeActiveContextMenu(); // Close any open context menus when a modal opens
+            closeActiveContextMenu(); 
+            if (!modalContainer) return;
             modalContainer.innerHTML = '';
             const modalOverlay = document.createElement('div');
             modalOverlay.className = 'modal-overlay';
@@ -1052,6 +1087,7 @@
                          modalHTML = `<div class="modal-content"><h2>Edit Meme Description</h2>
                                     <form id="editMemeForm">
                                         <input type="hidden" id="editMemeId" value="${data.meme.id}">
+                                        <label for="editMemeDescription">Description:</label>
                                         <textarea id="editMemeDescription" rows="4" required>${data.meme.description || ''}</textarea>
                                         <div class="modal-flex-buttons">
                                             <button type="button" class="cancel-btn nav-button">Cancel</button>
@@ -1059,7 +1095,7 @@
                                         </div>
                                     </form>
                                  </div>`;
-                    } else { return; }
+                    } else { showInPageNotification("Error: Meme data not found for editing.", "error"); return; }
                     break;
                 case 'settings':
                      modalHTML = `<div class="modal-content"><h2>Settings</h2>
@@ -1079,7 +1115,7 @@
                                         </div>
                                         <div style="margin-top: 15px; text-align:left;">
                                             <input type="checkbox" id="settingEmailNotifications" name="emailNotifications">
-                                            <label for="settingEmailNotifications" style="display:inline;">Receive Email Notifications (placeholder)</label>
+                                            <label for="settingEmailNotifications" class="checkbox-label">Receive Email Notifications (placeholder)</label>
                                         </div>
                                         <div class="modal-flex-buttons" style="margin-top:25px;">
                                             <button type="button" class="cancel-btn nav-button">Cancel</button>
@@ -1092,15 +1128,15 @@
                     if (data && data.meme) {
                         modalOverlay.classList.add('meme-detail-modal-overlay'); 
                         modalHTML = `<div class="meme-detail-modal-content">
-                                        <button class="meme-detail-close-btn" aria-label="Close meme detail view">×</button>
-                                        <img src="${data.meme.imageBase64}" alt="${(data.meme.description || 'Meme image').replace(/"/g, '"')}"/>
+                                        <button class="meme-detail-close-btn" aria-label="Close meme detail view">&times;</button>
+                                        <img src="${data.meme.imageBase64}" alt="${(data.meme.description || 'Meme image').replace(/"/g, '&quot;')}"/>
                                      </div>`;
                     } else { showInPageNotification("Error: Meme data not found for detail view.", "error"); return; }
                     break;
             }
             modalOverlay.innerHTML = modalHTML;
             modalContainer.appendChild(modalOverlay);
-            attachModalListeners(modalType, modalOverlay, data); // Pass data for editMeme
+            attachModalListeners(modalType, modalOverlay, data);
         };
 
         function attachModalListeners(modalType, modalOverlayElement, modalData = null) {
@@ -1123,11 +1159,42 @@
             switch(modalType) {
                 case 'auth': 
                     const googleLoginBtn = modalOverlayElement.querySelector('#googleLoginBtn');
-                    if (googleLoginBtn) { /* ... same signInWithPopup logic ... */ }
+                    if (googleLoginBtn) {
+                        googleLoginBtn.addEventListener('click', async () => { 
+                            console.log("INDEX: Attempting signInWithPopup directly.");
+                            showSpinner();
+                            const provider = new firebase.auth.GoogleAuthProvider();
+                            try {
+                                const result = await auth.signInWithPopup(provider);
+                                hideSpinner();
+                                console.log("INDEX: signInWithPopup SUCCESS. Full result:", result);
+                                if (result.user) {
+                                    const user = result.user;
+                                    const userRef = database.ref('users/' + user.uid);
+                                    userRef.once('value', (userSnap) => {
+                                        if (!userSnap.exists()) { 
+                                            userRef.set({ displayName: user.displayName || 'Meme Lover', email: user.email, photoURL: user.photoURL, createdAt: firebase.database.ServerValue.TIMESTAMP, lastLogin: firebase.database.ServerValue.TIMESTAMP });
+                                        } else { 
+                                            userRef.update({ lastLogin: firebase.database.ServerValue.TIMESTAMP, displayName: user.displayName || userSnap.val().displayName, photoURL: user.photoURL || userSnap.val().photoURL });
+                                        }
+                                    });
+                                    modalContainer.innerHTML = ''; 
+                                    showInPageNotification('Login successful!', 'success');
+                                } else { 
+                                    console.error("INDEX: signInWithPopup successful, but no user object in result.");
+                                    showInPageNotification("Login seemed to work but no user data was returned.", "error");
+                                }
+                            } catch (error) { 
+                                hideSpinner();
+                                console.error("INDEX: signInWithPopup ERROR. Code:", error.code, "Message:", error.message);
+                                showInPageNotification(`Login failed: ${error.message} (Code: ${error.code})`, "error");
+                            }
+                        });
+                    }
                     break;
                 case 'upload':
                     const uploadForm = modalOverlayElement.querySelector('#uploadForm');
-                    if (uploadForm) { /* ... same upload logic, make sure to initialize new fields like favoriteCount and favorites:{} ... */ 
+                    if (uploadForm) {
                         uploadForm.addEventListener('submit', async e => {
                             e.preventDefault();
                             showSpinner();
@@ -1152,10 +1219,10 @@
                                     likeCount: 0, 
                                     dislikeCount: 0,
                                     commentCount: 0,
-                                    favoriteCount: 0, // Initialize
+                                    favoriteCount: 0,
                                     likes: {},
                                     dislikes: {},
-                                    favorites: {} // Initialize
+                                    favorites: {}       
                                 };
                                 database.ref('memes').push(memeData)
                                     .then(() => {
@@ -1192,10 +1259,9 @@
                             showSpinner();
                             database.ref(`memes/${memeId}/description`).set(newDescription)
                                 .then(() => {
+                                    database.ref(`memes/${memeId}/lastEditedAt`).set(firebase.database.ServerValue.TIMESTAMP);
                                     hideSpinner();
                                     showInPageNotification("Meme description updated!", "success");
-                                    // Add timestamp for edit
-                                    database.ref(`memes/${memeId}/lastEditedAt`).set(firebase.database.ServerValue.TIMESTAMP);
                                     modalOverlayElement.remove();
                                 })
                                 .catch(err => {
@@ -1208,21 +1274,19 @@
                     break;
                 case 'settings':
                     const settingsForm = modalOverlayElement.querySelector('#settingsForm');
-                    // Populate form with current settings
-                    if (currentUser) {
+                    if (currentUser && settingsForm) { // Ensure currentUser and form exist
                         database.ref(`users/${currentUser.uid}/settings`).once('value').then(snapshot => {
                             const settings = snapshot.val();
                             if (settings) {
-                                if(settings.theme) settingsForm.querySelector('#settingTheme').value = settings.theme;
-                                if(settings.emailNotifications) settingsForm.querySelector('#settingEmailNotifications').checked = settings.emailNotifications;
-                            } else { // Set default if no settings exist
-                                 settingsForm.querySelector('#settingTheme').value = localStorage.getItem('theme') || 'vaporwave';
+                                if(settings.theme && settingsForm.querySelector('#settingTheme')) settingsForm.querySelector('#settingTheme').value = settings.theme;
+                                if(typeof settings.emailNotifications === 'boolean' && settingsForm.querySelector('#settingEmailNotifications')) settingsForm.querySelector('#settingEmailNotifications').checked = settings.emailNotifications;
+                            } else { 
+                                 if(settingsForm.querySelector('#settingTheme')) settingsForm.querySelector('#settingTheme').value = localStorage.getItem('theme') || 'vaporwave';
                             }
-                        });
-                    } else {
-                         settingsForm.querySelector('#settingTheme').value = localStorage.getItem('theme') || 'vaporwave';
+                        }).catch(err => console.warn("Could not load user settings for form:", err));
+                    } else if (settingsForm) { // Not logged in, just set theme from local storage
+                        if(settingsForm.querySelector('#settingTheme')) settingsForm.querySelector('#settingTheme').value = localStorage.getItem('theme') || 'vaporwave';
                     }
-
 
                     if (settingsForm) {
                         settingsForm.addEventListener('submit', (e) => {
@@ -1239,11 +1303,11 @@
                             }).then(() => {
                                 hideSpinner();
                                 showInPageNotification("Settings saved!", "success");
-                                // Apply theme immediately if changed
                                 if (document.body.getAttribute('data-theme') !== newTheme) {
                                     document.body.setAttribute('data-theme', newTheme);
                                     localStorage.setItem('theme', newTheme);
-                                    document.getElementById('theme-selector').value = newTheme; // Sync nav selector
+                                    const navThemeSelector = document.getElementById('theme-selector');
+                                    if (navThemeSelector) navThemeSelector.value = newTheme;
                                 }
                                 modalOverlayElement.remove();
                             }).catch(err => {
@@ -1259,11 +1323,112 @@
             }
         }
         
-        auth.onAuthStateChanged(user => { /* ... same ... */ });
-        const handleLogout = () => { /* ... same ... */ };
+        auth.onAuthStateChanged(user => {
+            console.log("INDEX: Auth state changed, current user:", user ? {uid: user.uid, displayName: user.displayName} : null);
+            currentUser = user;
+            updateUIForAuthState(user);
+        });
+        
+        const handleLogout = () => {
+            auth.signOut().then(() => { 
+                showInPageNotification('You have been logged out.', 'info'); 
+            }).catch(error => { 
+                console.error("Logout error:", error); 
+                showInPageNotification(`Logout failed: ${error.message}`, "error");
+            });
+        };
+
         const memesRef = database.ref('memes');
-        memesRef.on('value', snapshot => { /* ... same ... */ });
-        const handleLikeDislike = (memeId, actionType) => { /* ... same combined like/dislike logic ... */ };
+        memesRef.on('value', snapshot => {
+            const memesData = snapshot.val() || {};
+            allMemes = Object.keys(memesData).map(key => ({
+                id: key,
+                ...memesData[key]
+            }));
+            console.log("INDEX: Fetched/updated memes count:", allMemes.length);
+            renderGallery(); 
+        }, error => { 
+            console.error("Error fetching memes from Firebase:", error); 
+            const galleryContainer = document.getElementById('meme-gallery');
+            if (galleryContainer) galleryContainer.innerHTML = '<p style="grid-column: 1 / -1; text-align: center; color: red;">Could not load memes. Check console.</p>';
+            showInPageNotification("Could not load memes. " + error.message, "error");
+        });
+
+        const handleLikeDislike = (memeId, actionType) => {
+            if (!currentUser) { showInPageNotification("Please login to interact!", "error"); openModal('auth'); return; }
+            console.log(`INDEX: Toggling ${actionType} for meme ${memeId} by user ${currentUser.uid}`);
+            
+            database.ref(`memes/${memeId}`).transaction(memeData => {
+                if (memeData) {
+                    memeData.likes = memeData.likes || {};
+                    memeData.dislikes = memeData.dislikes || {};
+                    memeData.likeCount = typeof memeData.likeCount === 'number' ? memeData.likeCount : 0;
+                    memeData.dislikeCount = typeof memeData.dislikeCount === 'number' ? memeData.dislikeCount : 0;
+
+                    const userUid = currentUser.uid;
+                    const wasLiked = memeData.likes[userUid];
+                    const wasDisliked = memeData.dislikes[userUid];
+                    let notificationType = null;
+                    let shouldNotify = false;
+
+                    if (actionType === 'like') {
+                        if (wasLiked) { 
+                            memeData.likeCount--;
+                            memeData.likes[userUid] = null;
+                        } else { 
+                            memeData.likeCount++;
+                            memeData.likes[userUid] = true;
+                            shouldNotify = true; notificationType = 'like';
+                            if (wasDisliked) { 
+                                memeData.dislikeCount--;
+                                memeData.dislikes[userUid] = null;
+                            }
+                        }
+                    } else if (actionType === 'dislike') {
+                        if (wasDisliked) { 
+                            memeData.dislikeCount--;
+                            memeData.dislikes[userUid] = null;
+                        } else { 
+                            memeData.dislikeCount++;
+                            memeData.dislikes[userUid] = true;
+                            // No notification for dislikes usually, but you could add:
+                            // shouldNotify = true; notificationType = 'dislike'; 
+                            if (wasLiked) { 
+                                memeData.likeCount--;
+                                memeData.likes[userUid] = null;
+                            }
+                        }
+                    }
+                    // Store notification trigger info if needed for the callback
+                    if (shouldNotify && notificationType) {
+                         memeData._pendingNotification = { type: notificationType, memeOwnerId: memeData.creatorId };
+                    }
+                }
+                return memeData; 
+            }, (error, committed, snapshot) => {
+                if (error) { console.error(`${actionType} transaction failed!`, error); showInPageNotification(`Could not process ${actionType}: ${error.message}`, "error");
+                } else if (!committed) { console.warn(`${actionType} transaction not committed.`); showInPageNotification(`Could not update ${actionType}, please try again.`, "info");
+                } else { 
+                    console.log(`${actionType} transaction committed!`);
+                    const updatedMemeData = snapshot.val();
+                    if (updatedMemeData && updatedMemeData._pendingNotification) {
+                        const notifInfo = updatedMemeData._pendingNotification;
+                        if (notifInfo.memeOwnerId && notifInfo.memeOwnerId !== currentUser.uid) {
+                            createNotification(
+                                notifInfo.memeOwnerId,
+                                notifInfo.type,
+                                currentUser.uid,
+                                currentUser.displayName || 'Someone',
+                                memeId,
+                                `${notifInfo.type}d your meme.`
+                            );
+                        }
+                        // Clean up temporary field (optional, or handle via rules)
+                        database.ref(`memes/${memeId}/_pendingNotification`).remove();
+                    }
+                }
+            });
+        };
         const handleLike = (memeId) => handleLikeDislike(memeId, 'like');
         const handleDislike = (memeId) => handleLikeDislike(memeId, 'dislike');
         
@@ -1276,57 +1441,401 @@
                     memeData.favorites = memeData.favorites || {};
                     memeData.favoriteCount = typeof memeData.favoriteCount === 'number' ? memeData.favoriteCount : 0;
 
-                    if (memeData.favorites[currentUser.uid]) { // Already favorited, so unfavorite
+                    const userUid = currentUser.uid;
+                    if (memeData.favorites[userUid]) { 
                         memeData.favoriteCount--;
-                        memeData.favorites[currentUser.uid] = null;
-                    } else { // Not favorited, so favorite
+                        memeData.favorites[userUid] = null;
+                    } else { 
                         memeData.favoriteCount++;
-                        memeData.favorites[currentUser.uid] = true;
+                        memeData.favorites[userUid] = true;
+                        // Create notification for meme owner (if not self)
+                        if (memeData.creatorId && memeData.creatorId !== userUid) {
+                             memeData._pendingNotification = { type: 'favorite', memeOwnerId: memeData.creatorId };
+                        }
                     }
                 }
                 return memeData; 
             }, (error, committed, snapshot) => {
                 if (error) { console.error(`Favorite transaction failed!`, error); showInPageNotification(`Could not process favorite: ${error.message}`, "error");
                 } else if (!committed) { console.warn(`Favorite transaction not committed.`); showInPageNotification(`Could not update favorite, please try again.`, "info");
-                } else { console.log(`Favorite transaction committed!`); }
+                } else { 
+                    console.log(`Favorite transaction committed!`);
+                    const updatedMemeData = snapshot.val();
+                     if (updatedMemeData && updatedMemeData._pendingNotification) {
+                        const notifInfo = updatedMemeData._pendingNotification;
+                        if (notifInfo.memeOwnerId && notifInfo.memeOwnerId !== currentUser.uid) { // Check currentUser exists
+                            createNotification(
+                                notifInfo.memeOwnerId,
+                                notifInfo.type,
+                                currentUser.uid, // currentUser should be defined here
+                                currentUser.displayName || 'Someone',
+                                memeId,
+                                `favorited your meme.`
+                            );
+                        }
+                        database.ref(`memes/${memeId}/_pendingNotification`).remove();
+                    }
+                }
             });
         };
 
-        const toggleComments = (memeId, postElement, toggleButton) => { /* ... same ... */ };
-        const renderComments = (snapshot, commentsListDiv) => { /* ... same, includes comment timestamp ... */ };
-        const handleAddComment = (event, memeId) => { /* ... same, includes notification creation ... */ };
-        const openMemeDetail = (meme) => { openModal('memeDetail', { meme: meme }); };
+        const toggleComments = (memeId, postElement, toggleButton) => {
+            const commentsSection = postElement.querySelector('.comments-section');
+            if (!commentsSection) return;
+            const commentsListDiv = commentsSection.querySelector('.comments-list');
+            const isHidden = commentsSection.classList.toggle('hidden');
+            toggleButton.setAttribute('aria-expanded', !isHidden);
+
+            if (!isHidden) { 
+                commentsListDiv.innerHTML = '<p>Loading comments...</p>'; 
+                if (!commentsListeners[memeId] || !commentsListeners[memeId].isActive) { 
+                    console.log(`INDEX: Attaching comment listener for meme ${memeId}`);
+                    const memeCommentsRef = database.ref(`comments/${memeId}`).orderByChild('createdAt').limitToLast(50); 
+                    
+                    const listenerCallback = snapshot => {
+                        console.log(`INDEX: Comments data received for meme ${memeId}`);
+                        renderComments(snapshot, commentsListDiv);
+                        const commentCount = snapshot.numChildren();
+                        const commentCountDisplay = postElement.querySelector('.comment-count-display');
+                        if (commentCountDisplay) commentCountDisplay.textContent = commentCount;
+                        
+                        const memeRefForCount = database.ref(`memes/${memeId}/commentCount`);
+                        memeRefForCount.once('value', currentCountSnap => {
+                            if (currentCountSnap.val() !== commentCount) {
+                                memeRefForCount.set(commentCount)
+                                .catch(err => console.warn("Failed to update meme comment count:", err)); 
+                            }
+                        });
+                    };
+                    const errorCallback = error => {
+                        console.error(`Error fetching comments for meme ${memeId}:`, error);
+                        if(commentsListDiv) commentsListDiv.innerHTML = '<p style="color:red;">Could not load comments.</p>';
+                        showInPageNotification("Failed to load comments: " + error.message, "error");
+                    };
+                    
+                    memeCommentsRef.on('value', listenerCallback, errorCallback);
+                    commentsListeners[memeId] = { ref: memeCommentsRef, listener: listenerCallback, errorCb: errorCallback, isActive: true };
+                }
+            } else { 
+                if (commentsListeners[memeId] && commentsListeners[memeId].isActive) {
+                    console.log(`INDEX: Detaching comment listener for meme ${memeId}`);
+                    commentsListeners[memeId].ref.off('value', commentsListeners[memeId].listener);
+                    commentsListeners[memeId].isActive = false; 
+                }
+            }
+        };
+
+        const renderComments = (snapshot, commentsListDiv) => {
+            if (!commentsListDiv) return;
+            commentsListDiv.innerHTML = ''; 
+            if (!snapshot.exists() || snapshot.numChildren() === 0) {
+                commentsListDiv.innerHTML = '<p>No comments yet. Be the first!</p>';
+                return;
+            }
+            let commentsArray = [];
+            snapshot.forEach(childSnapshot => {
+                commentsArray.push({ id: childSnapshot.key, ...childSnapshot.val() });
+            });
+            commentsArray.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); 
+
+            commentsArray.forEach(comment => {
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'comment';
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'comment-header';
+                const strong = document.createElement('strong');
+                strong.textContent = (comment.userName || 'User');
+                const time = document.createElement('span');
+                time.className = 'comment-timestamp';
+                time.textContent = ` - ${timeAgo(comment.createdAt)}`;
+                headerDiv.appendChild(strong);
+                headerDiv.appendChild(time); 
+                
+                const p = document.createElement('p');
+                p.textContent = comment.text;
+
+                commentDiv.appendChild(headerDiv);
+                commentDiv.appendChild(p);
+                commentsListDiv.appendChild(commentDiv);
+            });
+        };
+
+        const handleAddComment = (event, memeId) => {
+            event.preventDefault();
+            if (!currentUser) {
+                showInPageNotification("Please login to comment.", "error");
+                openModal('auth');
+                return;
+            }
+            const form = event.target;
+            const commentTextarea = form.querySelector('textarea[name="commentText"]');
+            const commentText = commentTextarea.value.trim();
+
+            if (!commentText) {
+                showInPageNotification("Comment cannot be empty.", "error");
+                return;
+            }
+
+            const commentData = {
+                text: commentText,
+                userId: currentUser.uid,
+                userName: currentUser.displayName || 'Anonymous Commenter',
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            };
+            console.log("INDEX: Attempting to post commentData:", JSON.stringify(commentData));
+            console.log("INDEX: Current auth.currentUser.uid on client for comment:", auth.currentUser ? auth.currentUser.uid : "No auth.currentUser");
+
+            const newCommentRef = database.ref(`comments/${memeId}`).push();
+            newCommentRef.set(commentData)
+                .then(() => {
+                    commentTextarea.value = ''; 
+                    showInPageNotification("Comment posted!", "success");
+                    database.ref(`memes/${memeId}/commentCount`).transaction(count => (count || 0) + 1);
+
+                    const memeOwnerId = allMemes.find(m => m.id === memeId)?.creatorId;
+                    if (memeOwnerId && memeOwnerId !== currentUser.uid) {
+                        createNotification(
+                            memeOwnerId,
+                            'comment',
+                            currentUser.uid,
+                            currentUser.displayName || 'Someone',
+                            memeId,
+                            `commented on your meme: "${commentText.substring(0, 30)}${commentText.length > 30 ? '...' : ''}"`
+                        );
+                    }
+                })
+                .catch(error => {
+                    console.error("Error posting comment:", error);
+                    showInPageNotification("Could not post comment: " + error.message, "error");
+                });
+        };
+
+        const openMemeDetail = (meme) => {
+            openModal('memeDetail', { meme: meme });
+        };
+
         const searchBar = document.getElementById('search-bar');
-        const applySearchFilter = () => { /* ... same ... */ };
-        searchBar.addEventListener('input', applySearchFilter);
-        document.getElementById('feed-for-you').addEventListener('click', (e) => switchFeed('for-you', e.target));
-        document.getElementById('feed-new').addEventListener('click', (e) => switchFeed('new', e.target));
-        const switchFeed = (feedName, clickedButton) => { /* ... same ... */ };
+        const applySearchFilter = () => {
+            const searchTerm = searchBar.value.toLowerCase().trim();
+            let baseMemesForFilter = [...allMemes]; 
+            if (searchTerm === '') {
+                currentFeedMemes = baseMemesForFilter;
+            } else {
+                currentFeedMemes = baseMemesForFilter.filter(meme => 
+                    (meme.description && meme.description.toLowerCase().includes(searchTerm)) ||
+                    (meme.creatorName && meme.creatorName.toLowerCase().includes(searchTerm))
+                );
+            }
+            renderGallery();
+        };
+        if(searchBar) searchBar.addEventListener('input', applySearchFilter);
+
+        document.getElementById('feed-for-you')?.addEventListener('click', (e) => switchFeed('for-you', e.target));
+        document.getElementById('feed-new')?.addEventListener('click', (e) => switchFeed('new', e.target));
+
+        const switchFeed = (feedName, clickedButton) => {
+            activeFeed = feedName;
+            document.querySelectorAll('.feed-tabs button').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+            });
+            if (clickedButton) {
+                clickedButton.classList.add('active');
+                clickedButton.setAttribute('aria-pressed', 'true');
+            }
+            applySearchFilter(); 
+            showInPageNotification(`Switched to "${feedName.replace('-', ' ')}" feed.`, 'info', 1500);
+        };
+
         const themeSelector = document.getElementById('theme-selector');
-        /* ... theme logic same ... */
+        const initTheme = () => {
+            const savedTheme = localStorage.getItem('theme') || 'vaporwave'; 
+            document.body.setAttribute('data-theme', savedTheme);
+            if(themeSelector) themeSelector.value = savedTheme; 
+        };
+        initTheme();
+
+        if(themeSelector) {
+            themeSelector.addEventListener('change', (e) => {
+                document.body.setAttribute('data-theme', e.target.value);
+                localStorage.setItem('theme', e.target.value);
+            });
+        }
         
         // --- NOTIFICATIONS ---
-        const createNotification = (receivingUserId, type, actorUid, actorName, targetId = null, messageContent = null, targetType = 'meme') => { /* ... (same logic to push to /user-notifications/) ... */ };
-        const updateNotificationBadge = (count) => { /* ... same ... */ };
-        const listenToUserNotifications = (userId) => { /* ... same ... */ };
-        const renderNotificationDropdown = (notifications) => { /* ... same ... */ };
-        const handleNotificationClick = (notification) => { /* ... same ... */ };
-        const toggleNotificationDropdown = () => { /* ... same ... */ };
-        const closeNotificationDropdown = () => { /* ... same ... */ };
-        document.getElementById('notificationsBtn').addEventListener('click', (e) => { e.stopPropagation(); toggleNotificationDropdown(); });
-        document.body.addEventListener('click', (e) => { /* ... same for closing dropdown ... */ });
+        const createNotification = (receivingUserId, type, actorUid, actorName, targetId = null, messageContent = null, targetType = 'meme') => {
+            if (!receivingUserId || !type || !actorUid || !actorName) {
+                console.warn("Skipping notification creation due to missing parameters.");
+                return;
+            }
+            // Avoid self-notification for certain types like like/comment on own content
+            if (receivingUserId === actorUid && (type === 'like' || type === 'comment' || type === 'favorite')) {
+                console.log("Skipping self-notification for action:", type);
+                return;
+            }
+
+            const notificationData = {
+                type: type, 
+                actorUid: actorUid,
+                actorName: actorName,
+                targetId: targetId, 
+                targetType: targetType, // 'meme', 'user' (for follow)
+                message: messageContent || `${actorName} performed an action.`, 
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                read: false
+            };
+            database.ref(`user-notifications/${receivingUserId}`).push(notificationData)
+                .then(() => console.log("Notification created for", receivingUserId, "Type:", type))
+                .catch(err => console.error("Error creating notification:", err));
+        };
+        
+        const updateNotificationBadge = (count) => {
+            if (notificationBadge) {
+                if (count > 0) {
+                    notificationBadge.textContent = count > 9 ? '9+' : count;
+                    notificationBadge.classList.remove('hidden');
+                    notificationBadge.classList.add('popping');
+                    setTimeout(() => notificationBadge.classList.remove('popping'), 300); // remove pop animation
+                } else {
+                    notificationBadge.classList.add('hidden');
+                }
+            }
+        };
+
+        const listenToUserNotifications = (userId) => {
+            if (userNotificationsListener && currentUser && currentUser.uid === userId) { // Already listening for this user
+                return;
+            }
+            if (userNotificationsListener && currentUser && currentUser.uid !== userId) { // User changed, stop old listener
+                 database.ref(`user-notifications/${currentUser.uid}`).off('value', userNotificationsListener);
+            }
+
+            const userNotificationsRef = database.ref(`user-notifications/${userId}`).orderByChild('timestamp').limitToLast(20); 
+            
+            userNotificationsListener = userNotificationsRef.on('value', snapshot => {
+                const notifications = [];
+                let unreadCount = 0;
+                snapshot.forEach(childSnap => {
+                    const notif = { id: childSnap.key, ...childSnap.val() };
+                    notifications.unshift(notif); 
+                    if (!notif.read) {
+                        unreadCount++;
+                    }
+                });
+                unreadNotificationCount = unreadCount;
+                updateNotificationBadge(unreadCount);
+                // If dropdown is currently open, re-render it
+                if (notificationDropdownContainer.querySelector('.notification-dropdown')) {
+                    renderNotificationDropdown(notifications); 
+                }
+            }, error => {
+                console.error("Error fetching notifications:", error);
+                showInPageNotification("Could not load notifications.", "error");
+            });
+        };
+
+        const renderNotificationDropdown = (notifications) => {
+            let dropdown = notificationDropdownContainer.querySelector('.notification-dropdown');
+            if (!dropdown) return; 
+
+            dropdown.innerHTML = ''; 
+            if (notifications.length === 0) {
+                dropdown.innerHTML = '<div class="no-notifications">No new notifications.</div>';
+                return;
+            }
+            notifications.forEach(notif => {
+                const item = document.createElement('div');
+                item.className = `notification-item ${!notif.read ? 'unread' : ''}`;
+                item.dataset.notificationId = notif.id;
+                item.setAttribute('tabindex', '0'); // Make focusable
+                item.innerHTML = `<span class="notification-message">${notif.message || `${notif.actorName} performed an action.`}</span>
+                                  <span class="notification-timestamp">${timeAgo(notif.timestamp)}</span>`;
+                item.addEventListener('click', () => handleNotificationClick(notif));
+                item.addEventListener('keydown', (e) => { if(e.key === 'Enter' || e.key === ' ') handleNotificationClick(notif); });
+                dropdown.appendChild(item);
+            });
+        };
+
+        const handleNotificationClick = (notification) => {
+            console.log("Clicked notification:", notification);
+            if (!notification.read && currentUser) {
+                database.ref(`user-notifications/${currentUser.uid}/${notification.id}/read`).set(true)
+                .catch(err => console.warn("Could not mark notification as read:", err));
+            }
+            if ((notification.type === 'like' || notification.type === 'comment' || notification.type === 'favorite' || notification.type === 'remix_on_yours') && notification.targetType === 'meme') {
+                if (notification.targetId) {
+                    const targetMeme = allMemes.find(m => m.id === notification.targetId);
+                    if (targetMeme) openMemeDetail(targetMeme);
+                    else showInPageNotification("The related meme could not be found.", "warning");
+                }
+            } else if (notification.type === 'follow' && notification.targetType === 'user') {
+                // Future: openUserProfile(notification.actorUid);
+                showInPageNotification(`${notification.actorName} followed you (profile view TBD).`, "info");
+            }
+            closeNotificationDropdown();
+        };
+
+        const toggleNotificationDropdown = () => {
+            let dropdown = notificationDropdownContainer.querySelector('.notification-dropdown');
+            const notificationsBtn = document.getElementById('notificationsBtn');
+            if (dropdown) {
+                dropdown.remove();
+                if(notificationsBtn) notificationsBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                dropdown = document.createElement('div');
+                dropdown.className = 'notification-dropdown';
+                dropdown.setAttribute('aria-label', 'Notifications List');
+                notificationDropdownContainer.appendChild(dropdown);
+                if(notificationsBtn) notificationsBtn.setAttribute('aria-expanded', 'true');
+                
+                if (currentUser) {
+                    database.ref(`user-notifications/${currentUser.uid}`).orderByChild('timestamp').limitToLast(20).once('value', snapshot => {
+                         const notifications = [];
+                         snapshot.forEach(childSnap => notifications.unshift({ id: childSnap.key, ...childSnap.val() }));
+                         renderNotificationDropdown(notifications);
+                    });
+                } else {
+                     renderNotificationDropdown([]); 
+                }
+            }
+        };
+        
+        const closeNotificationDropdown = () => {
+            const dropdown = notificationDropdownContainer.querySelector('.notification-dropdown');
+            if (dropdown) {
+                dropdown.remove();
+                document.getElementById('notificationsBtn')?.setAttribute('aria-expanded', 'false');
+            }
+        };
+
+        document.getElementById('notificationsBtn')?.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            toggleNotificationDropdown();
+        });
+        document.body.addEventListener('click', (e) => {
+            if (notificationDropdownContainer && !notificationDropdownContainer.contains(e.target) && e.target !== document.getElementById('notificationsBtn') && !document.getElementById('notificationsBtn')?.contains(e.target) ) {
+                closeNotificationDropdown();
+            }
+            // Close context menu logic
+            if (activeContextMenu && !activeContextMenu.contains(e.target) && !e.target.classList.contains('post-options-button') && !e.target.closest('.post-options-button')) {
+                closeActiveContextMenu();
+            }
+        });
 
         // --- POST OPTIONS (Edit/Delete) ---
         const togglePostOptionsMenu = (meme, buttonElement) => {
-            closeActiveContextMenu(); // Close any other open menu
+            closeActiveContextMenu(); 
             if (!currentUser || currentUser.uid !== meme.creatorId) return;
 
             const rect = buttonElement.getBoundingClientRect();
             const menu = document.createElement('div');
             menu.className = 'context-menu';
-            menu.style.top = `${rect.bottom + window.scrollY + 5}px`;
-            menu.style.right = `${window.innerWidth - rect.right - window.scrollX}px`;
-
+            // Position relative to button, attempt to keep in viewport
+            let top = rect.bottom + window.scrollY + 5;
+            let right = window.innerWidth - rect.right - window.scrollX;
+            menu.style.top = `${top}px`;
+            menu.style.right = `${right}px`;
+            
             const editButton = document.createElement('button');
             editButton.textContent = 'Edit Description';
             editButton.onclick = () => { openModal('editMeme', { meme }); closeActiveContextMenu(); };
@@ -1334,15 +1843,25 @@
 
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Delete Meme';
-            deleteButton.style.color = 'var(--error-color)';
+            deleteButton.className = 'delete-option';
             deleteButton.onclick = () => { handleDeleteMeme(meme.id); closeActiveContextMenu(); };
             menu.appendChild(deleteButton);
             
             document.body.appendChild(menu);
             activeContextMenu = menu;
 
-            // Click outside to close
-            setTimeout(() => { // Add listener after current event bubble phase
+            // Adjust position if out of viewport (simple check)
+            const menuRect = menu.getBoundingClientRect();
+            if (menuRect.right > window.innerWidth - 10) {
+                menu.style.right = '10px';
+                menu.style.left = 'auto';
+            }
+            if (menuRect.bottom > window.innerHeight - 10) {
+                menu.style.top = `${rect.top + window.scrollY - menuRect.height - 5}px`;
+            }
+
+
+            setTimeout(() => { 
                  document.addEventListener('click', handleClickOutsideContextMenu, { once: true });
             },0);
         };
@@ -1355,9 +1874,9 @@
             }
         };
         const handleClickOutsideContextMenu = (event) => {
-            if (activeContextMenu && !activeContextMenu.contains(event.target) && !event.target.classList.contains('post-options-button')) {
+            if (activeContextMenu && !activeContextMenu.contains(event.target) && !event.target.classList.contains('post-options-button') && !event.target.closest('.post-options-button')) {
                 closeActiveContextMenu();
-            } else if (activeContextMenu) { // Re-add if not closed by this click
+            } else if (activeContextMenu) { 
                  document.addEventListener('click', handleClickOutsideContextMenu, { once: true });
             }
         };
@@ -1372,17 +1891,15 @@
 
             if (confirm("Are you sure you want to delete this meme? This action cannot be undone.")) {
                 showSpinner();
-                // Delete meme, its likes, dislikes, favorites, and comments
                 const updates = {};
                 updates[`/memes/${memeId}`] = null;
                 updates[`/comments/${memeId}`] = null; 
-                // Could also iterate user-favorites to remove this memeId, more complex
+                // Future: Could remove from user-favorites lists, but that's more complex.
                 
                 database.ref().update(updates)
                     .then(() => {
                         hideSpinner();
                         showInPageNotification("Meme deleted successfully.", "success");
-                        // Gallery will re-render via the memesRef listener
                     })
                     .catch(err => {
                         hideSpinner();
@@ -1392,23 +1909,18 @@
             }
         };
         
-        // --- Settings Modal ---
         document.getElementById('settingsBtn')?.addEventListener('click', () => openModal('settings'));
-
-
+        
         document.addEventListener('click', (e) => {
             const target = e.target;
             if (target.id === 'loginPromptBtn') openModal('auth');
             else if (target.id === 'uploadBtn' && currentUser) openModal('upload');
             else if (target.id === 'uploadBtn' && !currentUser) showInPageNotification("Please login to upload.", "error");
             else if (target.id === 'home-link') { e.preventDefault(); window.location.reload(); }
-            // Close context menu if clicking anywhere else that's not part of it or its trigger
-            if (activeContextMenu && !activeContextMenu.contains(e.target) && !e.target.classList.contains('post-options-button') && !e.target.closest('.post-options-button')) {
-                closeActiveContextMenu();
-            }
         });
 
-        applySearchFilter(); 
+        applySearchFilter(); // Initial load
+        console.log("INDEX: End of DOMContentLoaded script. Event listeners attached.");
     });
     </script>
 </body>
